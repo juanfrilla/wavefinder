@@ -138,7 +138,7 @@ def convert_datestr_format(datestr):
 
 def render_html_from_browser(url, tag_to_wait=None, timeout=6000):
     with sync_playwright() as p:
-        browser = p.firefox.launch()
+        browser = p.chromium.launch()
         context = browser.new_context()
         page = context.new_page()
         page.goto(url)
