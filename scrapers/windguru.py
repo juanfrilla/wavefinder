@@ -1,0 +1,190 @@
+from bs4 import BeautifulSoup
+import requests
+from typing import Dict
+import pandas as pd
+from utils import *
+import numpy as np
+import re
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
+
+class Windguru(object):
+    def __init__(self):
+        pass
+
+    def beach_request(self, url):
+        r_text = render_html_from_browser(
+            url=url, tag_to_wait="div.nadlegend", timeout=20 * 1000
+        )
+        return BeautifulSoup(r_text, "html.parser")
+
+    def format_forecast(self, forecast: Dict) -> Dict:
+        forecast = rename_key(forecast, "tabid_0_0_dates", "datetime")
+        forecast = rename_key(forecast, "tabid_0_0_SMER", "wind_direction")
+        forecast = rename_key(forecast, "tabid_0_0_HTSGW", "wave_height")
+        forecast = rename_key(forecast, "tabid_0_0_DIRPW", "wave_direction")
+        forecast = rename_key(forecast, "tabid_0_0_PERPW", "wave_period")
+
+        forecast["wind_direction"] = [
+            angle_to_direction(self.parse_number_from_text(element))
+            for element in forecast["wind_direction"]
+        ]
+        forecast["wave_direction"] = [
+            angle_to_direction(self.parse_number_from_text(element))
+            for element in forecast["wave_direction"]
+        ]
+
+        forecast["date"] = [
+            self.datestr_to_backslashformat(dt.split(".")[0])
+            for dt in forecast["datetime"]
+        ]
+        forecast["time"] = [dt.split(".")[1] for dt in forecast["datetime"]]
+        del forecast["datetime"]
+
+        forecast["wind_status"] = self.parse_windstatus(
+            forecast["wave_direction"], forecast["wind_direction"]
+        )
+        # dates = forecast["tabid_0_0_dates"]
+        # dates = [date.split(" ")[0] for date in dates]
+        # forecast["tabid_0_0_dates"] = dates
+        return forecast
+
+    def parse_spot_name(self, soup):
+        return soup.select("div.spot-name.wg-guide")[0].text.strip()
+
+    def parse_spot_names(self, soup, total_records):
+        return [self.parse_spot_name(soup) for _ in range(total_records)]
+
+    def get_dataframe_from_soup(self, soup: BeautifulSoup) -> Dict:
+        forecast = {}
+        table = soup.find("table", class_="tabulka")
+        tablebody = table.find("tbody")
+        rows = tablebody.find_all("tr")
+
+        for row in rows:
+            cells = row.find_all("td")
+            id = row["id"]
+            if id in [
+                "tabid_0_0_SMER",
+                "tabid_0_0_dates",
+                "tabid_0_0_HTSGW",
+                "tabid_0_0_DIRPW",
+                "tabid_0_0_PERPW",
+            ]:
+                forecast[id] = []
+                for cell in cells:
+                    if ("SMER" in id) | ("DIRPW" in id):
+                        value = cell.find("span")["title"]
+                    else:
+                        value = cell.get_text()
+                    forecast[id].append(value)
+        total_records = len(forecast["tabid_0_0_dates"])
+        forecast["spot_name"] = self.parse_spot_names(soup, total_records)
+        forecast = self.format_forecast(forecast)
+        return pd.DataFrame(forecast)
+
+    def process_soup(self, soup):
+        df = self.get_dataframe_from_soup(soup)
+        df = self.conditions(df)
+        return self.format_dataframe(df)
+
+    def parse_number_from_text(self, text):
+        pattern = r"(\d+)°"  # This regex pattern matches one or more digits followed by the degree symbol
+
+        match = re.search(pattern, text)
+        if match:
+            return int(match.group(1))
+        return None
+
+    def conditions(self, df: pd.DataFrame) -> pd.DataFrame:
+        wave_height = df["wave_height"].astype(float)
+
+        period = df["wave_period"].astype(float)
+
+        # STRENGTH
+        STRENGTH = wave_height >= 1  # & (primary_wave_heigh <= 2.5)
+
+        # PERIOD
+        PERIOD = period >= 6
+
+        WIND_STATUS = (df["wind_status"] == "Offshore") | (
+            df["wind_status"] == "Cross-off"
+        )
+
+        favorable = STRENGTH & PERIOD & WIND_STATUS
+
+        default = "No Favorable"
+
+        str_list = ["Favorable"]
+
+        df["approval"] = np.select(
+            [favorable],
+            str_list,
+            default=default,
+        )
+        return df
+
+    def parse_windstatus(self, wave_directions, wind_directions):
+        return [
+            get_wind_status(wind_dir, wave_dir)
+            for wave_dir, wind_dir in zip(wave_directions, wind_directions)
+        ]
+
+    def format_dataframe(self, df):
+        # Hacerlo en menos lineas comprobando que la hora es de noche
+        df = df.drop(
+            df[
+                (df["time"] == "03h")
+                | (df["time"] == "04h")
+                | (df["time"] == "05h")
+                | (df["time"] == "21h")
+            ].index
+        )
+        return df
+
+    def datestr_to_backslashformat(self, input_text):
+        # si es menor es del próximo mes, si es mayor o igual es de este mes
+        day = re.search(r"\d+", input_text).group()
+
+        current_date = datetime.now()
+        
+        if int(day) < current_date.day:
+            new_date = current_date + relativedelta(months=1)
+            month = new_date.month
+        elif int(day) >= current_date.day:
+            month = current_date.month
+        year = current_date.year
+
+        date_datetime = datetime.strptime(f"{day}/{month}/{year}", "%d/%m/%Y")
+
+        return date_datetime.strftime("%d/%m/%Y")
+
+        # weekday_mapping = {
+        #     "Mo": 0,
+        #     "Tu": 1,
+        #     "We": 2,
+        #     "Th": 3,
+        #     "Fr": 4,
+        #     "Sa": 5,
+        #     "Su": 6,
+        # }
+
+        # weekday_abbr = input_text[:2]
+        # day_number = int(input_text[2:])
+
+        # current_date = datetime.now()
+
+        # days_until_desired_weekday = (
+        #     weekday_mapping[weekday_abbr] - current_date.weekday()
+        # ) % 7
+
+        # target_date = current_date + timedelta(days=days_until_desired_weekday)
+
+        # target_date_with_day_number = target_date.replace(day=day_number)
+
+        # return target_date_with_day_number.strftime("%d/%m/%Y")
+
+    def scrape(self, url):
+        soup = self.beach_request(url)
+        return self.process_soup(soup)

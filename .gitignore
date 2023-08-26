@@ -1,0 +1,7 @@
+*.json
+venv/
+__pycache__/
+*.csv
+.env
+.coverage
+.pytest_cache
