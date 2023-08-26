@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
 from playwright.sync_api import sync_playwright
+import subprocess
 
 MONTH_MAPPING = {
     "Ene": "01",
@@ -165,3 +166,18 @@ def final_format(df):
     df["date"] = df["date"].dt.strftime("%d/%m/%Y")
 
     return df
+
+
+def is_playwright_installed():
+    try:
+        subprocess.run(["playwright", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+def install_playwright():
+    try:
+        subprocess.run(["playwright", "install"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+        print("Playwright installed successfully.")
+    except subprocess.CalledProcessError as e:
+        print("Error installing Playwright:", e.stderr.decode("utf-8"))
