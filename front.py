@@ -7,8 +7,7 @@ from scrapers.windfinder import WindFinder
 from scrapers.windguru import Windguru
 
 
-# Cache the dataframe so it's only loaded once
-@st.experimental_memo() #si cambio este, me quita algunos spots
+@st.experimental_memo(ttl=7200) #si cambio este, me quita algunos spots
 def load_data(urls):
     start_time = time.time()
     if "windfinder" in urls[1]:
