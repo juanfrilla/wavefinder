@@ -160,31 +160,6 @@ class Windguru(object):
 
         return date_datetime.strftime("%d/%m/%Y")
 
-        # weekday_mapping = {
-        #     "Mo": 0,
-        #     "Tu": 1,
-        #     "We": 2,
-        #     "Th": 3,
-        #     "Fr": 4,
-        #     "Sa": 5,
-        #     "Su": 6,
-        # }
-
-        # weekday_abbr = input_text[:2]
-        # day_number = int(input_text[2:])
-
-        # current_date = datetime.now()
-
-        # days_until_desired_weekday = (
-        #     weekday_mapping[weekday_abbr] - current_date.weekday()
-        # ) % 7
-
-        # target_date = current_date + timedelta(days=days_until_desired_weekday)
-
-        # target_date_with_day_number = target_date.replace(day=day_number)
-
-        # return target_date_with_day_number.strftime("%d/%m/%Y")
-
     def scrape(self, url):
         soup = self.beach_request(url)
         return self.process_soup(soup)

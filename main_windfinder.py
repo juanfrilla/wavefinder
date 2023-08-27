@@ -1,6 +1,5 @@
 from utils import *
 from front import *
-from scrapers.windfinder import WindFinder
 
 if __name__ == "__main__":
     urls = [
@@ -18,9 +17,3 @@ if __name__ == "__main__":
     ]
 
     plot_data(urls)
-    
-    # df = multithread.scrape_multiple_requests(urls, WindFinder())
-    
-    # df = final_format(df)
-    
-    print()
