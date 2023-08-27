@@ -1,4 +1,4 @@
-from front import *
+from front import plot_data
 
 if __name__ == "__main__":
     urls = [
@@ -7,5 +7,5 @@ if __name__ == "__main__":
         "https://www.windguru.cz/49328",  # famara
         "https://www.windguru.cz/586104",  # costa teguise
     ]
-    
+
     plot_data(urls)

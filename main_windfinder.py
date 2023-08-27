@@ -1,5 +1,4 @@
-from utils import *
-from front import *
+from front import plot_data
 
 if __name__ == "__main__":
     urls = [

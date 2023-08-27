@@ -2,7 +2,12 @@ import requests
 from bs4 import BeautifulSoup, Tag
 import pandas as pd
 import numpy as np
-from utils import *
+from utils import (
+    import_html,
+    get_wind_status,
+    angle_to_direction,
+    convert_datestr_format,
+)
 
 
 class WindFinder(object):

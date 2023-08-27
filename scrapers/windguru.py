@@ -1,11 +1,15 @@
 from bs4 import BeautifulSoup
-import requests
 from typing import Dict
 import pandas as pd
-from utils import *
+from utils import (
+    rename_key,
+    angle_to_direction,
+    get_wind_status,
+    render_html_from_browser,
+)
 import numpy as np
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 
@@ -148,7 +152,7 @@ class Windguru(object):
         day = re.search(r"\d+", input_text).group()
 
         current_date = datetime.now()
-        
+
         if int(day) < current_date.day:
             new_date = current_date + relativedelta(months=1)
             month = new_date.month

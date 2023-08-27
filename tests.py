@@ -1,6 +1,5 @@
 from scrapers.windfinder import WindFinder
 from scrapers.windguru import Windguru
-from utils import *
 
 
 # def test_playa_blanca():

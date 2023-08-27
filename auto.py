@@ -1,5 +1,5 @@
 from scrapers.windfinder import WindFinder
-from utils import *
+from utils import  export_to_html
 if __name__ == "__main__":
     filename="./samples/costa_teguise.html"
     windfinder = WindFinder()

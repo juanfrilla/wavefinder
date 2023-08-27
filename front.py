@@ -1,7 +1,7 @@
 import streamlit as st
 
 import time
-from utils import *
+from utils import final_format
 from multi import multithread
 from scrapers.windfinder import WindFinder
 from scrapers.windguru import Windguru
