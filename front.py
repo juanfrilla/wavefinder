@@ -13,7 +13,7 @@ def load_data(urls):
     if "windfinder" in urls[1]:
         df = multithread.scrape_multiple_requests(urls, WindFinder())
     elif "windguru" in urls[1]:
-        df = multithread.scrape_multiple_requests(urls, Windguru())
+        df = multithread.scrape_multiple_browser(urls, Windguru())
     df = final_format(df)
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -33,6 +33,7 @@ def plot_data(urls):
         # GET UNIQUES
         date_name = st.session_state.df["date"].unique().tolist()
         wind_state = st.session_state.df["wind_status"].unique().tolist()
+        default_wind_state = ["Cross-off"] if "Offshore" not in wind_state else ["Offshore"]
         all_beaches = st.session_state.df["spot_name"].unique().tolist()
         # lg_beaches = (
         #     st.session_state.df.loc[st.session_state.df["island"] == "La Graciosa", "beach"]
@@ -59,7 +60,7 @@ def plot_data(urls):
         # CREATE MULTISELECT
         date_name_selection = st.multiselect("Fecha:", date_name, default=date_name)
         wind_state_selection = st.multiselect(
-            "Estado del viento:", wind_state, default=["Offshore"]
+            "Estado del viento:", wind_state, default=default_wind_state
         )
 
         # island_selection = st.multiselect("Isla:", island, default=["Lanzarote"])

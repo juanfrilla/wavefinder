@@ -4,16 +4,13 @@ import utils
 import pandas as pd
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 
+
 def scrape_multiple_browser(urls, object):
-    num_processes = 3
     forecast = pd.DataFrame()
 
-    with multiprocessing.Pool(processes=num_processes) as pool:
-        scraper_objects = []
-        for url in urls:
-            object.url=url
-            scraper_objects.append(object)
-        results = pool.map(object.scrape, scraper_objects)
+    results = []
+    for url in urls:
+        results.append(object.scrape(url))
 
     for url, content in zip(urls, results):
         forecast = utils.combine_df(forecast, content)
@@ -27,7 +24,6 @@ def scrape_multiple_requests(urls, object):
     forecast = pd.DataFrame()
 
     for url in urls:
-
         x = ThreadWithReturnValue(target=object.scrape, args=(url,))
 
         add_script_run_ctx(x)

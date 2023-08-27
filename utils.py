@@ -1,8 +1,13 @@
 from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
-from playwright.sync_api import sync_playwright
-import subprocess
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+# import undetected_chromedriver as uc
+# import chromedriver_autoinstaller
 
 MONTH_MAPPING = {
     "Ene": "01",
@@ -137,17 +142,18 @@ def convert_datestr_format(datestr):
     return date_obj.strftime("%d/%m/%Y")
 
 
-def render_html_from_browser(url, tag_to_wait=None, timeout=6000):
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        context = browser.new_context()
-        page = context.new_page()
-        page.goto(url)
-        if tag_to_wait is not None:
-            page.wait_for_selector(selector=tag_to_wait, timeout=timeout)
-        html_content = page.content()
-        context.close()
-        browser.close()
+def render_html_from_browser(url, tag_to_wait=None, timeout=10):
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')  # Run Chrome in headless mode
+
+    with webdriver.Chrome(options=options) as driver:
+        driver.get(url)
+        if tag_to_wait:
+            WebDriverWait(driver, timeout).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
+            )
+        html_content = driver.page_source
+
     return html_content
 
 
@@ -166,18 +172,3 @@ def final_format(df):
     df["date"] = df["date"].dt.strftime("%d/%m/%Y")
 
     return df
-
-
-def is_playwright_installed():
-    try:
-        subprocess.run(["playwright", "--version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-        return True
-    except subprocess.CalledProcessError:
-        return False
-
-def install_playwright():
-    try:
-        subprocess.run(["playwright", "install"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-        print("Playwright installed successfully.")
-    except subprocess.CalledProcessError as e:
-        print("Error installing Playwright:", e.stderr.decode("utf-8"))
