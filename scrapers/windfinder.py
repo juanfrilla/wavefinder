@@ -173,6 +173,10 @@ class WindFinder(object):
             "wave_height": self.parse_wave_heights(soup),
             "spot_name": self.parse_spot_names(soup, total_records),
         }
+        
+        for key, value in data.items():
+            print(f"Length of {key}: {len(value)}")
+            
         return pd.DataFrame(data)
 
     def process_soup(self, soup):
