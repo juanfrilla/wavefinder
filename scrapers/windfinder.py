@@ -96,8 +96,8 @@ class WindFinder(object):
             for wave_heights_table in wave_heights_table
         ]
 
-    def parse_spot_names(self, soup, total_records):
-        return [self.parse_spot_name(soup) for _ in range(total_records)]
+    def parse_spot_names(self, spot_name, total_records):
+        return [spot_name for _ in range(total_records)]
 
     def parse_dates_str(self, soup, total_records):
         wearthable_headers = soup.select("div.weathertable__header > h3")
@@ -162,6 +162,7 @@ class WindFinder(object):
         wave_directions = self.parse_wave_directions(soup)
         wind_directions = self.parse_wind_directions(soup)
         total_records = len(wave_directions)
+        spot_name = self.parse_spot_name(soup)
 
         data = {
             "date": self.parse_dates_str(soup, total_records),
@@ -171,12 +172,12 @@ class WindFinder(object):
             "wind_status": self.parse_windstatus(wave_directions, wind_directions),
             "wave_period": self.parse_wave_periods(soup),
             "wave_height": self.parse_wave_heights(soup),
-            "spot_name": self.parse_spot_names(soup, total_records),
+            "spot_name": self.parse_spot_names(spot_name, total_records),
         }
-        
+
         for key, value in data.items():
-            print(f"Length of {key}: {len(value)}")
-            
+            print(f"Length of {key} for {spot_name}: {len(value)}")
+
         return pd.DataFrame(data)
 
     def process_soup(self, soup):

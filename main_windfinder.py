@@ -1,4 +1,4 @@
-from front import plot_data
+from front import plot_forecast, plot_tides
 
 if __name__ == "__main__":
     urls = [
@@ -15,4 +15,5 @@ if __name__ == "__main__":
         "https://es.windfinder.com/forecast/la_palma1",
     ]
 
-    plot_data(urls)
+    plot_forecast(urls)
+    plot_tides()

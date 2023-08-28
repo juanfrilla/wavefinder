@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -141,7 +141,7 @@ def convert_datestr_format(datestr):
 
 def render_html_from_browser(url, tag_to_wait=None, timeout=10):
     options = webdriver.ChromeOptions()
-    options.add_argument('--headless')  # Run Chrome in headless mode
+    options.add_argument("--headless")  # Run Chrome in headless mode
 
     with webdriver.Chrome(options=options) as driver:
         driver.get(url)
@@ -159,6 +159,14 @@ def rename_key(dictionary, old_key, new_key):
         dictionary[new_key] = dictionary.pop(old_key)
 
     return dictionary
+
+
+def get_day_name(days_to_add: float) -> str:
+    today = date.today()
+    day = today + timedelta(days=days_to_add)
+    day_name_number = day.strftime("%m-%d, %A")
+
+    return day_name_number
 
 
 def final_format(df):
