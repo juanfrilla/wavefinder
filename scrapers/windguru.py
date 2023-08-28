@@ -5,7 +5,8 @@ from utils import (
     rename_key,
     angle_to_direction,
     get_wind_status,
-    render_html_from_browser,
+    render_html,
+    open_browser,
 )
 import numpy as np
 import re
@@ -17,9 +18,9 @@ class Windguru(object):
     def __init__(self):
         pass
 
-    def beach_request(self, url):
-        r_text = render_html_from_browser(
-            url=url, tag_to_wait="div.nadlegend", timeout=20 * 1000
+    def beach_request(self, browser, url):
+        r_text = render_html(
+            browser=browser, url=url, tag_to_wait="div.nadlegend", timeout=20 * 1000
         )
         return BeautifulSoup(r_text, "html.parser")
 
@@ -164,6 +165,6 @@ class Windguru(object):
 
         return date_datetime.strftime("%d/%m/%Y")
 
-    def scrape(self, url):
-        soup = self.beach_request(url)
+    def scrape(self, browser, url):
+        soup = self.beach_request(browser, url)
         return self.process_soup(soup)

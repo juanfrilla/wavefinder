@@ -139,18 +139,19 @@ def convert_datestr_format(datestr):
     return date_obj.strftime("%d/%m/%Y")
 
 
-def render_html_from_browser(url, tag_to_wait=None, timeout=10):
+def open_browser():
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Run Chrome in headless mode
+    browser = webdriver.Chrome(options=options)
+    return browser
 
-    with webdriver.Chrome(options=options) as driver:
-        driver.get(url)
-        if tag_to_wait:
-            WebDriverWait(driver, timeout).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
-            )
-        html_content = driver.page_source
-
+def render_html(browser, url, tag_to_wait=None, timeout=10):
+    browser.get(url)
+    if tag_to_wait:
+        WebDriverWait(browser, timeout).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
+        )
+    html_content = browser.page_source
     return html_content
 
 

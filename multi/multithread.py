@@ -7,13 +7,13 @@ from streamlit.runtime.scriptrunner import add_script_run_ctx
 
 def scrape_multiple_browser(urls, object):
     forecast = pd.DataFrame()
-
     results = []
-    for url in urls:
-        results.append(object.scrape(url))
+    with utils.open_browser() as browser:
+        for url in urls:
+            results.append(object.scrape(browser, url))
 
-    for url, content in zip(urls, results):
-        forecast = utils.combine_df(forecast, content)
+        for url, content in zip(urls, results):
+            forecast = utils.combine_df(forecast, content)
 
     return forecast
 
