@@ -6,7 +6,6 @@ from utils import (
     angle_to_direction,
     get_wind_status,
     render_html,
-    open_browser,
 )
 import numpy as np
 import re
@@ -50,9 +49,6 @@ class Windguru(object):
         forecast["wind_status"] = self.parse_windstatus(
             forecast["wave_direction"], forecast["wind_direction"]
         )
-        # dates = forecast["tabid_0_0_dates"]
-        # dates = [date.split(" ")[0] for date in dates]
-        # forecast["tabid_0_0_dates"] = dates
         return forecast
 
     def parse_spot_name(self, soup):
@@ -95,7 +91,7 @@ class Windguru(object):
         return self.format_dataframe(df)
 
     def parse_number_from_text(self, text):
-        pattern = r"(\d+)°"  # This regex pattern matches one or more digits followed by the degree symbol
+        pattern = r"(\d+)°"
 
         match = re.search(pattern, text)
         if match:

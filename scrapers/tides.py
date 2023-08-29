@@ -4,17 +4,9 @@ from typing import Dict
 from requests import Session
 from utils import get_day_name
 
-# from selenium import webdriver
-# from selenium.webdriver.chrome.service import Service
-
 
 class TidesScraper(object):
     def __init__(self):
-        # options = webdriver.ChromeOptions()
-        # options.add_argument("--headless")
-        # options.add_argument("--start-maximized")
-        # ser = Service(r"/usr/bin/chromedriver")
-        # self.driver = webdriver.Chrome(service=ser, options=options)
         self.link = (
             "https://www.temperaturadelmar.es/europa/lanzarote/arrecife/tides.html"
         )
