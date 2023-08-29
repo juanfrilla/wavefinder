@@ -1,8 +1,9 @@
 # wavefinder
 Scraping some waves websites to help me in the task of interpreting when there are good conditions to surf.
 
-NORTH COAST
-https://wavefinder-izcwbxltqt8yz5c2kpvol5.streamlit.app/
+NORTH COAST 
+ - (windguru) https://wavefinder-windguru.streamlit.app/
+ - (surf-forecast) https://wavefinder-sforecast.streamlit.app/
 
-SOUTH COAST
-https://wavefinder-fxjf59emqhgxps6pcdxchh.streamlit.app/
+SOUTH COAST 
+- (windfinder) https://wavefinder-windfinder.streamlit.app/
