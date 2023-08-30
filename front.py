@@ -47,11 +47,11 @@ def plot_forecast(urls):
         # GET UNIQUES
         date_name = st.session_state.forecast_df["date"].unique().tolist()
         wind_state = st.session_state.forecast_df["wind_status"].unique().tolist()
-        if wind_state == ["Cross-off", "Offshore"]:
+        if "Cross-off" in wind_state and "Offshore" in wind_state:
             default_wind_state = ["Cross-off", "Offshore"]
-        elif wind_state == ["Offshore"]:
+        elif "Offshore" in wind_state:
             default_wind_state = ["Offshore"]
-        elif wind_state == ["Cross-off"]:
+        elif "Cross-off" in wind_state:
             default_wind_state = ["Cross-off"]
         else:
             default_wind_state = []

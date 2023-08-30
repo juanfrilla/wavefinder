@@ -5,6 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import numpy as np
 
 MONTH_MAPPING = {
     "Ene": "01",
@@ -192,3 +193,31 @@ def final_format(df):
         ]
     ]
     return df
+
+def conditions(df: pd.DataFrame) -> pd.DataFrame:
+        wave_height = df["wave_height"].astype(float)
+
+        period = df["wave_period"].astype(float)
+
+        # STRENGTH
+        STRENGTH = wave_height >= 1  # & (primary_wave_heigh <= 2.5)
+
+        # PERIOD
+        PERIOD = period >= 7
+
+        WIND_STATUS = (df["wind_status"] == "Offshore") | (
+            df["wind_status"] == "Cross-off"
+        )
+
+        favorable = STRENGTH & PERIOD & WIND_STATUS
+
+        default = "No Favorable"
+
+        str_list = ["Favorable"]
+
+        df["approval"] = np.select(
+            [favorable],
+            str_list,
+            default=default,
+        )
+        return df

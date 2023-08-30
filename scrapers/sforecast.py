@@ -1,9 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
-from utils import rename_key
+from utils import rename_key, conditions
 from datetime import datetime, timedelta
-import numpy as np
 import re
 
 
@@ -72,14 +71,36 @@ class SurfForecast(object):
         return new_wind_status
 
     def get_formatted_wave_height(self, forecast):
-        new_wave_height = []
+        wave_height_list = []
         pattern = r"(\d+(\.\d+)?)"
-        for element in forecast["wave_height"]:
+        for element in forecast["wave"]:
             match = re.match(pattern, element)
             if match:
-                numeric_value = float(match.group(1))
-                new_wave_height.append(numeric_value)
-        return new_wave_height
+                wave_height = float(match.group(1))
+                wave_height_list.append(wave_height)
+        return wave_height_list
+
+    def get_formatted_wave_direction(self, forecast):
+        wave_direction_list = []
+        pattern = r"(\d+(\.\d+)?)"
+        for element in forecast["wave"]:
+            match = re.match(pattern, element)
+            if match:
+                numeric_value = str(match.group(1))
+                char_value = element.split(numeric_value)[1]
+                wave_direction_list.append(char_value.strip())
+        return wave_direction_list
+
+    def get_formatted_wind_direction(self, forecast):
+        wind_direction_list = []
+        pattern = r"(\d+(\.\d+)?)"
+        for element in forecast["wind"]:
+            match = re.match(pattern, element)
+            if match:
+                wind_direction_degrees = str(match.group(1))
+                char_value = element.split(wind_direction_degrees)[1]
+                wind_direction_list.append(char_value.strip())
+        return wind_direction_list
 
     def get_dataframe_from_soup(self, soup):
         forecast = {}
@@ -100,41 +121,16 @@ class SurfForecast(object):
                 if cell.text.strip() != "":
                     forecast[row_name].append(cell.text)
         forecast = rename_key(forecast, "wind-state", "wind_status")
-        forecast = rename_key(forecast, "wave-height", "wave_height")
+        forecast = rename_key(forecast, "wave-height", "wave")
         forecast = rename_key(forecast, "periods", "wave_period")
         forecast = self.add_days_to_forecast(forecast)
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["date"]))
         forecast["wind_status"] = self.get_formatted_wind_status(forecast)
         forecast["wave_height"] = self.get_formatted_wave_height(forecast)
+        forecast["wave_direction"] = self.get_formatted_wave_direction(forecast)
+        del forecast["wave"]
+        forecast["wind_direction"] = self.get_formatted_wind_direction(forecast)
         return pd.DataFrame(forecast)
-
-    def conditions(self, df: pd.DataFrame) -> pd.DataFrame:
-        wave_height = df["wave_height"].astype(float)
-
-        period = df["wave_period"].astype(float)
-
-        # STRENGTH
-        STRENGTH = wave_height >= 1  # & (primary_wave_heigh <= 2.5)
-
-        # PERIOD
-        PERIOD = period >= 6
-
-        WIND_STATUS = (df["wind_status"] == "Offshore") | (
-            df["wind_status"] == "Cross-off"
-        )
-
-        favorable = STRENGTH & PERIOD & WIND_STATUS
-
-        default = "No Favorable"
-
-        str_list = ["Favorable"]
-
-        df["approval"] = np.select(
-            [favorable],
-            str_list,
-            default=default,
-        )
-        return df
 
     def format_dataframe(self, df):
         # Hacerlo en menos lineas comprobando que la hora es de noche
@@ -150,7 +146,7 @@ class SurfForecast(object):
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)
-        df = self.conditions(df)
+        df = conditions(df)
         return self.format_dataframe(df)
 
     def scrape(self, url):

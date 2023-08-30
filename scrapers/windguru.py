@@ -6,8 +6,8 @@ from utils import (
     angle_to_direction,
     get_wind_status,
     render_html,
+    conditions,
 )
-import numpy as np
 import re
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -87,7 +87,7 @@ class Windguru(object):
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)
-        df = self.conditions(df)
+        df = conditions(df)
         return self.format_dataframe(df)
 
     def parse_number_from_text(self, text):
@@ -97,34 +97,6 @@ class Windguru(object):
         if match:
             return int(match.group(1))
         return None
-
-    def conditions(self, df: pd.DataFrame) -> pd.DataFrame:
-        wave_height = df["wave_height"].astype(float)
-
-        period = df["wave_period"].astype(float)
-
-        # STRENGTH
-        STRENGTH = wave_height >= 1  # & (primary_wave_heigh <= 2.5)
-
-        # PERIOD
-        PERIOD = period >= 6
-
-        WIND_STATUS = (df["wind_status"] == "Offshore") | (
-            df["wind_status"] == "Cross-off"
-        )
-
-        favorable = STRENGTH & PERIOD & WIND_STATUS
-
-        default = "No Favorable"
-
-        str_list = ["Favorable"]
-
-        df["approval"] = np.select(
-            [favorable],
-            str_list,
-            default=default,
-        )
-        return df
 
     def parse_windstatus(self, wave_directions, wind_directions):
         return [
