@@ -95,18 +95,19 @@ def plot_forecast(urls):
         with st.container():
             for spot_name, group_df in grouped_data:
                 st.subheader(f"Spot: {spot_name}")
-                
+
                 # Drop the "spot_name" column from the group DataFrame
                 group_df = group_df.drop(columns=["spot_name"])
-                
+
                 st.dataframe(
                     group_df.style.set_properties(
                         **{"overflow-y": "auto", "overflow-x": "auto"}
-                    )
+                    ),
+                    hide_index=True,
                 )
 
 
 def plot_tides():
     st.session_state.tides_df = load_tides()
     st.subheader("Tabla de mareas")
-    st.table(st.session_state.tides_df)
+    st.dataframe(st.session_state.tides_df, hide_index=True)

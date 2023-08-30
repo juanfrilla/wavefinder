@@ -145,6 +145,7 @@ def open_browser():
     browser = webdriver.Chrome(options=options)
     return browser
 
+
 def render_html(browser, url, tag_to_wait=None, timeout=10):
     browser.get(url)
     if tag_to_wait:
@@ -173,8 +174,21 @@ def get_day_name(days_to_add: float) -> str:
 def final_format(df):
     df = df.drop(df[df["wind_status"] == "Onshore"].index)
     df["date"] = pd.to_datetime(df["date"], format="%d/%m/%Y")
-    #df["time"] = df["time"].str.extract("(\d+)").astype(int)
+    # df["time"] = df["time"].str.extract("(\d+)").astype(int)
     df.sort_values(by=["date", "time", "spot_name"], ascending=[True, True, True])
     df["date"] = df["date"].dt.strftime("%d/%m/%Y")
 
+    df = df[
+        [
+            "date",
+            "time",
+            "spot_name",
+            "wind_status",
+            "wave_height",
+            "wave_period",
+            "wind_direction",
+            "wave_direction",
+            "approval",
+        ]
+    ]
     return df
