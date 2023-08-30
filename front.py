@@ -47,9 +47,15 @@ def plot_forecast(urls):
         # GET UNIQUES
         date_name = st.session_state.forecast_df["date"].unique().tolist()
         wind_state = st.session_state.forecast_df["wind_status"].unique().tolist()
-        default_wind_state = (
-            ["Cross-off"] if "Offshore" not in wind_state else ["Offshore"]
-        )
+        if wind_state == ["Cross-off", "Offshore"]:
+            default_wind_state = ["Cross-off", "Offshore"]
+        elif wind_state == ["Offshore"]:
+            default_wind_state = ["Offshore"]
+        elif wind_state == ["Cross-off"]:
+            default_wind_state = ["Cross-off"]
+        else:
+            default_wind_state = []
+
         all_beaches = st.session_state.forecast_df["spot_name"].unique().tolist()
 
         approval = st.session_state.forecast_df["approval"].unique().tolist()
@@ -64,7 +70,9 @@ def plot_forecast(urls):
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
 
-        approval_selection = st.multiselect("Valoración:", approval, default=approval)
+        approval_selection = st.multiselect(
+            "Valoración:", approval, default=["Favorable"]
+        )
 
         # tides_state_selection = st.multiselect(
         #     "Estado de la marea:", tides_state, default=tides_state

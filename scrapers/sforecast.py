@@ -62,9 +62,13 @@ class SurfForecast(object):
             "cross": "Crossshore",
             "cross-off": "Cross-off",
             "cross-on": "Cross-on",
+            "glass": "Glass",
         }
         for element in forecast["wind_status"]:
-            new_wind_status.append(translator[element])
+            if element in translator:
+                new_wind_status.append(translator[element])
+            else:
+                raise Exception(f"Element {element} not in translator")
         return new_wind_status
 
     def get_formatted_wave_height(self, forecast):
