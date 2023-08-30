@@ -89,16 +89,24 @@ def plot_forecast(urls):
         # --- GROUP DATAFRAME AFTER SELECTION
         st.session_state.forecast_df = st.session_state.forecast_df[mask]
 
+        grouped_data = st.session_state.forecast_df.groupby("spot_name")
+
+        # Display tables for each group
         with st.container():
-            # st.dataframe(st.session_state.forecast_df, height=500, width=800)
-            st.dataframe(
-                st.session_state.forecast_df.style.set_properties(
-                    **{"overflow-y": "auto", "overflow-x": "auto"}
+            for spot_name, group_df in grouped_data:
+                st.subheader(f"Spot: {spot_name}")
+                
+                # Drop the "spot_name" column from the group DataFrame
+                group_df = group_df.drop(columns=["spot_name"])
+                
+                st.dataframe(
+                    group_df.style.set_properties(
+                        **{"overflow-y": "auto", "overflow-x": "auto"}
+                    )
                 )
-            )
 
 
 def plot_tides():
     st.session_state.tides_df = load_tides()
-    st.write("Tabla de mareas")
+    st.subheader("Tabla de mareas")
     st.table(st.session_state.tides_df)
