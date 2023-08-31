@@ -70,8 +70,17 @@ def plot_forecast(urls):
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
 
+        if "No favorable" in wind_state and "Favorable" in wind_state:
+            default_approval = ["No favorable", "Favorable"]
+        elif "Favorable" in wind_state:
+            default_approval = ["Favorable"]
+        elif "No favorable" in wind_state:
+            default_approval = ["No favorable"]
+        else:
+            default_approval = []
+
         approval_selection = st.multiselect(
-            "Valoración:", approval, default=["Favorable"]
+            "Valoración:", approval, default=default_approval
         )
 
         # tides_state_selection = st.multiselect(
