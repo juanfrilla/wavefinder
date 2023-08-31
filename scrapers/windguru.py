@@ -80,10 +80,7 @@ class Windguru(object):
                     else:
                         value = cell.get_text()
                     forecast[id].append(value)
-        if "tabid_0_0_dates" in forecast:
-            total_records = len(forecast["tabid_0_0_dates"])
-        else:
-            print()
+        total_records = len(forecast["tabid_0_0_dates"])
         forecast["spot_name"] = self.parse_spot_names(soup, total_records)
         forecast = self.format_forecast(forecast)
         return pd.DataFrame(forecast)

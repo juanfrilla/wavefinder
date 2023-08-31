@@ -147,9 +147,6 @@ class WindFinder(object):
             "spot_name": self.parse_spot_names(spot_name, total_records),
         }
 
-        for key, value in data.items():
-            print(f"Length of {key} for {spot_name}: {len(value)}")
-
         return pd.DataFrame(data)
 
     def process_soup(self, soup):

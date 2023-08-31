@@ -9,6 +9,26 @@ from scrapers.sforecast import SurfForecast
 from scrapers.tides import TidesScraper
 
 
+def get_default_approval_list(approval_list):
+    if "No Favorable" in approval_list and "Favorable" in approval_list:
+        return ["Favorable"]
+    elif "Favorable" in approval_list:
+        return ["Favorable"]
+    elif "No Favorable" in approval_list:
+        return ["No Favorable"]
+    return []
+
+
+def get_default_wind_status_list(wind_status_list):
+    if "Cross-off" in wind_status_list and "Offshore" in wind_status_list:
+        return ["Cross-off", "Offshore"]
+    elif "Offshore" in wind_status_list:
+        return ["Offshore"]
+    elif "Cross-off" in wind_status_list:
+        return ["Cross-off"]
+    return []
+
+
 @st.experimental_memo(ttl=7200)  # si cambio este, me quita algunos spots
 def load_forecast(urls):
     start_time = time.time()
@@ -45,42 +65,31 @@ def plot_forecast(urls):
         st.write("The DataFrame is empty.")
     else:
         # GET UNIQUES
-        date_name = st.session_state.forecast_df["date"].unique().tolist()
-        wind_state = st.session_state.forecast_df["wind_status"].unique().tolist()
-        if "Cross-off" in wind_state and "Offshore" in wind_state:
-            default_wind_state = ["Cross-off", "Offshore"]
-        elif "Offshore" in wind_state:
-            default_wind_state = ["Offshore"]
-        elif "Cross-off" in wind_state:
-            default_wind_state = ["Cross-off"]
-        else:
-            default_wind_state = []
+        date_name_list = st.session_state.forecast_df["date"].unique().tolist()
+        wind_status_list = st.session_state.forecast_df["wind_status"].unique().tolist()
 
         all_beaches = st.session_state.forecast_df["spot_name"].unique().tolist()
 
-        approval = st.session_state.forecast_df["approval"].unique().tolist()
+        approval_list = st.session_state.forecast_df["approval"].unique().tolist()
         # tides_state = st.session_state.forecast_df["tide_state"].unique().tolist()
         # island = st.session_state.forecast_df["island"].unique().tolist()
 
         # CREATE MULTISELECT
-        date_name_selection = st.multiselect("Fecha:", date_name, default=date_name)
-        wind_state_selection = st.multiselect(
-            "Estado del viento:", wind_state, default=default_wind_state
+        date_name_selection = st.multiselect(
+            "Fecha:", date_name_list, default=date_name_list
+        )
+        wind_status_selection = st.multiselect(
+            "Estado del viento:",
+            wind_status_list,
+            default=get_default_wind_status_list(wind_status_list),
         )
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
 
-        if "No favorable" in wind_state and "Favorable" in wind_state:
-            default_approval = ["No favorable", "Favorable"]
-        elif "Favorable" in wind_state:
-            default_approval = ["Favorable"]
-        elif "No favorable" in wind_state:
-            default_approval = ["No favorable"]
-        else:
-            default_approval = []
-
         approval_selection = st.multiselect(
-            "Valoración:", approval, default=default_approval
+            "Valoración:",
+            approval_list,
+            default=get_default_approval_list(approval_list),
         )
 
         # tides_state_selection = st.multiselect(
@@ -89,7 +98,7 @@ def plot_forecast(urls):
         # --- FILTER DATAFRAME BASED ON SELECTION
         mask = (
             (st.session_state.forecast_df["date"].isin(date_name_selection))
-            & (st.session_state.forecast_df["wind_status"].isin(wind_state_selection))
+            & (st.session_state.forecast_df["wind_status"].isin(wind_status_selection))
             & (st.session_state.forecast_df["spot_name"].isin(beach_selection))
             & (st.session_state.forecast_df["approval"].isin(approval_selection))
             # & (st.session_state.forecast_df["tide_state"].isin(tides_state_selection))
