@@ -14,8 +14,6 @@ def get_default_approval_list(approval_list):
         return ["Favorable"]
     elif "Favorable" in approval_list:
         return ["Favorable"]
-    elif "No Favorable" in approval_list:
-        return ["No Favorable"]
     return []
 
 
