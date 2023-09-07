@@ -200,7 +200,7 @@ def conditions(df: pd.DataFrame) -> pd.DataFrame:
         period = df["wave_period"].astype(float)
 
         # STRENGTH
-        STRENGTH = wave_height >= 1  # & (primary_wave_heigh <= 2.5)
+        STRENGTH = wave_height >= 1.3  # & (primary_wave_heigh <= 2.5)
 
         # PERIOD
         PERIOD = period >= 7
