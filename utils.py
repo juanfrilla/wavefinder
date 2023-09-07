@@ -175,7 +175,6 @@ def get_day_name(days_to_add: float) -> str:
 def final_format(df):
     df = df.drop(df[df["wind_status"] == "Onshore"].index)
     df["date"] = pd.to_datetime(df["date"], format="%d/%m/%Y")
-    # df["time"] = df["time"].str.extract("(\d+)").astype(int)
     df.sort_values(by=["date", "time", "spot_name"], ascending=[True, True, True])
     df["date"] = df["date"].dt.strftime("%d/%m/%Y")
 
