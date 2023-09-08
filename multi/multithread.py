@@ -19,13 +19,13 @@ def scrape_multiple_browser(urls, object):
 
 
 def scrape_multiple_requests(urls, object, batch_size=8):
-    threads = list()
     forecast = pd.DataFrame()
     dfs = []
     # Create batches of URLs to scrape
     url_batches = [urls[i : i + batch_size] for i in range(0, len(urls), batch_size)]
 
     for url_list in url_batches:
+        threads = list()
         for url in url_list:
             x = ThreadWithReturnValue(target=object.scrape, args=(url,))
 
