@@ -22,4 +22,3 @@ class Item:
     # swell_direction: str
     # wind_description: str
     # page_rating: str
-    # approval: str

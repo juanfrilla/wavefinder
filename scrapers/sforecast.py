@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
-from utils import rename_key, conditions
+from utils import rename_key
 from datetime import datetime, timedelta
 import re
 
@@ -152,7 +152,6 @@ class SurfForecast(object):
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)
-        df = conditions(df)
         return self.format_dataframe(df)
 
     def scrape(self, url):

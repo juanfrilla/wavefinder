@@ -6,7 +6,6 @@ from utils import (
     get_wind_status,
     angle_to_direction,
     convert_datestr_format,
-    conditions,
 )
 
 
@@ -151,7 +150,6 @@ class WindFinder(object):
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)
-        df = conditions(df)
         return self.format_dataframe(df)
 
     def scrape(self, url):

@@ -6,7 +6,6 @@ from utils import (
     angle_to_direction,
     get_wind_status,
     render_html,
-    conditions,
 )
 import re
 from datetime import datetime
@@ -93,7 +92,6 @@ class Windguru(object):
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)
-        df = conditions(df)
         return self.format_dataframe(df)
 
     def parse_number_from_text(self, text):

@@ -189,26 +189,7 @@ def final_format(df):
             "wave_height",
             "wave_period",
             "wind_direction",
-            "wave_direction",
-            "approval",
+            "wave_direction"
         ]
     ]
-    return df
-
-
-def conditions(df: pd.DataFrame) -> pd.DataFrame:
-
-    WIND_STATUS = (df["wind_status"] == "Offshore") | (df["wind_status"] == "Cross-off")
-
-    favorable = WIND_STATUS
-
-    default = "No Favorable"
-
-    str_list = ["Favorable"]
-
-    df["approval"] = np.select(
-        [favorable],
-        str_list,
-        default=default,
-    )
     return df

@@ -12,14 +12,6 @@ DEFAULT_MIN_WAVE_HEIGHT = 1.30
 DEFAULT_MIN_WAVE_PERIOD = 7
 
 
-def get_default_approval_list(approval_list):
-    if "No Favorable" in approval_list and "Favorable" in approval_list:
-        return ["Favorable"]
-    elif "Favorable" in approval_list:
-        return ["Favorable"]
-    return []
-
-
 def get_default_wind_status_list(wind_status_list):
     if "Cross-off" in wind_status_list and "Offshore" in wind_status_list:
         return ["Cross-off", "Offshore"]
@@ -103,11 +95,6 @@ def plot_forecast(urls):
 
         all_beaches = st.session_state.forecast_df["spot_name"].unique().tolist()
 
-        approval_list = st.session_state.forecast_df["approval"].unique().tolist()
-
-        selected_wave_height = plot_selected_wave_height()
-        selected_wave_period = plot_selected_wave_period()
-
         # CREATE MULTISELECT
         date_name_selection = st.multiselect(
             "Fecha:", date_name_list, default=date_name_list
@@ -117,14 +104,10 @@ def plot_forecast(urls):
             wind_status_list,
             default=get_default_wind_status_list(wind_status_list),
         )
+        selected_wave_height = plot_selected_wave_height()
+        selected_wave_period = plot_selected_wave_period()
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
-
-        approval_selection = st.multiselect(
-            "Valoración:",
-            approval_list,
-            default=get_default_approval_list(approval_list),
-        )
 
         # tides_state_selection = st.multiselect(
         #     "Estado de la marea:", tides_state, default=tides_state
@@ -134,7 +117,6 @@ def plot_forecast(urls):
             (st.session_state.forecast_df["date"].isin(date_name_selection))
             & (st.session_state.forecast_df["wind_status"].isin(wind_status_selection))
             & (st.session_state.forecast_df["spot_name"].isin(beach_selection))
-            & (st.session_state.forecast_df["approval"].isin(approval_selection))
             & (st.session_state.forecast_df["wave_height"] >= selected_wave_height[0])
             & (st.session_state.forecast_df["wave_height"] <= selected_wave_height[1])
             & (st.session_state.forecast_df["wave_period"] >= selected_wave_period[0])
