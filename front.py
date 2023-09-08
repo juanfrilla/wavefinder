@@ -30,6 +30,38 @@ def get_default_wind_status_list(wind_status_list):
     return []
 
 
+def plot_selected_wave_height():
+    min_wave_height = float(st.session_state.forecast_df["wave_height"].min())
+    max_wave_height = float(st.session_state.forecast_df["wave_height"].max())
+    if max_wave_height < DEFAULT_MIN_WAVE_HEIGHT:
+        default_wave_height_selection = (1.0, DEFAULT_MIN_WAVE_HEIGHT)
+    else:
+        default_wave_height_selection = (DEFAULT_MIN_WAVE_HEIGHT, max_wave_height)
+    return st.slider(
+        "Altura de las olas (m)",
+        min_wave_height,
+        max_wave_height,
+        default_wave_height_selection,
+        0.1,
+    )
+
+
+def plot_selected_wave_period():
+    min_wave_period = int(st.session_state.forecast_df["wave_period"].min())
+    max_wave_period = int(st.session_state.forecast_df["wave_period"].max())
+    if max_wave_period < DEFAULT_MIN_WAVE_PERIOD:
+        default_wave_period_selection = (5, DEFAULT_MIN_WAVE_PERIOD)
+    else:
+        default_wave_period_selection = (DEFAULT_MIN_WAVE_PERIOD, max_wave_period)
+    return st.slider(
+        "Periodo de las olas (s)",
+        min_wave_period,
+        max_wave_period,
+        default_wave_period_selection,
+        1,
+    )
+
+
 @st.experimental_memo(ttl=7200)  # si cambio este, me quita algunos spots
 def load_forecast(urls):
     start_time = time.time()
@@ -72,34 +104,9 @@ def plot_forecast(urls):
         all_beaches = st.session_state.forecast_df["spot_name"].unique().tolist()
 
         approval_list = st.session_state.forecast_df["approval"].unique().tolist()
-        # tides_state = st.session_state.forecast_df["tide_state"].unique().tolist()
-        # island = st.session_state.forecast_df["island"].unique().tolist()
-        # Add a slider for wave height selection
-        min_wave_height = float(st.session_state.forecast_df["wave_height"].min())
-        max_wave_height = float(st.session_state.forecast_df["wave_height"].max())
-        if max_wave_height < DEFAULT_MIN_WAVE_HEIGHT:
-            default_wave_height_selection = (1.0, DEFAULT_MIN_WAVE_HEIGHT)
-        else:
-            default_wave_height_selection = (DEFAULT_MIN_WAVE_HEIGHT, max_wave_height)
-        selected_wave_height = st.slider(
-            "Altura de las olas (m)",
-            min_wave_height,
-            max_wave_height,
-            default_wave_height_selection,
-        )
 
-        min_wave_period = int(st.session_state.forecast_df["wave_period"].min())
-        max_wave_period = int(st.session_state.forecast_df["wave_period"].max())
-        if max_wave_period < DEFAULT_MIN_WAVE_PERIOD:
-            default_wave_period_selection = (5, DEFAULT_MIN_WAVE_PERIOD)
-        else:
-            default_wave_period_selection = (DEFAULT_MIN_WAVE_PERIOD, max_wave_period)
-        selected_wave_period = st.slider(
-            "Periodo de las olas (s)",
-            min_wave_period,
-            max_wave_period,
-            default_wave_period_selection,
-        )
+        selected_wave_height = plot_selected_wave_height()
+        selected_wave_period = plot_selected_wave_period()
 
         # CREATE MULTISELECT
         date_name_selection = st.multiselect(

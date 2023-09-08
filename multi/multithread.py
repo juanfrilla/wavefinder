@@ -1,8 +1,8 @@
 from multi.threadingresult import ThreadWithReturnValue
-import multiprocessing
 import utils
 import pandas as pd
 from streamlit.runtime.scriptrunner import add_script_run_ctx
+from time import sleep
 
 
 def scrape_multiple_browser(urls, object):
@@ -36,6 +36,7 @@ def scrape_multiple_requests(urls, object, batch_size=8):
         for thread in threads:
             df = thread.join()
             dfs.append(df)
+        sleep(10)
 
     for df in dfs:
         forecast = utils.combine_df(forecast, df)
