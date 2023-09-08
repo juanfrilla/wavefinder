@@ -91,6 +91,11 @@ class SurfForecast(object):
                 wave_direction_list.append(char_value.strip())
         return wave_direction_list
 
+    def obtain_formated_wave_period(self, forecast):
+        return [
+            int(forecast["wave_period"][i]) for i in range(len(forecast["wave_period"]))
+        ]
+
     def get_formatted_wind_direction(self, forecast):
         wind_direction_list = []
         pattern = r"(\d+(\.\d+)?)"
@@ -130,6 +135,7 @@ class SurfForecast(object):
         forecast["wave_direction"] = self.get_formatted_wave_direction(forecast)
         del forecast["wave"]
         forecast["wind_direction"] = self.get_formatted_wind_direction(forecast)
+        forecast["wave_period"] = self.obtain_formated_wave_period(forecast)
         return pd.DataFrame(forecast)
 
     def format_dataframe(self, df):

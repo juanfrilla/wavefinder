@@ -8,6 +8,9 @@ from scrapers.windguru import Windguru
 from scrapers.sforecast import SurfForecast
 from scrapers.tides import TidesScraper
 
+DEFAULT_MIN_WAVE_HEIGHT = 1.30
+DEFAULT_MIN_WAVE_PERIOD = 7
+
 
 def get_default_approval_list(approval_list):
     if "No Favorable" in approval_list and "Favorable" in approval_list:
@@ -71,6 +74,26 @@ def plot_forecast(urls):
         approval_list = st.session_state.forecast_df["approval"].unique().tolist()
         # tides_state = st.session_state.forecast_df["tide_state"].unique().tolist()
         # island = st.session_state.forecast_df["island"].unique().tolist()
+        # Add a slider for wave height selection
+        min_wave_height = float(st.session_state.forecast_df["wave_height"].min())
+        max_wave_height = float(st.session_state.forecast_df["wave_height"].max())
+        default_wave_height_selection = (DEFAULT_MIN_WAVE_HEIGHT, max_wave_height)
+        selected_wave_height = st.slider(
+            "Altura de las olas (m)",
+            min_wave_height,
+            max_wave_height,
+            default_wave_height_selection,
+        )
+
+        min_wave_period = int(st.session_state.forecast_df["wave_period"].min())
+        max_wave_period = int(st.session_state.forecast_df["wave_period"].max())
+        default_wave_period_selection = (DEFAULT_MIN_WAVE_PERIOD, max_wave_period)
+        selected_wave_period = st.slider(
+            "Periodo de las olas (s)",
+            min_wave_period,
+            max_wave_period,
+            default_wave_period_selection,
+        )
 
         # CREATE MULTISELECT
         date_name_selection = st.multiselect(
@@ -99,6 +122,10 @@ def plot_forecast(urls):
             & (st.session_state.forecast_df["wind_status"].isin(wind_status_selection))
             & (st.session_state.forecast_df["spot_name"].isin(beach_selection))
             & (st.session_state.forecast_df["approval"].isin(approval_selection))
+            & (st.session_state.forecast_df["wave_height"] >= selected_wave_height[0])
+            & (st.session_state.forecast_df["wave_height"] <= selected_wave_height[1])
+            & (st.session_state.forecast_df["wave_period"] >= selected_wave_period[0])
+            & (st.session_state.forecast_df["wave_period"] <= selected_wave_period[1])
             # & (st.session_state.forecast_df["tide_state"].isin(tides_state_selection))
         )
 

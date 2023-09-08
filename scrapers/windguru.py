@@ -49,6 +49,7 @@ class Windguru(object):
         forecast["wind_status"] = self.parse_windstatus(
             forecast["wave_direction"], forecast["wind_direction"]
         )
+        forecast["wave_period"] = self.obtain_formated_wave_period(forecast)
         return forecast
 
     def parse_spot_name(self, soup):
@@ -102,6 +103,11 @@ class Windguru(object):
         return [
             get_wind_status(wind_dir, wave_dir)
             for wave_dir, wind_dir in zip(wave_directions, wind_directions)
+        ]
+    
+    def obtain_formated_wave_period(self, forecast):
+        return [
+            int(forecast["wave_period"][i]) for i in range(len(forecast["wave_period"]))
         ]
 
     def format_dataframe(self, df):

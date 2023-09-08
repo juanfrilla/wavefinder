@@ -43,7 +43,7 @@ class WindFinder(object):
 
     def format_period_height(self, soup):
         next_element = soup.next
-        return self.text_strip(next_element)
+        return int(self.text_strip(next_element))
 
     def text_strip(self, div: Tag):
         return div.text.strip()
@@ -92,7 +92,7 @@ class WindFinder(object):
             "div.data-waveheight.data--major.weathertable__cell > span.units-wh"
         )
         return [
-            self.text_strip(wave_heights_table)
+            float(self.text_strip(wave_heights_table))
             for wave_heights_table in wave_heights_table
         ]
 

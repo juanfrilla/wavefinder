@@ -197,19 +197,10 @@ def final_format(df):
 
 
 def conditions(df: pd.DataFrame) -> pd.DataFrame:
-    wave_height = df["wave_height"].astype(float)
-
-    period = df["wave_period"].astype(float)
-
-    # STRENGTH
-    STRENGTH = wave_height >= 1.3  # & (primary_wave_heigh <= 2.5)
-
-    # PERIOD
-    PERIOD = period >= 7
 
     WIND_STATUS = (df["wind_status"] == "Offshore") | (df["wind_status"] == "Cross-off")
 
-    favorable = STRENGTH & PERIOD & WIND_STATUS
+    favorable = WIND_STATUS
 
     default = "No Favorable"
 
