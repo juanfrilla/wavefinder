@@ -77,7 +77,10 @@ def plot_forecast(urls):
         # Add a slider for wave height selection
         min_wave_height = float(st.session_state.forecast_df["wave_height"].min())
         max_wave_height = float(st.session_state.forecast_df["wave_height"].max())
-        default_wave_height_selection = (DEFAULT_MIN_WAVE_HEIGHT, max_wave_height)
+        if max_wave_height < DEFAULT_MIN_WAVE_HEIGHT:
+            default_wave_height_selection = (1.0, DEFAULT_MIN_WAVE_HEIGHT)
+        else:
+            default_wave_height_selection = (DEFAULT_MIN_WAVE_HEIGHT, max_wave_height)
         selected_wave_height = st.slider(
             "Altura de las olas (m)",
             min_wave_height,
@@ -87,7 +90,10 @@ def plot_forecast(urls):
 
         min_wave_period = int(st.session_state.forecast_df["wave_period"].min())
         max_wave_period = int(st.session_state.forecast_df["wave_period"].max())
-        default_wave_period_selection = (DEFAULT_MIN_WAVE_PERIOD, max_wave_period)
+        if max_wave_period < DEFAULT_MIN_WAVE_PERIOD:
+            default_wave_period_selection = (5, DEFAULT_MIN_WAVE_PERIOD)
+        else:
+            default_wave_period_selection = (DEFAULT_MIN_WAVE_PERIOD, max_wave_period)
         selected_wave_period = st.slider(
             "Periodo de las olas (s)",
             min_wave_period,

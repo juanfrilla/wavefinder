@@ -49,7 +49,12 @@ class Windguru(object):
         forecast["wind_status"] = self.parse_windstatus(
             forecast["wave_direction"], forecast["wind_direction"]
         )
-        forecast["wave_period"] = self.obtain_formated_wave_period(forecast)
+        forecast["wave_period"] = self.format_dict_digit_all_values(
+            forecast, "wave_period", "int"
+        )
+        forecast["wave_height"] = self.format_dict_digit_all_values(
+            forecast, "wave_height", "float"
+        )
         return forecast
 
     def parse_spot_name(self, soup):
@@ -104,11 +109,18 @@ class Windguru(object):
             get_wind_status(wind_dir, wave_dir)
             for wave_dir, wind_dir in zip(wave_directions, wind_directions)
         ]
-    
-    def obtain_formated_wave_period(self, forecast):
-        return [
-            int(forecast["wave_period"][i]) for i in range(len(forecast["wave_period"]))
-        ]
+
+    def format_dict_digit_all_values(self, forecast, forecast_value, digit_type):
+        if digit_type == "int":
+            return [
+                int(forecast[forecast_value][i])
+                for i in range(len(forecast[forecast_value]))
+            ]
+        elif digit_type == "float":
+            return [
+                float(forecast[forecast_value][i])
+                for i in range(len(forecast[forecast_value]))
+            ]
 
     def format_dataframe(self, df):
         # Hacerlo en menos lineas comprobando que la hora es de noche
