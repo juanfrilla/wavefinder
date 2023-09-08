@@ -173,7 +173,9 @@ def get_day_name(days_to_add: float) -> str:
 
 
 def final_format(df):
-    df = df.drop(df[df["wind_status"] == "Onshore"].index)
+    if not df[df["wind_status"] == "Onshore"].empty:
+        df = df.drop(df[df["wind_status"] == "Onshore"].index)
+
     df["date"] = pd.to_datetime(df["date"], format="%d/%m/%Y")
     df.sort_values(by=["date", "time", "spot_name"], ascending=[True, True, True])
     df["date"] = df["date"].dt.strftime("%d/%m/%Y")
@@ -193,30 +195,29 @@ def final_format(df):
     ]
     return df
 
+
 def conditions(df: pd.DataFrame) -> pd.DataFrame:
-        wave_height = df["wave_height"].astype(float)
+    wave_height = df["wave_height"].astype(float)
 
-        period = df["wave_period"].astype(float)
+    period = df["wave_period"].astype(float)
 
-        # STRENGTH
-        STRENGTH = wave_height >= 1.3  # & (primary_wave_heigh <= 2.5)
+    # STRENGTH
+    STRENGTH = wave_height >= 1.3  # & (primary_wave_heigh <= 2.5)
 
-        # PERIOD
-        PERIOD = period >= 7
+    # PERIOD
+    PERIOD = period >= 7
 
-        WIND_STATUS = (df["wind_status"] == "Offshore") | (
-            df["wind_status"] == "Cross-off"
-        )
+    WIND_STATUS = (df["wind_status"] == "Offshore") | (df["wind_status"] == "Cross-off")
 
-        favorable = STRENGTH & PERIOD & WIND_STATUS
+    favorable = STRENGTH & PERIOD & WIND_STATUS
 
-        default = "No Favorable"
+    default = "No Favorable"
 
-        str_list = ["Favorable"]
+    str_list = ["Favorable"]
 
-        df["approval"] = np.select(
-            [favorable],
-            str_list,
-            default=default,
-        )
-        return df
+    df["approval"] = np.select(
+        [favorable],
+        str_list,
+        default=default,
+    )
+    return df
