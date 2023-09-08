@@ -12,20 +12,18 @@ from scrapers.tides import TidesScraper
 def get_default_approval_list(approval_list):
     if "No Favorable" in approval_list and "Favorable" in approval_list:
         return ["Favorable"]
-    elif approval_list == ["Favorable"]:
-        return approval_list
-    elif approval_list == ["No Favorable"]:
-        return approval_list
+    elif "Favorable" in approval_list:
+        return ["Favorable"]
     return []
 
 
 def get_default_wind_status_list(wind_status_list):
     if "Cross-off" in wind_status_list and "Offshore" in wind_status_list:
         return ["Cross-off", "Offshore"]
-    elif wind_status_list == ["Offshore"]:
-        return wind_status_list
-    elif wind_status_list == ["Cross-off"]:
-        return wind_status_list
+    elif "Offshore" in wind_status_list:
+        return ["Offshore"]
+    elif "Cross-off" in wind_status_list:
+        return ["Cross-off"]
     return []
 
 
