@@ -6,7 +6,9 @@ from multi import multithread
 from scrapers.windfinder import WindFinder
 from scrapers.windguru import Windguru
 from scrapers.sforecast import SurfForecast
+from scrapers.surfline import Surfline
 from scrapers.tides import TidesScraper
+
 
 DEFAULT_MIN_WAVE_HEIGHT = 1.30
 DEFAULT_MIN_WAVE_PERIOD = 7
@@ -63,6 +65,8 @@ def load_forecast(urls):
         df = multithread.scrape_multiple_browser(urls, Windguru())
     elif "surf-forecast" in urls[1]:
         df = multithread.scrape_multiple_requests(urls, SurfForecast())
+    else:
+        df = multithread.scrape_multiple_requests(urls, Surfline())
     df = final_format(df)
     print("--- %s seconds ---" % (time.time() - start_time))
 

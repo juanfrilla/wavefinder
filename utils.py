@@ -21,7 +21,8 @@ MONTH_MAPPING = {
     "Nov": "11",
     "Dic": "12",
 }
-
+INTERNAL_DATE_STR_FORMAT = "%d/%m/%Y"
+INTERNAL_TIME_STR_FORMAT = "%H:%M:%S"
 
 def get_wind_status(wind_direction, wave_direction):
     if is_offshore(wind_direction, wave_direction):
@@ -193,3 +194,76 @@ def final_format(df):
         ]
     ]
     return df
+
+def degrees_to_direction(degrees):
+    directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+    index = round(degrees / 45) % 8
+    return directions[index]
+
+def classify_wind_speed(speed_knots):
+    if speed_knots < 1:
+        return "Calm"
+    elif speed_knots <= 3:
+        return "Light Air"
+    elif speed_knots <= 7:
+        return "Light Breeze"
+    elif speed_knots <= 12:
+        return "Gentle Breeze"
+    elif speed_knots <= 18:
+        return "Moderate Breeze"
+    elif speed_knots <= 24:
+        return "Fresh Breeze"
+    elif speed_knots <= 31:
+        return "Strong Breeze"
+    elif speed_knots <= 38:
+        return "High Wind, Moderate Gale, Near Gale"
+    elif speed_knots <= 46:
+        return "Gale, Fresh Gale"
+    elif speed_knots <= 54:
+        return "Strong Gale"
+    elif speed_knots <= 63:
+        return "Storm, Whole Gale"
+    elif speed_knots <= 72:
+        return "Violent Storm"
+    else:
+        return "Hurricane"
+
+def datetime_to_str(dt: datetime, dt_format: str) -> str:
+    return dt.strftime(dt_format)
+
+def timestamp_to_datetime(timestamp_date: int) -> datetime:
+    return datetime.utcfromtimestamp(timestamp_date)
+
+
+def add_offset_to_datetime(dt: datetime, utc_offset: int) -> datetime:
+    return dt + timedelta(hours=utc_offset)
+
+
+def timestamp_to_datetimestr(timestamp_date: int, utc_offset: int) -> str:
+    datetime_dt = timestamp_to_datetime(timestamp_date)
+    datestr = datetime_to_str(
+        add_offset_to_datetime(datetime_dt, utc_offset), INTERNAL_DATE_STR_FORMAT
+    )
+    timestr = datetime_to_str(
+        add_offset_to_datetime(datetime_dt, utc_offset), INTERNAL_TIME_STR_FORMAT
+    )
+    return datestr, timestr
+
+def str_to_datetime(dtstr) -> datetime:
+    return datetime.strptime(dtstr, INTERNAL_DATE_STR_FORMAT)
+
+def get_datename(dt: str):
+    dt_dt = str_to_datetime(dt).date()
+
+    today = datetime.now().date()
+    tomorrow = today + timedelta(days=1)
+    day_after_tomorrow = today + timedelta(days=2)
+
+    if dt_dt == today:
+        return "Today"
+    elif dt_dt == tomorrow:
+        return "Tomorrow"
+    elif dt_dt == day_after_tomorrow:
+        return "Day After Tomorrow"
+    else:
+        return "Another Day"
