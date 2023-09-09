@@ -24,6 +24,7 @@ MONTH_MAPPING = {
 INTERNAL_DATE_STR_FORMAT = "%d/%m/%Y"
 INTERNAL_TIME_STR_FORMAT = "%H:%M:%S"
 
+
 def get_wind_status(wind_direction, wave_direction):
     if is_offshore(wind_direction, wave_direction):
         return "Offshore"
@@ -190,15 +191,17 @@ def final_format(df):
             "wave_height",
             "wave_period",
             "wind_direction",
-            "wave_direction"
+            "wave_direction",
         ]
     ]
     return df
+
 
 def degrees_to_direction(degrees):
     directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
     index = round(degrees / 45) % 8
     return directions[index]
+
 
 def classify_wind_speed(speed_knots):
     if speed_knots < 1:
@@ -228,8 +231,15 @@ def classify_wind_speed(speed_knots):
     else:
         return "Hurricane"
 
+
+def feet_to_meters(feet):
+    meters = feet * 0.3048
+    return meters
+
+
 def datetime_to_str(dt: datetime, dt_format: str) -> str:
     return dt.strftime(dt_format)
+
 
 def timestamp_to_datetime(timestamp_date: int) -> datetime:
     return datetime.utcfromtimestamp(timestamp_date)
@@ -249,8 +259,10 @@ def timestamp_to_datetimestr(timestamp_date: int, utc_offset: int) -> str:
     )
     return datestr, timestr
 
+
 def str_to_datetime(dtstr) -> datetime:
     return datetime.strptime(dtstr, INTERNAL_DATE_STR_FORMAT)
+
 
 def get_datename(dt: str):
     dt_dt = str_to_datetime(dt).date()

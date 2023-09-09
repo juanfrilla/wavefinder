@@ -5,8 +5,10 @@ from utils import (
     get_datename,
     timestamp_to_datetimestr,
     classify_wind_speed,
+    feet_to_meters,
 )
 import json
+import streamlit as st
 
 
 class Wind(BaseModel):
@@ -42,6 +44,8 @@ class Surf(BaseModel):
     def swell_size(self) -> str:
         min_val = self.min
         max_val = self.max
+        if st.secrets["ENVIRONMENT"] == "prod":
+            return feet_to_meters(max_val)
         return max_val
 
 
