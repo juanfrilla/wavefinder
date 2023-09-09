@@ -97,14 +97,17 @@ class Surfline:
 
         return response.json()
 
-    def scrape(self, spot_id):
+    def scrape(self, url):
+        spot_id = url.split("/")[-1].replace("?view=table", "")
+        location = url.split("/")[-2]
         wave_info = self.wave_request(spot_id)
         waves = wave_info.get("data", {}).get("wave", [])
         wind_info = self.wind_request(spot_id)
         winds = wind_info.get("data", {}).get("wind", [])
         tides_info = self.tides_request(spot_id)
         tides = tides_info.get("data", {}).get("tides", [])
-        location = tides_info.get("associated").get("tideLocation").get("name")
+        #location = tides_info.get("associated").get("tideLocation").get("name")
+        print("======", location)
         rating_info = self.rating_request(spot_id)
         ratings = rating_info.get("data", {}).get("rating", [])
         combined_data = []

@@ -59,11 +59,11 @@ def plot_selected_wave_period():
 @st.experimental_memo(ttl=7200)  # si cambio este, me quita algunos spots
 def load_forecast(urls):
     start_time = time.time()
-    if "windfinder" in urls[1]:
+    if "windfinder" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, WindFinder())
-    elif "windguru" in urls[1]:
+    elif "windguru" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, Windguru())
-    elif "surf-forecast" in urls[1]:
+    elif "surf-forecast" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, SurfForecast())
     else:
         df = multithread.scrape_multiple_requests(urls, Surfline())
@@ -84,9 +84,9 @@ def load_tides():
 
 
 def plot_forecast(urls):
-    if "windfinder" in urls[1]:
+    if "windfinder" in urls[0]:
         st.title("SOUTH COAST OF LANZAROTE")
-    elif "windguru" or "surf-forecast" in urls[1]:
+    elif "windguru" or "surf-forecast" in urls[0]:
         st.title("NORTH COAST OF LANZAROTE")
 
     st.session_state.forecast_df = load_forecast(urls)
