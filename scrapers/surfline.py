@@ -106,8 +106,6 @@ class Surfline:
         winds = wind_info.get("data", {}).get("wind", [])
         tides_info = self.tides_request(spot_id)
         tides = tides_info.get("data", {}).get("tides", [])
-        #location = tides_info.get("associated").get("tideLocation").get("name")
-        print("======", location)
         rating_info = self.rating_request(spot_id)
         ratings = rating_info.get("data", {}).get("rating", [])
         combined_data = []

@@ -5,7 +5,7 @@ from utils import (
     import_html,
     get_wind_status,
     angle_to_direction,
-    convert_datestr_format,
+    convert_datestr_format
 )
 
 
@@ -96,13 +96,8 @@ class WindFinder(object):
         ]
 
     def parse_wind_speeds(self, soup):
-        wind_speeds_table = soup.select(
-            "div.speed > span.data-wrap > span.units-ws"
-        )
-        return [
-            float(self.text_strip(wind_speed_table))
-            for wind_speed_table in wind_speeds_table
-        ]
+        wind_speeds_table = soup.select("div.speed > span.data-wrap > span.units-ws")
+        return [float(self.text_strip(wind_speed)) for wind_speed in wind_speeds_table]
 
     def parse_spot_names(self, spot_name, total_records):
         return [spot_name for _ in range(total_records)]

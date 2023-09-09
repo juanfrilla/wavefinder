@@ -18,7 +18,7 @@ class Windguru(object):
 
     def beach_request(self, browser, url):
         r_text = render_html(
-            browser=browser, url=url, tag_to_wait="div.nadlegend", timeout=20 * 1000
+            browser=browser, url=url, tag_to_wait="div.nadlegend", timeout=30 * 1000
         )
         return BeautifulSoup(r_text, "html.parser")
 
@@ -54,6 +54,9 @@ class Windguru(object):
         )
         forecast["wave_height"] = self.format_dict_digit_all_values(
             forecast, "wave_height", "float"
+        )
+        forecast["wind_speed"] = self.format_dict_digit_all_values(
+            forecast, "wind_speed", "float"
         )
         return forecast
 

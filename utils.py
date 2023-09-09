@@ -189,7 +189,8 @@ def final_format(df):
             "wave_period",
             "wind_direction",
             "wave_direction",
-            "wind_speed"
+            "wind_speed",
+            "wind_approval",
         ]
     ]
     return df
@@ -277,3 +278,33 @@ def get_datename(dt: str):
         return "Day After Tomorrow"
     else:
         return "Another Day"
+
+
+def kmh_to_knots(speed):
+    return speed / 1.852
+
+
+def handle_wind(df: pd.DataFrame) -> pd.DataFrame:
+    wind_speed = df["wind_speed"].astype(float)
+
+    WIND_STATUS_HIGH_10 = (df["wind_status"] == "Offshore") | (
+        df["wind_status"] == "Cross-off"
+    )
+
+    WIND_STATUS_LESS_10 = (df["wind_status"] != "Offshore") & (
+        df["wind_status"] != "Cross-off"
+    )
+    WIND_SPEED_LESS_10 = wind_speed <= 10
+
+    wind_ok = (WIND_STATUS_LESS_10 & WIND_SPEED_LESS_10) | (WIND_STATUS_HIGH_10)
+
+    default = "Viento No Favorable"
+
+    str_list = ["Viento Favorable"]
+
+    df["wind_approval"] = np.select(
+        [wind_ok],
+        str_list,
+        default=default,
+    )
+    return df

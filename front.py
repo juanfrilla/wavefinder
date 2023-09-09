@@ -14,13 +14,16 @@ DEFAULT_MIN_WAVE_HEIGHT = 1.30
 DEFAULT_MIN_WAVE_PERIOD = 7
 
 
-def get_default_wind_status_list(wind_status_list):
-    if "Cross-off" in wind_status_list and "Offshore" in wind_status_list:
-        return ["Cross-off", "Offshore"]
-    elif "Offshore" in wind_status_list:
-        return ["Offshore"]
-    elif "Cross-off" in wind_status_list:
-        return ["Cross-off"]
+def get_default_wind_approval_selection(wind_approval_list):
+    if (
+        "Viento Favorable" in wind_approval_list
+        and "Viento No Favorable" in wind_approval_list
+    ):
+        return ["Viento Favorable"]
+    elif len(wind_approval_list) == 1 and "Viento No Favorable" in wind_approval_list:
+        return ["Viento No Favorable"]
+    elif len(wind_approval_list) == 1 and "Viento Favorable" in wind_approval_list:
+        return ["Viento Favorable"]
     return []
 
 
@@ -96,8 +99,10 @@ def plot_forecast(urls):
         # GET UNIQUES
         date_name_list = st.session_state.forecast_df["date"].unique().tolist()
         wind_status_list = st.session_state.forecast_df["wind_status"].unique().tolist()
-
         all_beaches = st.session_state.forecast_df["spot_name"].unique().tolist()
+        all_wind_approvals = (
+            st.session_state.forecast_df["wind_approval"].unique().tolist()
+        )
 
         # CREATE MULTISELECT
         date_name_selection = st.multiselect(
@@ -106,12 +111,18 @@ def plot_forecast(urls):
         wind_status_selection = st.multiselect(
             "Estado del viento:",
             wind_status_list,
-            default=get_default_wind_status_list(wind_status_list),
+            default=wind_status_list,
         )
         selected_wave_height = plot_selected_wave_height()
         selected_wave_period = plot_selected_wave_period()
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
+
+        wind_approval_selection = st.multiselect(
+            "Aprobación del viento:",
+            all_wind_approvals,
+            default=get_default_wind_approval_selection(all_wind_approvals),
+        )
 
         # tides_state_selection = st.multiselect(
         #     "Estado de la marea:", tides_state, default=tides_state
@@ -121,6 +132,11 @@ def plot_forecast(urls):
             (st.session_state.forecast_df["date"].isin(date_name_selection))
             & (st.session_state.forecast_df["wind_status"].isin(wind_status_selection))
             & (st.session_state.forecast_df["spot_name"].isin(beach_selection))
+            & (
+                st.session_state.forecast_df["wind_approval"].isin(
+                    wind_approval_selection
+                )
+            )
             & (st.session_state.forecast_df["wave_height"] >= selected_wave_height[0])
             & (st.session_state.forecast_df["wave_height"] <= selected_wave_height[1])
             & (st.session_state.forecast_df["wave_period"] >= selected_wave_period[0])
