@@ -91,8 +91,17 @@ class WindFinder(object):
             "div.data-waveheight.data--major.weathertable__cell > span.units-wh"
         )
         return [
-            float(self.text_strip(wave_heights_table))
-            for wave_heights_table in wave_heights_table
+            float(self.text_strip(wave_height_table))
+            for wave_height_table in wave_heights_table
+        ]
+
+    def parse_wind_speeds(self, soup):
+        wind_speeds_table = soup.select(
+            "div.speed > span.data-wrap > span.units-ws"
+        )
+        return [
+            float(self.text_strip(wind_speed_table))
+            for wind_speed_table in wind_speeds_table
         ]
 
     def parse_spot_names(self, spot_name, total_records):
@@ -143,6 +152,7 @@ class WindFinder(object):
             "wind_status": self.parse_windstatus(wave_directions, wind_directions),
             "wave_period": self.parse_wave_periods(soup),
             "wave_height": self.parse_wave_heights(soup),
+            "wind_speed": self.parse_wind_speeds(soup),
             "spot_name": self.parse_spot_names(spot_name, total_records),
         }
 

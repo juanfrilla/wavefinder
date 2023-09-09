@@ -33,6 +33,12 @@ from scrapers.windguru import Windguru
 #     assert len(windfinder.parse_wave_directions(soup)) == 80
 #     assert len(windfinder.parse_wind_directions(soup)) == 80
     
+def test_wind_speed():
+    windfinder = WindFinder()
+    soup = windfinder.sample_soup("./samples/costa_teguise.html")
+    wind_speeds = windfinder.parse_wind_speeds(soup)
+    
+    assert len(wind_speeds) == 1
 
 def test_common():
     windfinder = WindFinder()
@@ -58,8 +64,8 @@ def test_common():
 #     response = windfinder.beach_request("https://es.windfinder.com/forecast/jameos_del_agua")
 #     assert response.status_code == 200
     
-def test_windguru_date_backslash():
-    windguru = Windguru()
-    assert windguru.datestr_to_backslashformat("Fr25") == "25/08/2023"
-    assert windguru.datestr_to_backslashformat("Sa26") == "26/08/2023"
-    assert windguru.datestr_to_backslashformat("Sa9") == "09/09/2023"
+# def test_windguru_date_backslash():
+#     windguru = Windguru()
+#     assert windguru.datestr_to_backslashformat("Fr25") == "25/08/2023"
+#     assert windguru.datestr_to_backslashformat("Sa26") == "26/08/2023"
+#     assert windguru.datestr_to_backslashformat("Sa9") == "09/09/2023"

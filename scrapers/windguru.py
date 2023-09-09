@@ -28,6 +28,7 @@ class Windguru(object):
         forecast = rename_key(forecast, "tabid_0_0_HTSGW", "wave_height")
         forecast = rename_key(forecast, "tabid_0_0_DIRPW", "wave_direction")
         forecast = rename_key(forecast, "tabid_0_0_PERPW", "wave_period")
+        forecast = rename_key(forecast, "tabid_0_0_WINDSPD", "wind_speed")
 
         forecast["wind_direction"] = [
             angle_to_direction(self.parse_number_from_text(element))
@@ -77,6 +78,7 @@ class Windguru(object):
                 "tabid_0_0_HTSGW",
                 "tabid_0_0_DIRPW",
                 "tabid_0_0_PERPW",
+                "tabid_0_0_WINDSPD",
             ]:
                 forecast[id] = []
                 for cell in cells:

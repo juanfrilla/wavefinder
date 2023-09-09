@@ -175,9 +175,6 @@ def get_day_name(days_to_add: float) -> str:
 
 
 def final_format(df):
-    if not df[df["wind_status"] == "Onshore"].empty:
-        df = df.drop(df[df["wind_status"] == "Onshore"].index)
-
     df["date"] = pd.to_datetime(df["date"], format="%d/%m/%Y")
     df.sort_values(by=["date", "time", "spot_name"], ascending=[True, True, True])
     df["date"] = df["date"].dt.strftime("%d/%m/%Y")
@@ -192,6 +189,7 @@ def final_format(df):
             "wave_period",
             "wind_direction",
             "wave_direction",
+            "wind_speed"
         ]
     ]
     return df

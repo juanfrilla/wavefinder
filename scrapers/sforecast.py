@@ -106,6 +106,16 @@ class SurfForecast(object):
                 char_value = element.split(wind_direction_degrees)[1]
                 wind_direction_list.append(char_value.strip())
         return wind_direction_list
+    
+    def get_formatted_wind_speed(self, forecast):
+        wind_direction_list = []
+        pattern = r"(\d+(\.\d+)?)"
+        for element in forecast["wind"]:
+            match = re.match(pattern, element)
+            if match:
+                wind_direction_degrees = str(match.group(1))
+                wind_direction_list.append(wind_direction_degrees)
+        return wind_direction_list
 
     def get_dataframe_from_soup(self, soup):
         forecast = {}
@@ -135,6 +145,7 @@ class SurfForecast(object):
         forecast["wave_direction"] = self.get_formatted_wave_direction(forecast)
         del forecast["wave"]
         forecast["wind_direction"] = self.get_formatted_wind_direction(forecast)
+        forecast["wind_speed"] = self.get_formatted_wind_speed(forecast)
         forecast["wave_period"] = self.obtain_formated_wave_period(forecast)
         return pd.DataFrame(forecast)
 

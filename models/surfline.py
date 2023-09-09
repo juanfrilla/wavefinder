@@ -149,6 +149,7 @@ class Item(BaseModel):
     wind_direction: str
     wave_direction: str
     wind_description: str
+    wind_speed: float
     page_rating: str
     approval: str
 

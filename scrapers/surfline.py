@@ -2,6 +2,7 @@ import requests
 from models.surfline import Wave, Wind, Tide, Rating, Item
 import pandas as pd
 
+
 class Surfline:
     def __init__(self):
         self.headers = {
@@ -119,6 +120,7 @@ class Surfline:
                 wind_direction=wind_item.wind_direction,
                 wind_description=wind_item.wind_description,
                 wind_status=wind_item.directionType,
+                wind_speed=wind_item.speed,
                 wave_direction=wave_item.swell_direction,
                 wave_period=wave_item.period,
                 wave_height=wave_item.swell_size,
