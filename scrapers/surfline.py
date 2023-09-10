@@ -97,6 +97,25 @@ class Surfline:
 
         return response.json()
 
+    def format_dataframe(self, df):
+        df = df.drop(
+            df[
+                (df["time"] == "20:00:00")
+                | (df["time"] == "21:00:00")
+                | (df["time"] == "22:00:00")
+                | (df["time"] == "23:00:00")
+                | (df["time"] == "00:00:00")
+                | (df["time"] == "01:00:00")
+                | (df["time"] == "02:00:00")
+                | (df["time"] == "03:00:00")
+                | (df["time"] == "04:00:00")
+                | (df["time"] == "05:00:00")
+            ].index
+        )
+        
+        df = df[df["wave_height"] != 0.0]
+        return df
+
     def scrape(self, url):
         spot_id = url.split("/")[-1].replace("?view=table", "")
         location = url.split("/")[-2]
@@ -134,4 +153,6 @@ class Surfline:
                 ),
             ).model_dump()
             combined_data.append(item)
-        return pd.DataFrame(combined_data)
+        df = pd.DataFrame(combined_data)
+        # return df
+        return self.format_dataframe(df)

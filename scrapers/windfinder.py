@@ -7,7 +7,6 @@ from utils import (
     angle_to_direction,
     convert_datestr_format,
     convert_all_values_of_dict_to_min_length,
-    obtain_minimum_len_of_dict_values,
 )
 
 
