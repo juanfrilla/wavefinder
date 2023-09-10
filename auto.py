@@ -1,7 +1,7 @@
 from scrapers.windfinder import WindFinder
 from utils import  export_to_html
 if __name__ == "__main__":
-    filename="./samples/costa_teguise.html"
+    filename="./samples/papagayo.html"
     windfinder = WindFinder()
-    soup = windfinder.beach_request(windfinder.COSTA_TEGUISE_URL)
-    export_to_html(filename, soup)
+    response = windfinder.beach_request("https://es.windfinder.com/forecast/la_palma1")
+    export_to_html(filename, response)

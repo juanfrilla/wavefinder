@@ -5,7 +5,9 @@ from utils import (
     import_html,
     get_wind_status,
     angle_to_direction,
-    convert_datestr_format
+    convert_datestr_format,
+    convert_all_values_of_dict_to_min_length,
+    obtain_minimum_len_of_dict_values,
 )
 
 
@@ -133,14 +135,10 @@ class WindFinder(object):
         html_content = import_html(filename)
         return BeautifulSoup(html_content, "html.parser")
 
-    def get_dataframe_from_soup(self, soup):
+    def obtain_data(self, soup):
         wave_directions = self.parse_wave_directions(soup)
         wind_directions = self.parse_wind_directions(soup)
-        total_records = len(wave_directions)
-        spot_name = self.parse_spot_name(soup)
-
         data = {
-            "date": self.parse_dates_str(soup, total_records),
             "time": self.parse_hour_intervals(soup),
             "wave_direction": wave_directions,
             "wind_direction": wind_directions,
@@ -148,9 +146,17 @@ class WindFinder(object):
             "wave_period": self.parse_wave_periods(soup),
             "wave_height": self.parse_wave_heights(soup),
             "wind_speed": self.parse_wind_speeds(soup),
-            "spot_name": self.parse_spot_names(spot_name, total_records),
         }
+        total_records = len(data["time"])
+        data["spot_name"] = self.parse_spot_names(
+            self.parse_spot_name(soup), total_records
+        )
+        data["date"] = self.parse_dates_str(soup, total_records)
+        data = convert_all_values_of_dict_to_min_length(data)
+        return data
 
+    def get_dataframe_from_soup(self, soup):
+        data = self.obtain_data(soup)
         return pd.DataFrame(data)
 
     def process_soup(self, soup):

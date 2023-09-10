@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from requests import Response
 import pandas as pd
 from datetime import datetime, date, timedelta
 from selenium import webdriver
@@ -113,8 +114,8 @@ def is_crossoff(wind_direction, wave_direction):
         return False
 
 
-def export_to_html(filename, soup: BeautifulSoup):
-    # Export the BeautifulSoup content to an HTML file
+def export_to_html(filename, response: Response):
+    soup = BeautifulSoup(response.text, "html.parser")
     with open(filename, "w") as file:
         file.write(soup.prettify())
 
@@ -282,6 +283,21 @@ def get_datename(dt: str):
 
 def kmh_to_knots(speed):
     return speed / 1.852
+
+
+def convert_all_values_of_dict_to_min_length(data):
+    min_len = obtain_minimum_len_of_dict_values(data)
+    new_data = {}
+    for key, value in data.items():
+        new_data[key] = value[:min_len]
+    return new_data
+
+
+def obtain_minimum_len_of_dict_values(data: dict):
+    data_value_lens = []
+    for _, value in data.items():
+        data_value_lens.append(len(value))
+    return min(data_value_lens)
 
 
 def handle_wind(df: pd.DataFrame) -> pd.DataFrame:
