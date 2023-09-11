@@ -88,9 +88,13 @@ def load_tides():
 
 def plot_forecast(urls):
     if "windfinder" in urls[0]:
-        st.title("SOUTH COAST OF LANZAROTE")
-    elif "windguru" or "surf-forecast" in urls[0]:
-        st.title("NORTH COAST OF LANZAROTE")
+        st.title("SOUTH COAST OF LANZAROTE (WINDFINDER)")
+    elif "windguru" in urls[0]:
+        st.title("NORTH COAST OF LANZAROTE (WINDGURU)")
+    elif "surf-forecast" in urls[0]:
+        st.title("NORTH COAST OF LANZAROTE (SURF-FORECAST)")
+    elif "surfline" in urls[0]:
+        st.title("NORTH AND SOUTH COAST OF LANZAROTE (SURFLINE)")
 
     st.session_state.forecast_df = load_forecast(urls)
     if st.session_state.forecast_df.empty:
