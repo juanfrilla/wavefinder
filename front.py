@@ -59,7 +59,7 @@ def plot_selected_wave_period():
     )
 
 
-@st.experimental_memo(ttl=7200)  # si cambio este, me quita algunos spots
+@st.cache_data(ttl=7200)  # si cambio este, me quita algunos spots
 def load_forecast(urls):
     start_time = time.time()
     if "windfinder" in urls[0]:
@@ -76,7 +76,7 @@ def load_forecast(urls):
     return df
 
 
-@st.experimental_memo(ttl=7200)  # si cambio este, me quita algunos spots
+@st.cache_data(ttl=7200)  # si cambio este, me quita algunos spots
 def load_tides():
     start_time = time.time()
     tide_scraper = TidesScraper()
