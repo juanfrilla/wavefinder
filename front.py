@@ -76,7 +76,7 @@ def load_forecast(urls):
     return df
 
 
-@st.cache_data(ttl=7200)  # si cambio este, me quita algunos spots
+@st.cache_data(ttl=7200, persist=True)  # si cambio este, me quita algunos spots
 def load_tides():
     start_time = time.time()
     tide_scraper = TidesScraper()
