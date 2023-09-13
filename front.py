@@ -7,6 +7,7 @@ from scrapers.windfinder import WindFinder
 from scrapers.windguru import Windguru
 from scrapers.sforecast import SurfForecast
 from scrapers.surfline import Surfline
+from scrapers.windy import Windy
 from scrapers.tides import TidesScraper
 
 
@@ -68,8 +69,10 @@ def load_forecast(urls):
         df = multithread.scrape_multiple_browser(urls, Windguru())
     elif "surf-forecast" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, SurfForecast())
-    else:
+    elif "surfline" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, Surfline())
+    else:
+        df = multithread.scrape_multiple_browser(urls, Windy())
     df = final_format(df)
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -95,6 +98,8 @@ def plot_forecast(urls):
         st.title("NORTH COAST OF LANZAROTE (SURF-FORECAST)")
     elif "surfline" in urls[0]:
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (SURFLINE)")
+    elif "windy" in urls[0]:
+        st.title("NORTH AND SOUTH COAST OF LANZAROTE (WINDY)")
 
     st.session_state.forecast_df = load_forecast(urls)
     if st.session_state.forecast_df.empty:

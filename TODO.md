@@ -6,3 +6,4 @@ TODO: quitar el sleep(10) de multithread y buscar otra alternativa para que no m
 TODO: Unificar más las páginas en hoy, mañana y pasado
 Seleccionar hoy, mañana y pasado
 Dibujar tablas de spots de menor fecha a mayor fecha
+Terminar windy
