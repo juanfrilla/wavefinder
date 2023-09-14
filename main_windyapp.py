@@ -1,7 +1,7 @@
 #from front import plot_forecast, plot_tides
 
 from utils import open_browser
-from scrapers.windy import Windy
+from scrapers.windyapp import Windy
 
 # if __name__ == "__main__":
 #     urls = [
