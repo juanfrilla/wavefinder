@@ -7,3 +7,4 @@ TODO: Unificar más las páginas en hoy, mañana y pasado
 Seleccionar hoy, mañana y pasado
 Dibujar tablas de spots de menor fecha a mayor fecha
 Terminar windy
+Refactorizar

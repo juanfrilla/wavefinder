@@ -71,7 +71,7 @@ def load_forecast(urls):
         df = multithread.scrape_multiple_requests(urls, SurfForecast())
     elif "surfline" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, Surfline())
-    else:
+    elif "windy.app" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, WindyApp())
     df = final_format(df)
     print("--- %s seconds ---" % (time.time() - start_time))

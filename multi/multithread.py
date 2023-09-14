@@ -14,7 +14,7 @@ def scrape_multiple_browser(urls, object):
 
         for url, content in zip(urls, results):
             df = utils.handle_wind(content)
-            forecast = utils.combine_df(df, content)
+            forecast = utils.combine_df(df, forecast)
 
     return forecast
 

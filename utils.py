@@ -57,61 +57,32 @@ def angle_to_direction(angle):
 
 
 def is_offshore(wind_direction, wave_direction):
-    if wind_direction == "North" and wave_direction == "South":
-        return True
-    elif wind_direction == "South" and wave_direction == "North":
-        return True
-    elif wind_direction == "East" and wave_direction == "West":
-        return True
-    elif wind_direction == "West" and wave_direction == "East":
-        return True
-    elif wind_direction == "NorthEast" and wave_direction == "SouthWest":
-        return True
-    elif wind_direction == "SouthWest" and wave_direction == "NorthEast":
-        return True
-    elif wind_direction == "NorthWest" and wave_direction == "SouthEast":
-        return True
-    elif wind_direction == "SouthEast" and wave_direction == "NorthWest":
-        return True
-    else:
-        return False
+    offshore_mapping = {
+        "North": ["South"],
+        "South": ["North"],
+        "East": ["West"],
+        "West": ["East"],
+        "NorthEast": ["SouthWest"],
+        "SouthWest": ["NorthEast"],
+        "NorthWest": ["SouthEast"],
+        "SouthEast": ["NorthWest"],
+    }
+
+    return wind_direction in offshore_mapping.get(wave_direction, [])
 
 
 def is_crossoff(wind_direction, wave_direction):
-    if wave_direction == "North" and wind_direction == "SouthEast":
-        return True
-    elif wave_direction == "North" and wind_direction == "SouthWest":
-        return True
-    elif wave_direction == "South" and wind_direction == "NorthEast":
-        return True
-    elif wave_direction == "South" and wind_direction == "NorthWest":
-        return True
-    elif wave_direction == "East" and wind_direction == "NorthWest":
-        return True
-    elif wave_direction == "East" and wind_direction == "SouthWest":
-        return True
-    elif wave_direction == "West" and wind_direction == "NorthEast":
-        return True
-    elif wave_direction == "West" and wind_direction == "SouthEast":
-        return True
-    elif wave_direction == "NorthEast" and wind_direction == "South":
-        return True
-    elif wave_direction == "NorthWest" and wind_direction == "South":
-        return True
-    elif wave_direction == "SouthEast" and wind_direction == "North":
-        return True
-    elif wave_direction == "SouthWest" and wind_direction == "North":
-        return True
-    elif wave_direction == "NorthEast" and wind_direction == "West":
-        return True
-    elif wave_direction == "SouthEast" and wind_direction == "West":
-        return True
-    elif wave_direction == "NorthWest" and wind_direction == "East":
-        return True
-    elif wave_direction == "SouthWest" and wind_direction == "East":
-        return True
-    else:
-        return False
+    cross_offshore_mapping = {
+        "North": ["SouthEast", "SouthWest"],
+        "South": ["NorthEast", "NorthWest"],
+        "East": ["NorthWest", "SouthWest"],
+        "West": ["NorthEast", "SouthEast"],
+        "NorthEast": ["SouthEast", "NorthWest"],
+        "NorthWest": ["SouthWest", "NorthEast"],
+        "SouthEast": ["SouthWest", "NorthEast"],
+        "SouthWest": ["NorthWest", "SouthEast"],
+    }
+    return wind_direction in cross_offshore_mapping.get(wave_direction, [])
 
 
 def export_to_html(filename, response: Response):
@@ -281,8 +252,12 @@ def get_datename(dt: str):
         return "Another Day"
 
 
-def kmh_to_knots(speed):
-    return speed / 1.852
+def kmh_to_knots(kmh):
+    return kmh / 1.852
+
+
+def mps_to_knots(mps):
+    return mps * 1.94384
 
 
 def convert_all_values_of_dict_to_min_length(data):
