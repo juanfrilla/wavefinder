@@ -127,13 +127,9 @@ def open_browser():
 def render_html(browser, url, tag_to_wait=None, timeout=10):
     browser.get(url)
     if tag_to_wait:
-        try:
-            WebDriverWait(browser, timeout).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
-            )
-        except Exception as e:
-            html_string = browser.page_source
-            st.markdown(html_string, unsafe_allow_html=True)
+        WebDriverWait(browser, timeout).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
+        )
     html_content = browser.page_source
     return html_content
 

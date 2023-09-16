@@ -6,7 +6,7 @@ from utils import (
     get_wind_status,
     render_html,
     convert_all_values_of_dict_to_min_length,
-    mps_to_knots
+    mps_to_knots,
 )
 from datetime import datetime, timedelta
 import re
@@ -150,18 +150,16 @@ class WindyApp(object):
             "wind_speed": wind_speeds,
         }
         total_records = len(data["time"])
-        try:
-            data["spot_name"] = self.parse_spot_names(
-                self.parse_spot_name(soup), total_records
-            )
-        except Exception as e:
-            st.write(self.parse_widget_wrapper(soup))
+        data["spot_name"] = self.parse_spot_names(
+            self.parse_spot_name(soup), total_records
+        )
         data = convert_all_values_of_dict_to_min_length(data)
         return data
-    
+
     def parse_widget_wrapper(self, soup: BeautifulSoup):
-        return soup.select("div.row > div.col-12.col-md-12.col-widget.px-0.px-sm-3.forecast-widget-wrapper")[0]
-        
+        return soup.select(
+            "div.row > div.col-12.col-md-12.col-widget.px-0.px-sm-3.forecast-widget-wrapper"
+        )[0]
 
     def scrape(self, browser, url):
         soup = self.beach_request(browser, url, 60)
