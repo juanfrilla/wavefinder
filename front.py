@@ -9,6 +9,7 @@ from scrapers.sforecast import SurfForecast
 from scrapers.surfline import Surfline
 from scrapers.windyapp import WindyApp
 from scrapers.wisuki import Wisuki
+from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
 
 
@@ -76,6 +77,8 @@ def load_forecast(urls):
         df = multithread.scrape_multiple_browser(urls, WindyApp())
     elif "wisuki" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, Wisuki())
+    elif "worldbeachguide" in urls[0]:
+        df = multithread.scrape_multiple_requests(urls, WorldBeachGuide())
     df = final_forecast_format(df)
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -105,6 +108,8 @@ def plot_forecast(urls):
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (WINDY.APP)")
     elif "wisuki" in urls[0]:
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (WISUKI)")
+    elif "worldbeachguide" in urls[0]:
+        st.title("SOUTH COAST OF LANZAROTE (WORLDBEACHGUIDE)")
 
     st.session_state.forecast_df = load_forecast(urls)
     if st.session_state.forecast_df.empty:
