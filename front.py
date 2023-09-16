@@ -75,7 +75,7 @@ def load_forecast(urls):
     elif "windy.app" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, WindyApp())
     elif "wisuki" in urls[0]:
-        df = multithread.scrape_multiple_browser(urls, Wisuki())
+        df = multithread.scrape_multiple_requests(urls, Wisuki())
     df = final_forecast_format(df)
     print("--- %s seconds ---" % (time.time() - start_time))
 
