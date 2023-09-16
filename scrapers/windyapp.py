@@ -11,6 +11,8 @@ from utils import (
 from datetime import datetime, timedelta
 import re
 
+import streamlit as st
+
 
 class WindyApp(object):
     def __init__(self):
@@ -148,12 +150,20 @@ class WindyApp(object):
             "wind_speed": wind_speeds,
         }
         total_records = len(data["time"])
-        data["spot_name"] = self.parse_spot_names(
-            self.parse_spot_name(soup), total_records
-        )
+        try:
+            data["spot_name"] = self.parse_spot_names(
+                self.parse_spot_name(soup), total_records
+            )
+        except Exception as e:
+            st.write(self.parse_widget_wrapper(soup))
         data = convert_all_values_of_dict_to_min_length(data)
         return data
+    
+    def parse_widget_wrapper(self, soup: BeautifulSoup):
+        return soup.select("div.row > div.col-12.col-md-12.col-widget.px-0.px-sm-3.forecast-widget-wrapper")[0]
+        
 
     def scrape(self, browser, url):
         soup = self.beach_request(browser, url, 60)
+        x = self.parse_widget_wrapper(soup)
         return self.process_soup(soup)

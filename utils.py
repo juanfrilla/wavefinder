@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import numpy as np
+import streamlit as st
 
 MONTH_MAPPING = {
     "Ene": "01",
@@ -117,6 +118,8 @@ def convert_datestr_format(datestr):
 def open_browser():
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
+    options.add_argument('--no-sandbox')
+    options.add_argument('--disable-dev-shm-usage')
     browser = webdriver.Chrome(options=options)
     return browser
 
@@ -124,9 +127,13 @@ def open_browser():
 def render_html(browser, url, tag_to_wait=None, timeout=10):
     browser.get(url)
     if tag_to_wait:
-        WebDriverWait(browser, timeout).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
-        )
+        try:
+            WebDriverWait(browser, timeout).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
+            )
+        except Exception as e:
+            html_string = browser.page_source
+            st.markdown(html_string, unsafe_allow_html=True)
     html_content = browser.page_source
     return html_content
 
