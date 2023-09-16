@@ -118,8 +118,8 @@ def convert_datestr_format(datestr):
 def open_browser():
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
-    options.add_argument('--no-sandbox')
-    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
     browser = webdriver.Chrome(options=options)
     return browser
 
@@ -153,7 +153,7 @@ def get_day_name(days_to_add: float) -> str:
     return day_name_number
 
 
-def final_format(df):
+def final_forecast_format(df):
     df["date"] = pd.to_datetime(df["date"], format="%d/%m/%Y")
     df.sort_values(by=["date", "time", "spot_name"], ascending=[True, True, True])
     df["date"] = df["date"].dt.strftime("%d/%m/%Y")
@@ -172,6 +172,11 @@ def final_format(df):
             "wind_approval",
         ]
     ]
+    return df
+
+
+def final_tides_format(df: pd.DataFrame) -> pd.DataFrame:
+    pass
     return df
 
 

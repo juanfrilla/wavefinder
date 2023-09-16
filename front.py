@@ -1,7 +1,7 @@
 import streamlit as st
 
 import time
-from utils import final_format
+from utils import final_forecast_format, final_tides_format
 from multi import multithread
 from scrapers.windfinder import WindFinder
 from scrapers.windguru import Windguru
@@ -60,7 +60,7 @@ def plot_selected_wave_period():
     )
 
 
-@st.cache_data(ttl=7200)  # si cambio este, me quita algunos spots
+@st.cache_data(ttl=7200)
 def load_forecast(urls):
     start_time = time.time()
     if "windfinder" in urls[0]:
@@ -73,13 +73,13 @@ def load_forecast(urls):
         df = multithread.scrape_multiple_requests(urls, Surfline())
     elif "windy.app" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, WindyApp())
-    df = final_format(df)
+    df = final_forecast_format(df)
     print("--- %s seconds ---" % (time.time() - start_time))
 
     return df
 
 
-@st.cache_data(ttl=7200, persist=True)  # si cambio este, me quita algunos spots
+@st.cache_data(ttl=7200)
 def load_tides():
     start_time = time.time()
     tide_scraper = TidesScraper()

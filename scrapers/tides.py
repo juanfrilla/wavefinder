@@ -67,10 +67,3 @@ class TidesScraper(object):
         with open("mareas.txt", "a") as f:
             dfAsString = df.to_string(header=True, index=False)
             f.write(dfAsString)
-
-
-if __name__ == "__main__":
-    scraper = TidesScraper()
-    x = scraper.scrape()
-
-    print()
