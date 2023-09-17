@@ -36,25 +36,42 @@ def get_wind_status(wind_direction, wave_direction):
         return "Onshore"
 
 
+#margen de 20 grados en N,S,E,O
 def angle_to_direction(angle):
     angle %= 360
-
-    if 0 <= angle < 22.5 or angle >= 337.5:
+    if 0 <= angle < 10 or angle >= 350:
         return "North"
-    elif 22.5 <= angle < 67.5:
+    elif 10 <= angle < 80:
         return "NorthEast"
-    elif 67.5 <= angle < 112.5:
+    elif 80 <= angle < 100:
         return "East"
-    elif 112.5 <= angle < 157.5:
+    elif 100 <= angle < 170:
         return "SouthEast"
-    elif 157.5 <= angle < 202.5:
+    elif 170 <= angle < 190:
         return "South"
-    elif 202.5 <= angle < 247.5:
+    elif 190 <= angle < 260:
         return "SouthWest"
-    elif 247.5 <= angle < 292.5:
+    elif 260 <= angle < 280:
         return "West"
-    elif 292.5 <= angle < 337.5:
+    elif 280 <= angle < 350:
         return "NorthWest"
+
+    # if 0 <= angle < 22.5 or angle >= 337.5:
+    #     return "North"
+    # elif 22.5 <= angle < 67.5:
+    #     return "NorthEast"
+    # elif 67.5 <= angle < 112.5:
+    #     return "East"
+    # elif 112.5 <= angle < 157.5:
+    #     return "SouthEast"
+    # elif 157.5 <= angle < 202.5:
+    #     return "South"
+    # elif 202.5 <= angle < 247.5:
+    #     return "SouthWest"
+    # elif 247.5 <= angle < 292.5:
+    #     return "West"
+    # elif 292.5 <= angle < 337.5:
+    #     return "NorthWest"
 
 
 def is_offshore(wind_direction, wave_direction):
