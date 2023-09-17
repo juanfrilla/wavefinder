@@ -1,12 +1,6 @@
-from front import plot_forecast, plot_tides
+from front.one import plot_forecast, plot_tides
+from urls.windguru import WINDGURU_URLS
 
 if __name__ == "__main__":
-    urls = [
-        "https://www.windguru.cz/586104",  # costa teguise
-        "https://www.windguru.cz/49326",  # Jameos del agua
-        "https://www.windguru.cz/49325",  # La garita
-        "https://www.windguru.cz/49328",  # famara
-    ]
-
-    plot_forecast(urls)
+    plot_forecast(WINDGURU_URLS)
     plot_tides()

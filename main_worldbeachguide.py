@@ -1,10 +1,6 @@
-from front import plot_forecast, plot_tides
+from front.one import plot_forecast, plot_tides
+from urls.worldbeachguide import WORLDBEACHGUIDE_URLS
 
 if __name__ == "__main__":
-    urls = [
-        "https://www.worldbeachguide.com/spain/surf/costa-teguise.htm",
-        #"https://www.worldbeachguide.com/spain/surf/punta-de-mujeres.htm"
-    ]
-
-    plot_forecast(urls)
+    plot_forecast(WORLDBEACHGUIDE_URLS)
     plot_tides()
