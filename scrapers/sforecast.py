@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
-from utils import rename_key, kmh_to_knots
+from utils import rename_key, kmh_to_knots, convert_all_values_of_dict_to_min_length
 from datetime import datetime, timedelta
 import re
 
@@ -34,18 +34,17 @@ class SurfForecast(object):
         return response
 
     # TODO escrapear dias y no añadirlos asi
-    def add_days_to_forecast(self, forecast):
-        time_list = forecast["time"]
-        days_list = []
-        date = datetime.now()
-        for index, time in enumerate(time_list):
-            if time == "AM" and index != 0:
+    def parse_formated_dates(self, times: list) -> list:
+        dates = []
+        date = datetime.now().date()
+        for index, time in enumerate(times):
+            if (
+                index - 1 > 0 and time < times[index - 1]
+            ):  # and times[index + 1] < time:
                 date += timedelta(days=1)
-                days_list.append(date.strftime("%d/%m/%Y"))
-            else:
-                days_list.append(date.strftime("%d/%m/%Y"))
-        forecast["date"] = days_list
-        return forecast
+            date_str = datetime.strftime(date, "%d/%m/%Y")
+            dates.append(date_str)
+        return dates
 
     def parse_spot_name(self, soup):
         return soup.find_all("option", selected=True)[3].text
@@ -117,6 +116,14 @@ class SurfForecast(object):
                 wind_direction_list.append(kmh_to_knots(wind_speed))
         return wind_direction_list
 
+    def obtain_formated_time(self, forecast):
+        time_list = []
+        for time in forecast["time"]:
+            if time in ["AM", "PM"]:
+                time = int(time.replace("AM", "10").replace("PM", "16"))
+                time_list.append(time)
+        return time_list
+
     def get_dataframe_from_soup(self, soup):
         forecast = {}
         spot_name = self.parse_spot_name(soup)
@@ -138,8 +145,6 @@ class SurfForecast(object):
         forecast = rename_key(forecast, "wind-state", "wind_status")
         forecast = rename_key(forecast, "wave-height", "wave")
         forecast = rename_key(forecast, "periods", "wave_period")
-        forecast = self.add_days_to_forecast(forecast)
-        forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["date"]))
         forecast["wind_status"] = self.get_formatted_wind_status(forecast)
         forecast["wave_height"] = self.get_formatted_wave_height(forecast)
         forecast["wave_direction"] = self.get_formatted_wave_direction(forecast)
@@ -147,18 +152,15 @@ class SurfForecast(object):
         forecast["wind_direction"] = self.get_formatted_wind_direction(forecast)
         forecast["wind_speed"] = self.get_formatted_wind_speed(forecast)
         forecast["wave_period"] = self.obtain_formated_wave_period(forecast)
+        forecast["time"] = self.obtain_formated_time(forecast)
+        forecast["date"] = self.parse_formated_dates(forecast["time"])
+        forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
+        forecast = convert_all_values_of_dict_to_min_length(forecast)
         return pd.DataFrame(forecast)
 
     def format_dataframe(self, df):
         # Hacerlo en menos lineas comprobando que la hora es de noche
-        df = df.drop(
-            df[
-                (df["time"] == "03h")
-                | (df["time"] == "04h")
-                | (df["time"] == "05h")
-                | (df["time"] == "21h")
-            ].index
-        )
+        df = df.drop(df[(df["time"] == "Night")].index)
         return df
 
     def process_soup(self, soup):
