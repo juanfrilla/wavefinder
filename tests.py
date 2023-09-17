@@ -3,6 +3,7 @@ from scrapers.windguru import Windguru
 from utils import (
     obtain_minimum_len_of_dict_values,
     convert_all_values_of_dict_to_min_length,
+    generate_dates,
 )
 
 
@@ -67,3 +68,58 @@ def test_common():
 #     assert windguru.datestr_to_backslashformat("Fr25") == "25/08/2023"
 #     assert windguru.datestr_to_backslashformat("Sa26") == "26/08/2023"
 #     assert windguru.datestr_to_backslashformat("Sa9") == "09/09/2023"
+
+
+def test_generate_dates():
+    times = [
+        10,
+        16,
+        10,
+        16,
+        10,
+        16,
+        10,
+        16,
+        10,
+        16,
+        10,
+        16,
+        10,
+        16,
+        10,
+        16,
+        10,
+        16,
+        10,
+        16,
+        10,
+        16,
+        10,
+        16,
+    ]
+    assert generate_dates(times) == [
+        "17/09/2023",
+        "17/09/2023",
+        "18/09/2023",
+        "18/09/2023",
+        "19/09/2023",
+        "19/09/2023",
+        "20/09/2023",
+        "20/09/2023",
+        "21/09/2023",
+        "21/09/2023",
+        "22/09/2023",
+        "22/09/2023",
+        "23/09/2023",
+        "23/09/2023",
+        "24/09/2023",
+        "24/09/2023",
+        "25/09/2023",
+        "25/09/2023",
+        "26/09/2023",
+        "26/09/2023",
+        "27/09/2023",
+        "27/09/2023",
+        "28/09/2023",
+        "28/09/2023",
+    ]

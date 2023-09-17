@@ -36,7 +36,7 @@ def get_wind_status(wind_direction, wave_direction):
         return "Onshore"
 
 
-#margen de 20 grados en N,S,E,O
+# margen de 20 grados en N,S,E,O
 def angle_to_direction(angle):
     angle %= 360
     if 0 <= angle < 10 or angle >= 350:
@@ -324,3 +324,14 @@ def handle_wind(df: pd.DataFrame) -> pd.DataFrame:
         default=default,
     )
     return df
+
+
+def generate_dates(times: list) -> list:
+    dates = []
+    date = datetime.now().date()
+    for index, time in enumerate(times):
+        if index - 1 >= 0 and time < times[index - 1]:
+            date += timedelta(days=1)
+        date_str = datetime.strftime(date, "%d/%m/%Y")
+        dates.append(date_str)
+    return dates

@@ -1,5 +1,4 @@
 from bs4 import BeautifulSoup
-import requests
 import pandas as pd
 from utils import (
     angle_to_direction,
@@ -7,8 +6,8 @@ from utils import (
     render_html,
     convert_all_values_of_dict_to_min_length,
     mps_to_knots,
+    generate_dates
 )
-from datetime import datetime, timedelta
 import re
 
 
@@ -21,18 +20,6 @@ class WindyApp(object):
             browser=browser, url=url, tag_to_wait="tr.windywidgetdays", timeout=timeout
         )
         return BeautifulSoup(r_text, "html.parser")
-
-    def parse_formated_dates(self, times: list) -> list:
-        dates = []
-        date = datetime.now().date()
-        for index, time in enumerate(times):
-            if (
-                index - 1 > 0 and time < times[index - 1]
-            ):  # and times[index + 1] < time:
-                date += timedelta(days=1)
-            date_str = datetime.strftime(date, "%d/%m/%Y")
-            dates.append(date_str)
-        return dates
 
     def parse_formated_time(self, soup: BeautifulSoup) -> list:
         raw_time = soup.select("tr.windywidgethours > td")[1:]
@@ -65,9 +52,6 @@ class WindyApp(object):
         for style in raw_styles:
             angle = self.parse_number_from_style(style) + 180
             unformated_wind_direction.append(angle)
-        # unformated_wind_direction = [
-        #     self.parse_number_from_style(style) + 180 for style in raw_styles
-        # ]
         converted_angles = [
             self.convert_angle_between_0_and_360(angle)
             for angle in unformated_wind_direction
@@ -139,7 +123,7 @@ class WindyApp(object):
             soup
         )  # este marca el tamaño de la lista
         times = self.parse_formated_time(soup)
-        dates = self.parse_formated_dates(times)
+        dates = generate_dates(times)
         data = {
             "date": dates,
             "time": times,

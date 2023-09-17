@@ -1,7 +1,12 @@
 from bs4 import BeautifulSoup
 import requests
 import pandas as pd
-from utils import rename_key, kmh_to_knots, convert_all_values_of_dict_to_min_length
+from utils import (
+    rename_key,
+    kmh_to_knots,
+    convert_all_values_of_dict_to_min_length,
+    generate_dates,
+)
 from datetime import datetime, timedelta
 import re
 
@@ -32,19 +37,6 @@ class SurfForecast(object):
         )
 
         return response
-
-    # TODO escrapear dias y no añadirlos asi
-    def parse_formated_dates(self, times: list) -> list:
-        dates = []
-        date = datetime.now().date()
-        for index, time in enumerate(times):
-            if (
-                index - 1 > 0 and time < times[index - 1]
-            ):  # and times[index + 1] < time:
-                date += timedelta(days=1)
-            date_str = datetime.strftime(date, "%d/%m/%Y")
-            dates.append(date_str)
-        return dates
 
     def parse_spot_name(self, soup):
         return soup.find_all("option", selected=True)[3].text
@@ -153,7 +145,8 @@ class SurfForecast(object):
         forecast["wind_speed"] = self.get_formatted_wind_speed(forecast)
         forecast["wave_period"] = self.obtain_formated_wave_period(forecast)
         forecast["time"] = self.obtain_formated_time(forecast)
-        forecast["date"] = self.parse_formated_dates(forecast["time"])
+        dates = generate_dates(forecast["time"])
+        forecast["date"] = generate_dates(forecast["time"])
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
         forecast = convert_all_values_of_dict_to_min_length(forecast)
         return pd.DataFrame(forecast)

@@ -4,9 +4,9 @@ from utils import (
     convert_all_values_of_dict_to_min_length,
     get_wind_status,
     angle_to_direction,
+    generate_dates
 )
 import pandas as pd
-from datetime import datetime, timedelta
 import re
 
 
@@ -119,18 +119,6 @@ class Wisuki(object):
         )
         return df
 
-    def parse_formated_dates(self, times: list) -> list:
-        dates = []
-        date = datetime.now().date()
-        for index, time in enumerate(times):
-            if (
-                index - 1 > 0 and time < times[index - 1]
-            ):  # and times[index + 1] < time:
-                date += timedelta(days=1)
-            date_str = datetime.strftime(date, "%d/%m/%Y")
-            dates.append(date_str)
-        return dates
-
     def parse_formated_time(self, soup: BeautifulSoup) -> list:
         raw_times = soup.select("tbody > tr")[0]
         times = []
@@ -156,7 +144,7 @@ class Wisuki(object):
             wave_rows[3]
         )  # este marca el tamaño de la lista
         times = self.parse_formated_time(soup)
-        dates = self.parse_formated_dates(times)
+        dates = generate_dates(times)
         data = {
             "date": dates,
             "time": times,
