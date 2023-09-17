@@ -11,8 +11,6 @@ from utils import (
 from datetime import datetime, timedelta
 import re
 
-import streamlit as st
-
 
 class WindyApp(object):
     def __init__(self):
@@ -122,11 +120,14 @@ class WindyApp(object):
         return self.format_dataframe(df)
 
     def format_dataframe(self, df):
-        # df = df.drop(
-        #     df[
-        #         (df["time"] == "01h") | (df["time"] == "04h") | (df["time"] == "22h")
-        #     ].index
-        # )
+        df = df.drop(
+            df[
+                (df["time"] == 22)
+                | (df["time"] == 1)
+                | (df["time"] == 4)
+                | (df["time"] == 0)
+            ].index
+        )
         return df
 
     def obtain_data(self, soup):
@@ -163,5 +164,4 @@ class WindyApp(object):
 
     def scrape(self, browser, url):
         soup = self.beach_request(browser, url, 60)
-        x = self.parse_widget_wrapper(soup)
         return self.process_soup(soup)

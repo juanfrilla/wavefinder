@@ -4,8 +4,6 @@ from utils import (
     convert_all_values_of_dict_to_min_length,
     get_wind_status,
     angle_to_direction,
-    export_to_html,
-    import_html,
 )
 import pandas as pd
 from datetime import datetime, timedelta
@@ -114,11 +112,11 @@ class Wisuki(object):
         return self.format_dataframe(df)
 
     def format_dataframe(self, df):
-        # df = df.drop(
-        #     df[
-        #         (df["time"] == "01h") | (df["time"] == "04h") | (df["time"] == "22h")
-        #     ].index
-        # )
+        df = df.drop(
+            df[
+                (df["time"] == "01h") | (df["time"] == "04h") | (df["time"] == "22h")
+            ].index
+        )
         return df
 
     def parse_formated_dates(self, times: list) -> list:
