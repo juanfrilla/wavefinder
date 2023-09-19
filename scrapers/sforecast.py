@@ -145,7 +145,6 @@ class SurfForecast(object):
         forecast["wind_speed"] = self.get_formatted_wind_speed(forecast)
         forecast["wave_period"] = self.obtain_formated_wave_period(forecast)
         forecast["time"] = self.obtain_formated_time(forecast)
-        dates = generate_dates(forecast["time"])
         forecast["date"] = generate_dates(forecast["time"])
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
         forecast = convert_all_values_of_dict_to_min_length(forecast)

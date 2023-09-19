@@ -14,15 +14,16 @@ from urls.windfinder import WINDFINDER_URLS
 from urls.windguru import WINDGURU_URLS
 from urls.wisuki import WISUKI_URLS
 from urls.windyapp import WINDYAPP_URLS
-
-
+from utils import combine_df
+from front.more import plot_forecast
+from front.one import plot_tides
 
 scraper_objects = [
-    # {
-    #     "object": WindFinder(),
-    #     "target": multiprocess.scrape_multiple_requests_process,
-    #     "urls": WINDFINDER_URLS,
-    # },
+    {
+        "object": WindFinder(),
+        "target": multiprocess.scrape_multiple_requests_process,
+        "urls": WINDFINDER_URLS,
+    },
     # {
     #     "object": Windguru(),
     #     "target": multiprocess.scrape_multiple_browser_process,
@@ -33,11 +34,11 @@ scraper_objects = [
         "target": multiprocess.scrape_multiple_requests_process,
         "urls": SFORECAST_URLS,
     },
-    # {
-    #     "object": Surfline(),
-    #     "target": multiprocess.scrape_multiple_requests_process,
-    #     "urls": SURFLINE_URLS,
-    # },
+    {
+        "object": Surfline(),
+        "target": multiprocess.scrape_multiple_requests_process,
+        "urls": SURFLINE_URLS,
+    },
     {
         "object": Wisuki(),
         "target": multiprocess.scrape_multiple_requests_process,
@@ -50,8 +51,5 @@ scraper_objects = [
     },
 ]
 if __name__ == "__main__":
-    df = multiprocess.scrape_multiple_sites(scraper_objects)
-    
-    dfie = list(df)
-    
-    print()
+    plot_forecast(scraper_objects)
+    plot_tides()
