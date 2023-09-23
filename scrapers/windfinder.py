@@ -1,6 +1,6 @@
 import requests
 from bs4 import BeautifulSoup, Tag
-import polars as pl
+import pandas as pd
 from utils import (
     import_html,
     get_wind_status,
@@ -156,7 +156,7 @@ class WindFinder(object):
 
     def get_dataframe_from_soup(self, soup):
         data = self.obtain_data(soup)
-        return pl.DataFrame(data)
+        return pd.DataFrame(data)
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)

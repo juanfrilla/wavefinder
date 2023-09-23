@@ -1,12 +1,12 @@
 from multi.threadingresult import ThreadWithReturnValue
 import utils
-import polars as pl
+import pandas as pd
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from time import sleep
 
 
 def scrape_multiple_browser(urls, object):
-    forecast = pl.DataFrame()
+    forecast = pd.DataFrame()
     results = []
     with utils.open_browser() as browser:
         for url in urls:
@@ -20,7 +20,7 @@ def scrape_multiple_browser(urls, object):
 
 
 def scrape_multiple_requests(urls, object, batch_size=8):
-    forecast = pl.DataFrame()
+    forecast = pd.DataFrame()
     dfs = []
     url_batches = [urls[i : i + batch_size] for i in range(0, len(urls), batch_size)]
 

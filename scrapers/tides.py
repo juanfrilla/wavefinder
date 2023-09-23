@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-import os, datetime, polars as pl
+import os, datetime, pandas as pd
 from typing import Dict
 from requests import Session
 from utils import get_day_name
@@ -55,13 +55,13 @@ class TidesScraper(object):
                     hora.append(None)
         for hora in horas:
             hours_dict[get_day_name(horas.index(hora))] = hora
-        return pl.DataFrame(hours_dict)
+        return pd.DataFrame(hours_dict)
 
-    def mareas_to_df(self, dict: Dict) -> pl.DataFrame:
-        df = pl.DataFrame(dict)
+    def mareas_to_df(self, dict: Dict) -> pd.DataFrame:
+        df = pd.DataFrame(dict)
         return df
 
-    def df_to_txt(self, df: pl.DataFrame) -> None:
+    def df_to_txt(self, df: pd.DataFrame) -> None:
         if os.path.exists("mareas.txt"):
             os.remove("mareas.txt")
         with open("mareas.txt", "a") as f:

@@ -6,7 +6,7 @@ from utils import (
     angle_to_direction,
     generate_dates
 )
-import polars as pl
+import pandas as pd
 import re
 
 
@@ -105,7 +105,7 @@ class Wisuki(object):
 
     def get_dataframe_from_soup(self, soup):
         data = self.obtain_data(soup)
-        return pl.DataFrame(data)
+        return pd.DataFrame(data)
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)
