@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-import pandas as pd
+import polars as pl
 from utils import (
     angle_to_direction,
     get_wind_status,
@@ -97,7 +97,7 @@ class WindyApp(object):
 
     def get_dataframe_from_soup(self, soup):
         data = self.obtain_data(soup)
-        return pd.DataFrame(data)
+        return pl.DataFrame(data)
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)

@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from typing import Dict
-import pandas as pd
+import polars as pl
 from utils import (
     rename_key,
     angle_to_direction,
@@ -93,7 +93,7 @@ class Windguru(object):
         total_records = len(forecast["tabid_0_0_dates"])
         forecast["spot_name"] = self.parse_spot_names(soup, total_records)
         forecast = self.format_forecast(forecast)
-        return pd.DataFrame(forecast)
+        return pl.DataFrame(forecast)
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)

@@ -1,6 +1,6 @@
 import requests
 from models.surfline import Wave, Wind, Tide, Rating, Item
-import pandas as pd
+import polars as pl
 
 
 class Surfline:
@@ -153,6 +153,6 @@ class Surfline:
                 ),
             ).model_dump()
             combined_data.append(item)
-        df = pd.DataFrame(combined_data)
+        df = pl.DataFrame(combined_data)
         # return df
         return self.format_dataframe(df)

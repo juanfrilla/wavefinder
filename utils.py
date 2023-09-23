@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from requests import Response
-import pandas as pd
+import polars as pl
 from datetime import datetime, date, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -188,7 +188,7 @@ def final_forecast_format(df):
     return df
 
 
-def final_tides_format(df: pd.DataFrame) -> pd.DataFrame:
+def final_tides_format(df: pl.DataFrame) -> pl.DataFrame:
     pass
     return df
 
@@ -300,7 +300,7 @@ def obtain_minimum_len_of_dict_values(data: dict):
     return min(data_value_lens)
 
 
-def handle_wind(df: pd.DataFrame) -> pd.DataFrame:
+def handle_wind(df: pl.DataFrame) -> pl.DataFrame:
     wind_speed = df["wind_speed"].astype(float)
 
     WIND_STATUS_HIGH_10 = (df["wind_status"] == "Offshore") | (

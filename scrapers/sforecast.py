@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-import pandas as pd
+import polars as pl
 from utils import (
     rename_key,
     kmh_to_knots,
@@ -148,7 +148,7 @@ class SurfForecast(object):
         forecast["date"] = generate_dates(forecast["time"])
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
         forecast = convert_all_values_of_dict_to_min_length(forecast)
-        return pd.DataFrame(forecast)
+        return pl.DataFrame(forecast)
 
     def format_dataframe(self, df):
         # Hacerlo en menos lineas comprobando que la hora es de noche
