@@ -95,10 +95,10 @@ def is_crossoff(wind_direction, wave_direction):
         "South": ["NorthEast", "NorthWest"],
         "East": ["NorthWest", "SouthWest"],
         "West": ["NorthEast", "SouthEast"],
-        "NorthEast": ["SouthEast", "NorthWest"],
-        "NorthWest": ["SouthWest", "NorthEast"],
-        "SouthEast": ["SouthWest", "NorthEast"],
-        "SouthWest": ["NorthWest", "SouthEast"],
+        "NorthEast": ["SouthEast", "NorthWest", "South", "West"],
+        "NorthWest": ["SouthWest", "NorthEast", "South", "East"],
+        "SouthEast": ["SouthWest", "NorthEast", "North", "West"],
+        "SouthWest": ["NorthWest", "SouthEast", "North", "East"],
     }
     return wind_direction in cross_offshore_mapping.get(wave_direction, [])
 

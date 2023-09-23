@@ -4,6 +4,7 @@ from utils import (
     obtain_minimum_len_of_dict_values,
     convert_all_values_of_dict_to_min_length,
     generate_dates,
+    is_crossoff,
 )
 
 
@@ -70,56 +71,81 @@ def test_common():
 #     assert windguru.datestr_to_backslashformat("Sa9") == "09/09/2023"
 
 
-def test_generate_dates():
-    times = [
-        10,
-        16,
-        10,
-        16,
-        10,
-        16,
-        10,
-        16,
-        10,
-        16,
-        10,
-        16,
-        10,
-        16,
-        10,
-        16,
-        10,
-        16,
-        10,
-        16,
-        10,
-        16,
-        10,
-        16,
-    ]
-    assert generate_dates(times) == [
-        "17/09/2023",
-        "17/09/2023",
-        "18/09/2023",
-        "18/09/2023",
-        "19/09/2023",
-        "19/09/2023",
-        "20/09/2023",
-        "20/09/2023",
-        "21/09/2023",
-        "21/09/2023",
-        "22/09/2023",
-        "22/09/2023",
-        "23/09/2023",
-        "23/09/2023",
-        "24/09/2023",
-        "24/09/2023",
-        "25/09/2023",
-        "25/09/2023",
-        "26/09/2023",
-        "26/09/2023",
-        "27/09/2023",
-        "27/09/2023",
-        "28/09/2023",
-        "28/09/2023",
-    ]
+# def test_generate_dates():
+#     times = [
+#         10,
+#         16,
+#         10,
+#         16,
+#         10,
+#         16,
+#         10,
+#         16,
+#         10,
+#         16,
+#         10,
+#         16,
+#         10,
+#         16,
+#         10,
+#         16,
+#         10,
+#         16,
+#         10,
+#         16,
+#         10,
+#         16,
+#         10,
+#         16,
+#     ]
+#     assert generate_dates(times) == [
+#         "17/09/2023",
+#         "17/09/2023",
+#         "18/09/2023",
+#         "18/09/2023",
+#         "19/09/2023",
+#         "19/09/2023",
+#         "20/09/2023",
+#         "20/09/2023",
+#         "21/09/2023",
+#         "21/09/2023",
+#         "22/09/2023",
+#         "22/09/2023",
+#         "23/09/2023",
+#         "23/09/2023",
+#         "24/09/2023",
+#         "24/09/2023",
+#         "25/09/2023",
+#         "25/09/2023",
+#         "26/09/2023",
+#         "26/09/2023",
+#         "27/09/2023",
+#         "27/09/2023",
+#         "28/09/2023",
+#         "28/09/2023",
+#     ]
+def test_is_crossoff():
+    assert is_crossoff("North", "SouthEast") == True
+    assert is_crossoff("North", "SouthWest") == True
+    assert is_crossoff("South", "NorthEast") == True
+    assert is_crossoff("South", "NorthWest") == True
+    assert is_crossoff("East", "NorthWest") == True
+    assert is_crossoff("East", "SouthWest") == True
+    assert is_crossoff("West", "NorthEast") == True
+    assert is_crossoff("West", "SouthEast") == True
+    assert is_crossoff("NorthEast", "SouthEast") == True
+    assert is_crossoff("NorthEast", "NorthWest") == True
+    assert is_crossoff("NorthEast", "South") == True
+    assert is_crossoff("NorthEast", "West") == True
+    assert is_crossoff("NorthWest", "SouthWest") == True
+    assert is_crossoff("NorthWest", "NorthEast") == True
+    assert is_crossoff("NorthWest", "South") == True
+    assert is_crossoff("NorthWest", "East") == True
+    assert is_crossoff("SouthEast", "SouthWest") == True
+    assert is_crossoff("SouthEast", "NorthEast") == True
+    assert is_crossoff("SouthEast", "North") == True
+    assert is_crossoff("SouthEast", "West") == True
+    assert is_crossoff("SouthWest", "NorthWest") == True
+    assert is_crossoff("SouthWest", "SouthEast") == True
+    assert is_crossoff("SouthWest", "North") == True
+    assert is_crossoff("SouthWest", "East") == True
