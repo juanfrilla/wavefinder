@@ -13,7 +13,7 @@ from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
 
 
-DEFAULT_MIN_WAVE_HEIGHT = 1.30
+# DEFAULT_MIN_WAVE_HEIGHT = 1.30
 DEFAULT_MIN_WAVE_PERIOD = 7
 
 
@@ -30,13 +30,13 @@ def get_default_wind_approval_selection(wind_approval_list):
     return []
 
 
-def plot_selected_wave_height():
+def plot_selected_wave_height(default_wave_height):
     min_wave_height = float(st.session_state.forecast_df["wave_height"].min())
     max_wave_height = float(st.session_state.forecast_df["wave_height"].max())
-    if max_wave_height < DEFAULT_MIN_WAVE_HEIGHT:
-        default_wave_height_selection = (1.0, DEFAULT_MIN_WAVE_HEIGHT)
+    if max_wave_height < default_wave_height:
+        default_wave_height_selection = (1.0, default_wave_height)
     else:
-        default_wave_height_selection = (DEFAULT_MIN_WAVE_HEIGHT, max_wave_height)
+        default_wave_height_selection = (default_wave_height, max_wave_height)
     return st.slider(
         "Altura de las olas (m)",
         min_wave_height,
@@ -97,18 +97,25 @@ def load_tides():
 
 def plot_forecast(urls):
     if "windfinder" in urls[0]:
+        default_wave_height = 1.50
         st.title("SOUTH COAST OF LANZAROTE (WINDFINDER)")
     elif "windguru" in urls[0]:
+        default_wave_height = 1.0
         st.title("NORTH COAST OF LANZAROTE (WINDGURU)")
     elif "surf-forecast" in urls[0]:
+        default_wave_height = 1.0
         st.title("NORTH COAST OF LANZAROTE (SURF-FORECAST)")
     elif "surfline" in urls[0]:
+        default_wave_height = 1.50
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (SURFLINE)")
     elif "windy.app" in urls[0]:
+        default_wave_height = 1.50
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (WINDY.APP)")
     elif "wisuki" in urls[0]:
+        default_wave_height = 1.50
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (WISUKI)")
     elif "worldbeachguide" in urls[0]:
+        default_wave_height = 1.50
         st.title("SOUTH COAST OF LANZAROTE (WORLDBEACHGUIDE)")
 
     st.session_state.forecast_df = load_forecast(urls)
@@ -132,7 +139,7 @@ def plot_forecast(urls):
             wind_status_list,
             default=wind_status_list,
         )
-        selected_wave_height = plot_selected_wave_height()
+        selected_wave_height = plot_selected_wave_height(default_wave_height)
         selected_wave_period = plot_selected_wave_period()
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
