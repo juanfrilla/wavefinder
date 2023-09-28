@@ -123,7 +123,7 @@ def plot_forecast(urls):
         st.write("The DataFrame is empty.")
     else:
         # GET UNIQUES
-        date_name_list = st.session_state.forecast_df["datetime"].unique().tolist()
+        #date_name_list = st.session_state.forecast_df["datetime"].unique().tolist()
         wind_status_list = st.session_state.forecast_df["wind_status"].unique().tolist()
         all_beaches = st.session_state.forecast_df["spot_name"].unique().tolist()
         all_wind_approvals = (
@@ -131,9 +131,9 @@ def plot_forecast(urls):
         )
 
         # CREATE MULTISELECT
-        date_name_selection = st.multiselect(
-            "Fecha:", date_name_list, default=date_name_list
-        )
+        # date_name_selection = st.multiselect(
+        #     "Fecha:", date_name_list, default=date_name_list
+        # )
         wind_status_selection = st.multiselect(
             "Estado del viento:",
             wind_status_list,
@@ -155,8 +155,8 @@ def plot_forecast(urls):
         # )
         # --- FILTER DATAFRAME BASED ON SELECTION
         mask = (
-            (st.session_state.forecast_df["datetime"].isin(date_name_selection))
-            & (st.session_state.forecast_df["wind_status"].isin(wind_status_selection))
+            #(st.session_state.forecast_df["datetime"].isin(date_name_selection))
+            (st.session_state.forecast_df["wind_status"].isin(wind_status_selection))
             & (st.session_state.forecast_df["spot_name"].isin(beach_selection))
             & (
                 st.session_state.forecast_df["wind_approval"].isin(
