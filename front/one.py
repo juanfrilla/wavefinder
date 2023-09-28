@@ -172,14 +172,17 @@ def plot_forecast(urls):
 
         # --- GROUP DATAFRAME AFTER SELECTION
         st.session_state.forecast_df = st.session_state.forecast_df[mask]
-
-        st.title("Wave Height/Day Graph")
-        st.line_chart(
-            st.session_state.forecast_df,
-            x="datetime",
-            y="wave_height",
-            color="spot_name",
-        )
+        
+        try:
+            st.title("Wave Height/Day Graph")
+            st.line_chart(
+                st.session_state.forecast_df,
+                x="datetime",
+                y="wave_height",
+                color="spot_name",
+            )
+        except:
+            pass
 
         grouped_data = st.session_state.forecast_df.groupby("spot_name")
         # Display tables for each group
