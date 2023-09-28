@@ -74,7 +74,7 @@ class WindFinder(object):
             "div.cell-timespan.weathertable__cellgroup.weathertable__cellgroup--stacked"
         )
         return [
-            self.text_strip(hour_interval_table)
+            self.text_strip(hour_interval_table).replace("h", ":00")
             for hour_interval_table in hour_intervals_table
         ]
 

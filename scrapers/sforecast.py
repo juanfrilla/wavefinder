@@ -112,7 +112,7 @@ class SurfForecast(object):
         time_list = []
         for time in forecast["time"]:
             if time in ["AM", "PM"]:
-                time = int(time.replace("AM", "10").replace("PM", "16"))
+                time = time.replace("AM", "10:00").replace("PM", "16:00")
                 time_list.append(time)
         return time_list
 

@@ -9,6 +9,7 @@ from utils import (
 )
 import json
 import streamlit as st
+from datetime import datetime
 
 
 class Wind(BaseModel):
@@ -63,7 +64,9 @@ class Wave(BaseModel):
 
     @property
     def time(self) -> str:
-        return timestamp_to_datetimestr(self.timestamp, self.utcOffset)[1]
+        time_str = timestamp_to_datetimestr(self.timestamp, self.utcOffset)[1]
+        time_to_return = datetime.strptime(time_str, "%H:%M:%S").strftime("%H:%M")
+        return time_to_return
 
     surf: Surf
     swells: List[Swell]

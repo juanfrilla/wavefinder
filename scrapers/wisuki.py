@@ -124,7 +124,8 @@ class Wisuki(object):
         times = []
         for time in raw_times:
             if time.text.strip() != "":
-                times.append(time.text.strip())
+                time_str = time.text.strip().replace("h", ":00")
+                times.append(time_str)
         return times
 
     def parse_wind_rows(self, soup):

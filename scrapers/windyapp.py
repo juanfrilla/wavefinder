@@ -1,12 +1,13 @@
 from bs4 import BeautifulSoup
 import pandas as pd
+from datetime import datetime, timedelta
 from utils import (
     angle_to_direction,
     get_wind_status,
     render_html,
     convert_all_values_of_dict_to_min_length,
     mps_to_knots,
-    generate_dates
+    generate_dates,
 )
 import re
 
@@ -23,7 +24,8 @@ class WindyApp(object):
 
     def parse_formated_time(self, soup: BeautifulSoup) -> list:
         raw_time = soup.select("tr.windywidgethours > td")[1:]
-        return [int(time.text) for time in raw_time]
+        base_time = datetime(2023, 1, 1, 0, 0)
+        return [base_time + timedelta(hours=int(time.text)) for time in raw_time]
 
     def parse_number_from_style(self, style: str) -> int:
         regex = r"rotate\((\d+)deg\)"

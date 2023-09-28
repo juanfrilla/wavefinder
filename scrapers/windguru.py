@@ -43,7 +43,7 @@ class Windguru(object):
             self.datestr_to_backslashformat(dt.split(".")[0])
             for dt in forecast["datetime"]
         ]
-        forecast["time"] = [dt.split(".")[1] for dt in forecast["datetime"]]
+        forecast["time"] = [dt.split(".")[1].replace("h", ":00") for dt in forecast["datetime"]]
         del forecast["datetime"]
 
         forecast["wind_status"] = self.parse_windstatus(
@@ -90,7 +90,8 @@ class Windguru(object):
                     else:
                         value = cell.get_text()
                     forecast[id].append(value)
-        total_records = len(forecast["tabid_0_0_dates"])
+
+        total_records = len(max(forecast.items(), key=lambda item: len(item[1]))[1])
         forecast["spot_name"] = self.parse_spot_names(soup, total_records)
         forecast = self.format_forecast(forecast)
         return pd.DataFrame(forecast)
