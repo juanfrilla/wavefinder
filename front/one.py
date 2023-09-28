@@ -1,7 +1,7 @@
 import streamlit as st
 
 import time
-from utils import final_forecast_format, final_tides_format
+from utils import final_forecast_format
 from multi import multithread
 from scrapers.windfinder import WindFinder
 from scrapers.windguru import Windguru
@@ -13,7 +13,8 @@ from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
 
 
-# DEFAULT_MIN_WAVE_HEIGHT = 1.30
+#DEFAULT_MIN_WAVE_HEIGHT = 1.30
+DEFAULT_MIN_WAVE_HEIGHT = 1.0
 DEFAULT_MIN_WAVE_PERIOD = 7
 
 
@@ -97,25 +98,25 @@ def load_tides():
 
 def plot_forecast(urls):
     if "windfinder" in urls[0]:
-        default_wave_height = 1.50
+        #default_wave_height = 1.50
         st.title("SOUTH COAST OF LANZAROTE (WINDFINDER)")
     elif "windguru" in urls[0]:
-        default_wave_height = 1.0
+        #default_wave_height = 1.0
         st.title("NORTH COAST OF LANZAROTE (WINDGURU)")
     elif "surf-forecast" in urls[0]:
-        default_wave_height = 1.0
+        #default_wave_height = 1.0
         st.title("NORTH COAST OF LANZAROTE (SURF-FORECAST)")
     elif "surfline" in urls[0]:
-        default_wave_height = 1.50
+        #default_wave_height = 1.50
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (SURFLINE)")
     elif "windy.app" in urls[0]:
-        default_wave_height = 1.50
+        #default_wave_height = 1.50
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (WINDY.APP)")
     elif "wisuki" in urls[0]:
-        default_wave_height = 1.50
+        #default_wave_height = 1.50
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (WISUKI)")
     elif "worldbeachguide" in urls[0]:
-        default_wave_height = 1.50
+        #default_wave_height = 1.50
         st.title("SOUTH COAST OF LANZAROTE (WORLDBEACHGUIDE)")
 
     st.session_state.forecast_df = load_forecast(urls)
@@ -139,7 +140,7 @@ def plot_forecast(urls):
             wind_status_list,
             default=wind_status_list,
         )
-        selected_wave_height = plot_selected_wave_height(default_wave_height)
+        selected_wave_height = plot_selected_wave_height(DEFAULT_MIN_WAVE_HEIGHT)
         selected_wave_period = plot_selected_wave_period()
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
@@ -172,9 +173,11 @@ def plot_forecast(urls):
 
         # --- GROUP DATAFRAME AFTER SELECTION
         st.session_state.forecast_df = st.session_state.forecast_df[mask]
-
+        
+        st.title("Combined Line Chart")
+        st.line_chart(st.session_state.forecast_df, x="date", y="wave_height", color="spot_name")
+        
         grouped_data = st.session_state.forecast_df.groupby("spot_name")
-
         # Display tables for each group
         with st.container():
             for spot_name, group_df in grouped_data:
@@ -189,6 +192,8 @@ def plot_forecast(urls):
                     ),
                     hide_index=True,
                 )
+
+                #st.line_chart(group_df, x="date", y="wave_height", color=None)
 
 
 def plot_tides():
