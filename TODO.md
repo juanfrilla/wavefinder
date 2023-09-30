@@ -8,6 +8,7 @@ TODO: Unificar más las páginas en hoy, mañana y pasado, o con multiprocesos, 
 Seleccionar hoy, mañana y pasado
 Dibujar tablas de spots de menor fecha a mayor fecha
 Refactorizar
+Cambiar pandas por polars
 Hacer una gráfica de alturas, para ver más visual qué día está más grande de los seleccionados, eje x hora y dia, eje y altura, en los puntos puedes picar para más info y posiblemente poner todos los spots juntos para ver el que más sobresale.
 Mejorar lo que tengo con altair, que cuando te coloques (hover) en un punto aparezca toda la info de la fila del dataframe
 Eliminar días y poner solo hoy, mañana y pasado

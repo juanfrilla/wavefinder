@@ -10,7 +10,7 @@ from utils import (
 import re
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-
+import streamlit as st
 
 class Windguru(object):
     def __init__(self):
@@ -92,8 +92,11 @@ class Windguru(object):
                     else:
                         value = cell.get_text()
                     forecast[id].append(value)
-
-        total_records = len(max(forecast.items(), key=lambda item: len(item[1]))[1])
+        try:
+            total_records = len(max(forecast.items(), key=lambda item: len(item[1]))[1])
+        except Exception as e:
+            st.write("QUEEE FUEE")
+            st.write(forecast)
         forecast["spot_name"] = self.parse_spot_names(soup, total_records)
         forecast = self.format_forecast(forecast)
         return pd.DataFrame(forecast)
