@@ -96,6 +96,7 @@ class Windguru(object):
             total_records = len(max(forecast.items(), key=lambda item: len(item[1]))[1])
         except Exception as e:
             st.write("QUEEE FUEE")
+            st.write(soup)
             st.write(forecast)
         forecast["spot_name"] = self.parse_spot_names(soup, total_records)
         forecast = self.format_forecast(forecast)
