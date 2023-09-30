@@ -43,7 +43,9 @@ class Windguru(object):
             self.datestr_to_backslashformat(dt.split(".")[0])
             for dt in forecast["datetime"]
         ]
-        forecast["time"] = [dt.split(".")[1].replace("h", ":00") for dt in forecast["datetime"]]
+        forecast["time"] = [
+            dt.split(".")[1].replace("h", ":00") for dt in forecast["datetime"]
+        ]
         del forecast["datetime"]
 
         forecast["wind_status"] = self.parse_windstatus(
