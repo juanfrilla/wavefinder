@@ -1,3 +1,4 @@
+import locale
 from bs4 import BeautifulSoup
 from requests import Response
 import pandas as pd
@@ -169,7 +170,9 @@ def get_day_name(days_to_add: float) -> str:
 def final_forecast_format(df):
     df["date"] = pd.to_datetime(df["date"], format="%d/%m/%Y")
     df["time"] = pd.to_datetime(df["time"], format="%H:%M").dt.time
-    df["datetime"] = pd.to_datetime(df["date"].dt.strftime("%Y-%m-%d") + " " + df["time"].astype(str))
+    df["datetime"] = pd.to_datetime(
+        df["date"].dt.strftime("%Y-%m-%d") + " " + df["time"].astype(str)
+    )
     df.drop(["date", "time"], axis=1, inplace=True)
     df.sort_values(by=["datetime", "spot_name"], ascending=[True, True])
 
@@ -257,12 +260,13 @@ def timestamp_to_datetimestr(timestamp_date: int, utc_offset: int) -> str:
     return datestr, timestr
 
 
-def str_to_datetime(dtstr) -> datetime:
-    return datetime.strptime(dtstr, INTERNAL_DATE_STR_FORMAT)
+def str_to_datetime(dtstr, format) -> datetime:
+    locale.setlocale(locale.LC_TIME, "es_ES.UTF-8")
+    return datetime.strptime(dtstr, format)
 
 
 def get_datename(dt: str):
-    dt_dt = str_to_datetime(dt).date()
+    dt_dt = str_to_datetime(dt, INTERNAL_DATE_STR_FORMAT).date()
 
     today = datetime.now().date()
     tomorrow = today + timedelta(days=1)

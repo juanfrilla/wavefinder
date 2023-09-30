@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import os, datetime, pandas as pd
 from typing import Dict
 from requests import Session
-from utils import get_day_name
+from utils import get_day_name, str_to_datetime
 
 
 class TidesScraper(object):
@@ -28,7 +28,34 @@ class TidesScraper(object):
         }
         self.session = Session()
 
-    def scrape(self) -> Dict:
+    def scrape_graph(self) -> Dict:
+        response = self.session.get(url=self.link, headers=self.headers)
+        tides = {
+            "datetime": [],
+            "tide": [],
+        }
+        s = BeautifulSoup(response.text, "html.parser")
+        tables = s.select("table.table.table-bordered")
+        days_string = [day_h3.text for day_h3 in s.select("h3")][2:]
+        for table, day_string in zip(tables, days_string):
+            format_day = "%A %d %B %Y"
+            tide_date = str_to_datetime(day_string, format_day).date()
+            tablebody = table.find("tbody")
+            rows = tablebody.find_all("tr")
+            for row in rows:
+                cells = row.find_all("td")
+                for cell in cells:
+                    if cell.text == "pleamar" or cell.text == "bajamar":
+                        current_sea_state = cell.text
+                        tides["tide"].append(current_sea_state)
+                    elif ":" in cell.text:
+                        format_time = "%H:%M"
+                        tide_time = str_to_datetime(cell.text, format_time).time()
+                        tide_datetime_str = f"{tide_date} {tide_time}"
+                        tides["datetime"].append(tide_datetime_str)
+        return pd.DataFrame(tides)
+
+    def scrape_table(self) -> Dict:
         response = self.session.get(url=self.link, headers=self.headers)
         hours_dict = {}
         s = BeautifulSoup(response.text, "html.parser")
@@ -41,9 +68,7 @@ class TidesScraper(object):
             for row in rows:
                 cells = row.find_all("td")
                 for cell in cells:
-                    if (
-                        cell.text == "pleamar" or cell.text == "bajamar"
-                    ):  # TODO poner aqui directamente subiendo hasta las o bajando hasta las
+                    if cell.text == "pleamar" or cell.text == "bajamar":
                         hora.append(cell.text.replace("amar", ""))
                     elif ":" in cell.text:
                         ple_baj = hora.pop()

@@ -15,8 +15,7 @@ from urls.windguru import WINDGURU_URLS
 from urls.wisuki import WISUKI_URLS
 from urls.windyapp import WINDYAPP_URLS
 from utils import combine_df
-from front.more import plot_forecast
-from front.one import plot_tides
+from front.together.together import plot_forecast_as_table
 
 scraper_objects = [
     {
@@ -51,5 +50,4 @@ scraper_objects = [
     },
 ]
 if __name__ == "__main__":
-    plot_forecast(scraper_objects)
-    plot_tides()
+    plot_forecast_as_table(scraper_objects)
