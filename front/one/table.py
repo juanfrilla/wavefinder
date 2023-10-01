@@ -10,6 +10,7 @@ from scrapers.windyapp import WindyApp
 from scrapers.wisuki import Wisuki
 from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
+from APIS.telegram_api import TelegramBot
 
 
 # DEFAULT_MIN_WAVE_HEIGHT = 1.30
@@ -69,6 +70,17 @@ def load_forecast(urls):
         df = multithread.scrape_multiple_requests(urls, WindFinder())
     elif "windguru" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, Windguru())
+        # api_token =st.secrets["TELEGRAM_API_TOKEN"] 
+        # chat_id = st.secrets["TELEGRAM_CHAT_ID"]
+        # telegram_bot = TelegramBot(api_token, chat_id)
+        # #TODO si hay mayor que tal y cual envia mensaje
+        # condition = df['wave_height'] >= 1.5
+        # filtered_data = df[condition]
+        # result_strings = filtered_data.apply(lambda row: f"{row['spot_name']} - {row['datetime']}", axis=1)
+        # # Print or save the result_strings as needed
+        # for string in result_strings:
+        #     telegram_bot.send_message(string)
+            
     elif "surf-forecast" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, SurfForecast())
     elif "surfline" in urls[0]:
