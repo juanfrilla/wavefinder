@@ -12,8 +12,8 @@ from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
 
 
-#DEFAULT_MIN_WAVE_HEIGHT = 1.30
-#DEFAULT_MIN_WAVE_HEIGHT = 1.0
+# DEFAULT_MIN_WAVE_HEIGHT = 1.30
+# DEFAULT_MIN_WAVE_HEIGHT = 1.0
 DEFAULT_MIN_WAVE_PERIOD = 7
 
 
@@ -62,7 +62,7 @@ def plot_selected_wave_period():
     )
 
 
-@st.cache_data(ttl=7200)
+@st.cache_data(ttl=7200, persist="disk")
 def load_forecast(urls):
     start_time = time.time()
     if "windfinder" in urls[0]:
@@ -83,6 +83,7 @@ def load_forecast(urls):
     print("--- %s seconds ---" % (time.time() - start_time))
 
     return df
+
 
 def load_tides():
     start_time = time.time()
