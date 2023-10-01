@@ -119,6 +119,7 @@ def plot_forecast_as_table(urls):
 
     initial_forecast = load_forecast(urls)
     st.session_state.forecast_df = initial_forecast
+    st.session_state.forecast_graph = initial_forecast
     if st.session_state.forecast_df.empty:
         st.write("The DataFrame is empty.")
     else:
@@ -172,11 +173,15 @@ def plot_forecast_as_table(urls):
 
         # --- GROUP DATAFRAME AFTER SELECTION
         st.session_state.forecast_df = st.session_state.forecast_df[mask]
+        
+        
+        mask_graph = st.session_state.forecast_graph["spot_name"].isin(beach_selection)
+        st.session_state.forecast_graph = st.session_state.forecast_graph[mask_graph]
 
         try:
             st.header("Altura por día", divider="rainbow")
             st.line_chart(
-                initial_forecast,
+                st.session_state.forecast_graph,
                 x="datetime",
                 y="wave_height",
                 color="spot_name",

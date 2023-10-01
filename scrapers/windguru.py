@@ -68,7 +68,7 @@ class Windguru(object):
     def parse_spot_names(self, soup, total_records):
         return [self.parse_spot_name(soup) for _ in range(total_records)]
 
-    def get_dataframe_from_soup(self, soup: BeautifulSoup) -> Dict:
+    def get_dataframe_from_soup(self, soup: BeautifulSoup, url: str, index: int) -> Dict:
         forecast = {}
         table = soup.find("table", class_="tabulka")
         tablebody = table.find("tbody")
@@ -96,14 +96,14 @@ class Windguru(object):
             total_records = len(max(forecast.items(), key=lambda item: len(item[1]))[1])
         except Exception as e:
             st.write("QUEEE FUEE")
-            st.write(soup)
-            st.write(forecast)
+            st.write(url)
+            st.write(index)
         forecast["spot_name"] = self.parse_spot_names(soup, total_records)
         forecast = self.format_forecast(forecast)
         return pd.DataFrame(forecast)
 
-    def process_soup(self, soup):
-        df = self.get_dataframe_from_soup(soup)
+    def process_soup(self, soup, url, index):
+        df = self.get_dataframe_from_soup(soup, url, index)
         return self.format_dataframe(df)
 
     def parse_number_from_text(self, text):
@@ -136,10 +136,11 @@ class Windguru(object):
         # Hacerlo en menos lineas comprobando que la hora es de noche
         df = df.drop(
             df[
-                (df["time"] == "03h")
-                | (df["time"] == "04h")
-                | (df["time"] == "05h")
-                | (df["time"] == "21h")
+                (df["time"] == "03:00")
+                | (df["time"] == "04:00")
+                | (df["time"] == "05:00")
+                | (df["time"] == "21:00")
+                | (df["time"] == "22:00")
             ].index
         )
         return df
@@ -161,6 +162,6 @@ class Windguru(object):
 
         return date_datetime.strftime("%d/%m/%Y")
 
-    def scrape(self, browser, url):
+    def scrape(self, browser, url, index):
         soup = self.beach_request(browser, url)
-        return self.process_soup(soup)
+        return self.process_soup(soup, url, index)
