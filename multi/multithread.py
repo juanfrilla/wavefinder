@@ -4,7 +4,7 @@ import pandas as pd
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from time import sleep
 
-
+#TODO : cambiar a yields para liberar memoria
 def scrape_multiple_browser(urls, object):
     forecast = pd.DataFrame()
     results = []
@@ -12,9 +12,9 @@ def scrape_multiple_browser(urls, object):
         for index, url in enumerate(urls):
             results.append(object.scrape(browser, url, index))
 
-        for url, content in zip(urls, results):
-            df = utils.handle_wind(content)
-            forecast = utils.combine_df(df, forecast)
+    for url, content in zip(urls, results):
+        df = utils.handle_wind(content)
+        forecast = utils.combine_df(df, forecast)
 
     return forecast
 
