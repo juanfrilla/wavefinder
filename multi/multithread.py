@@ -3,6 +3,7 @@ import utils
 import pandas as pd
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from time import sleep
+import streamlit as st
 
 
 def scrape_multiple_browser(urls, object):
@@ -15,6 +16,7 @@ def scrape_multiple_browser(urls, object):
         for url, content in zip(urls, results):
             df = utils.handle_wind(content)
             forecast = utils.combine_df(df, forecast)
+            st.write(url)
 
     return forecast
 
