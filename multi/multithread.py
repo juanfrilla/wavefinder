@@ -9,14 +9,14 @@ from time import sleep
 def scrape_multiple_browser(urls, _object):
     forecast = pd.DataFrame()
     results = []
-    try:
-        browser = utils.open_browser()
-        for index, url in enumerate(urls):
+    for index, url in enumerate(urls):
+        try:
+            browser = utils.open_browser()
             result = _object.scrape(browser, url, index)
             results.append(result)
-    finally:
-        browser.close()
-        browser.quit()
+        finally:
+            browser.close()
+            browser.quit()
 
     for url, content in zip(urls, results):
         df = utils.handle_wind(content)
