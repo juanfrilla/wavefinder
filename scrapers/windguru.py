@@ -12,6 +12,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import streamlit as st
 
+
 class Windguru(object):
     def __init__(self):
         pass
@@ -68,7 +69,9 @@ class Windguru(object):
     def parse_spot_names(self, soup, total_records):
         return [self.parse_spot_name(soup) for _ in range(total_records)]
 
-    def get_dataframe_from_soup(self, soup: BeautifulSoup, url: str, index: int) -> Dict:
+    def get_dataframe_from_soup(
+        self, soup: BeautifulSoup, url: str, index: int
+    ) -> Dict:
         forecast = {}
         table = soup.find("table", class_="tabulka")
         tablebody = table.find("tbody")
@@ -92,15 +95,12 @@ class Windguru(object):
                     else:
                         value = cell.get_text()
                     forecast[id].append(value)
-        try:
+        if forecast != {}:
             total_records = len(max(forecast.items(), key=lambda item: len(item[1]))[1])
-        except Exception as e:
-            st.write("QUEEE FUEE")
-            st.write(url)
-            st.write(index)
-        forecast["spot_name"] = self.parse_spot_names(soup, total_records)
-        forecast = self.format_forecast(forecast)
-        return pd.DataFrame(forecast)
+            forecast["spot_name"] = self.parse_spot_names(soup, total_records)
+            forecast = self.format_forecast(forecast)
+            return pd.DataFrame(forecast)
+        return pd.DataFrame()
 
     def process_soup(self, soup, url, index):
         df = self.get_dataframe_from_soup(soup, url, index)
@@ -132,17 +132,18 @@ class Windguru(object):
                 for i in range(len(forecast[forecast_value]))
             ]
 
-    def format_dataframe(self, df):
+    def format_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
         # Hacerlo en menos lineas comprobando que la hora es de noche
-        df = df.drop(
-            df[
-                (df["time"] == "03:00")
-                | (df["time"] == "04:00")
-                | (df["time"] == "05:00")
-                | (df["time"] == "21:00")
-                | (df["time"] == "22:00")
-            ].index
-        )
+        if not df.empty:
+            df = df.drop(
+                df[
+                    (df["time"] == "03:00")
+                    | (df["time"] == "04:00")
+                    | (df["time"] == "05:00")
+                    | (df["time"] == "21:00")
+                    | (df["time"] == "22:00")
+                ].index
+            )
         return df
 
     def datestr_to_backslashformat(self, input_text):

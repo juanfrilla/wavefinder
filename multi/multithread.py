@@ -3,24 +3,25 @@ import utils
 import pandas as pd
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from time import sleep
-import streamlit as st
 
-#TODO : cambiar a yields para liberar memoria
-@st.cache_data(ttl=7200)
+
+# TODO : cambiar a yields para liberar memoria
 def scrape_multiple_browser(urls, _object):
-    st.session_state.forecast = pd.DataFrame()
-    st.session_state.results = []
+    forecast = pd.DataFrame()
+    results = []
     with utils.open_browser() as browser:
         for index, url in enumerate(urls):
-            st.session_state.results.append(_object.scrape(browser, url, index))
+            result = _object.scrape(browser, url, index)
+            results.append(result)
 
-    for url, content in zip(urls, st.session_state.results):
+    for url, content in zip(urls, results):
         df = utils.handle_wind(content)
-        st.session_state.forecast = utils.combine_df(df, st.session_state.forecast)
+        if not df.empty:
+            forecast = utils.combine_df(df, forecast)
 
-    return st.session_state.forecast
+    return forecast
 
-@st.cache_data(ttl=7200)
+
 def scrape_multiple_requests(urls, _object, batch_size=8):
     forecast = pd.DataFrame()
     dfs = []

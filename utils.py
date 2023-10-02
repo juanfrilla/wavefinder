@@ -306,28 +306,29 @@ def obtain_minimum_len_of_dict_values(data: dict):
 
 
 def handle_wind(df: pd.DataFrame) -> pd.DataFrame:
-    wind_speed = df["wind_speed"].astype(float)
+    if not df.empty:
+        wind_speed = df["wind_speed"].astype(float)
 
-    WIND_STATUS_HIGH_10 = (df["wind_status"] == "Offshore") | (
-        df["wind_status"] == "Cross-off"
-    )
+        WIND_STATUS_HIGH_10 = (df["wind_status"] == "Offshore") | (
+            df["wind_status"] == "Cross-off"
+        )
 
-    WIND_STATUS_LESS_10 = (df["wind_status"] != "Offshore") & (
-        df["wind_status"] != "Cross-off"
-    )
-    WIND_SPEED_LESS_10 = wind_speed <= 10
+        WIND_STATUS_LESS_10 = (df["wind_status"] != "Offshore") & (
+            df["wind_status"] != "Cross-off"
+        )
+        WIND_SPEED_LESS_10 = wind_speed <= 10
 
-    wind_ok = (WIND_STATUS_LESS_10 & WIND_SPEED_LESS_10) | (WIND_STATUS_HIGH_10)
+        wind_ok = (WIND_STATUS_LESS_10 & WIND_SPEED_LESS_10) | (WIND_STATUS_HIGH_10)
 
-    default = "Viento No Favorable"
+        default = "Viento No Favorable"
 
-    str_list = ["Viento Favorable"]
+        str_list = ["Viento Favorable"]
 
-    df["wind_approval"] = np.select(
-        [wind_ok],
-        str_list,
-        default=default,
-    )
+        df["wind_approval"] = np.select(
+            [wind_ok],
+            str_list,
+            default=default,
+        )
     return df
 
 

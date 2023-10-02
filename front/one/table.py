@@ -62,7 +62,7 @@ def plot_selected_wave_period():
         1,
     )
 
-
+@st.cache_data(ttl=7200)
 def load_forecast(urls):
     start_time = time.time()
     if "windfinder" in urls[0]:
