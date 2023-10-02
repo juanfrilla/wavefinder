@@ -12,3 +12,4 @@ Mejorar lo que tengo con altair, que cuando te coloques (hover) en un punto apar
 Eliminar días en table y poner solo hoy, mañana, pasado y otro día
 Hacer algo para no tener tantos mains
 Hacer que sea lo más visual posible, mapa de viento quizás
+Arreglar el navegador bucle infinito hasta que escrapee
