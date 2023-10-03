@@ -62,6 +62,7 @@ def plot_selected_wave_period():
         1,
     )
 
+
 @st.cache_data(ttl=7200)
 def load_forecast(urls):
     start_time = time.time()
@@ -69,7 +70,7 @@ def load_forecast(urls):
         df = multithread.scrape_multiple_requests(urls, WindFinder())
     elif "windguru" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, Windguru())
-        # api_token =st.secrets["TELEGRAM_API_TOKEN"] 
+        # api_token =st.secrets["TELEGRAM_API_TOKEN"]
         # chat_id = st.secrets["TELEGRAM_CHAT_ID"]
         # telegram_bot = TelegramBot(api_token, chat_id)
         # #TODO si hay mayor que tal y cual envia mensaje
@@ -79,7 +80,7 @@ def load_forecast(urls):
         # # Print or save the result_strings as needed
         # for string in result_strings:
         #     telegram_bot.send_message(string)
-            
+
     elif "surf-forecast" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, SurfForecast())
     elif "surfline" in urls[0]:
@@ -184,8 +185,7 @@ def plot_forecast_as_table(urls):
 
         # --- GROUP DATAFRAME AFTER SELECTION
         st.session_state.forecast_df = st.session_state.forecast_df[mask]
-        
-        
+
         mask_graph = st.session_state.forecast_graph["spot_name"].isin(beach_selection)
         st.session_state.forecast_graph = st.session_state.forecast_graph[mask_graph]
 
@@ -199,6 +199,29 @@ def plot_forecast_as_table(urls):
             )
         except:
             pass
+
+        try:
+            st.header("Estado del viento por día", divider="rainbow")
+            st.bar_chart(
+                st.session_state.forecast_df,
+                x="datetime",
+                y="spot_name",
+                color="wind_status",
+            )
+        except:
+            pass
+        
+        try:
+            st.header("Dirección del viento por día", divider="rainbow")
+            st.bar_chart(
+                st.session_state.forecast_graph,
+                x="datetime",
+                y="spot_name",
+                color="wind_direction",
+            )
+        except:
+            pass
+        
 
         grouped_data = st.session_state.forecast_df.groupby("spot_name")
         # Display tables for each group

@@ -8,8 +8,10 @@ TODO: Unificar más las páginas en hoy, mañana y pasado, o con multiprocesos, 
 Seleccionar hoy, mañana y pasado
 Refactorizar
 Cambiar pandas por polars
-Mejorar lo que tengo con altair, que cuando te coloques (hover) en un punto aparezca toda la info de la fila del dataframe
+Mejorar la gráfica con altair, que cuando te coloques (hover) en un punto aparezca toda la info de la fila del dataframe
 Eliminar días en table y poner solo hoy, mañana, pasado y otro día
 Hacer algo para no tener tantos mains
 Hacer que sea lo más visual posible, mapa de viento quizás
 Arreglar el navegador bucle infinito hasta que escrapee
+Esconder o enseñar elementos de la página (seleccionar gráfica, tabla o las dos)
+Intentar hacer que al rodar el slider cambien las gráficas
