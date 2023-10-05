@@ -11,7 +11,7 @@ from scrapers.wisuki import Wisuki
 from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
 from APIS.telegram_api import TelegramBot
-
+import altair as alt
 
 # DEFAULT_MIN_WAVE_HEIGHT = 1.30
 # DEFAULT_MIN_WAVE_HEIGHT = 1.0
@@ -191,14 +191,27 @@ def plot_forecast_as_table(urls):
 
         try:
             st.header("Altura por día", divider="rainbow")
-            st.line_chart(
-                st.session_state.forecast_graph,
-                x="datetime",
-                y="wave_height",
-                color="spot_name",
+
+            # Replace this with your data source
+            data = st.session_state.forecast_graph
+
+            # Create an Altair chart
+            chart = (
+                alt.Chart(data)
+                .mark_line()
+                .encode(
+                    x="datetime:T",
+                    y="wave_height:Q",
+                    color="spot_name:N",
+                )
+                .properties(width=600, height=400)
             )
-        except:
-            pass
+
+            # Display the chart using Streamlit's Altair component
+            st.altair_chart(chart, use_container_width=True)
+
+        except Exception as e:
+            st.write("An error occurred:", e)
 
         try:
             st.header("Aprobación del viento por día", divider="rainbow")
