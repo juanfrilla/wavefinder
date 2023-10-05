@@ -12,6 +12,7 @@ from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
 from APIS.telegram_api import TelegramBot
 import altair as alt
+import pandas as pd
 
 # DEFAULT_MIN_WAVE_HEIGHT = 1.30
 # DEFAULT_MIN_WAVE_HEIGHT = 1.0
@@ -63,7 +64,7 @@ def plot_selected_wave_period():
     )
 
 
-@st.cache_data(ttl=7200)
+@st.cache_data(ttl="1h")
 def load_forecast(urls):
     start_time = time.time()
     if "windfinder" in urls[0]:
@@ -189,13 +190,13 @@ def plot_forecast_as_table(urls):
         mask_graph = st.session_state.forecast_graph["spot_name"].isin(beach_selection)
         st.session_state.forecast_graph = st.session_state.forecast_graph[mask_graph]
 
+        # # Extract date and time components
+        # st.session_state.forecast_df['date'] = st.session_state.forecast_df['datetime'].dt.date
+        # st.session_state.forecast_df['time'] = st.session_state.forecast_df['datetime'].dt.time
+
         try:
             st.header("Altura por día", divider="rainbow")
-
-            # Replace this with your data source
             data = st.session_state.forecast_df
-
-            # Create an Altair chart
             chart = (
                 alt.Chart(data)
                 .mark_line()
@@ -203,15 +204,27 @@ def plot_forecast_as_table(urls):
                     x="datetime:T",
                     y="wave_height:Q",
                     color="spot_name:N",
+                    tooltip=[
+                        "date:T",
+                        "time:T",
+                        "spot_name:N",
+                        "wave_height:Q",
+                        "wind_approval:N",
+                        "wind_status:N",
+                        "wind_direction:N",
+                        "wave_direction:N",
+                        "wave_period:Q",
+                    ],
                 )
                 .properties(width=600, height=400)
-                .configure_legend(orient='right')
+                .configure_legend(orient="right")
             )
 
-            # Display the chart using Streamlit's Altair component
-                # Display the chart using Streamlit's Altair component within a responsive container
-            st.container()  # Use st.container() in older Streamlit versions
-            st.altair_chart(chart)
+            st.container()
+
+            zoomed_chart = chart.interactive().properties(width=600, height=400)
+
+            st.altair_chart(zoomed_chart, use_container_width=True)
 
         except Exception as e:
             st.write("An error occurred:", e)
@@ -226,7 +239,7 @@ def plot_forecast_as_table(urls):
             )
         except:
             pass
-        
+
         try:
             st.header("Estado del viento por día", divider="rainbow")
             st.bar_chart(
@@ -237,7 +250,7 @@ def plot_forecast_as_table(urls):
             )
         except:
             pass
-        
+
         try:
             st.header("Dirección del viento por día", divider="rainbow")
             st.bar_chart(
@@ -248,15 +261,11 @@ def plot_forecast_as_table(urls):
             )
         except:
             pass
-        
 
         grouped_data = st.session_state.forecast_df.groupby("spot_name")
-        # Display tables for each group
         with st.container():
             for spot_name, group_df in grouped_data:
                 st.subheader(f"Spot: {spot_name}")
-
-                # Drop the "spot_name" column from the group DataFrame
                 group_df = group_df.drop(columns=["spot_name"])
 
                 st.dataframe(
