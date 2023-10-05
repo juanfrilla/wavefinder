@@ -172,27 +172,28 @@ def get_day_name(days_to_add: float) -> str:
 
 
 def final_forecast_format(df):
-    df["date"] = pd.to_datetime(df["date"], format="%d/%m/%Y")
-    df["time"] = pd.to_datetime(df["time"], format="%H:%M").dt.time
-    df["datetime"] = pd.to_datetime(
-        df["date"].dt.strftime("%Y-%m-%d") + " " + df["time"].astype(str)
-    )
-    df.drop(["date", "time"], axis=1, inplace=True)
-    df.sort_values(by=["datetime", "spot_name"], ascending=[True, True])
+    if not df.empty:
+        df["date"] = pd.to_datetime(df["date"], format="%d/%m/%Y")
+        df["time"] = pd.to_datetime(df["time"], format="%H:%M").dt.time
+        df["datetime"] = pd.to_datetime(
+            df["date"].dt.strftime("%Y-%m-%d") + " " + df["time"].astype(str)
+        )
+        df.drop(["date", "time"], axis=1, inplace=True)
+        df.sort_values(by=["datetime", "spot_name"], ascending=[True, True])
 
-    df = df[
-        [
-            "datetime",
-            "spot_name",
-            "wind_status",
-            "wave_height",
-            "wave_period",
-            "wind_direction",
-            "wave_direction",
-            "wind_speed",
-            "wind_approval",
+        df = df[
+            [
+                "datetime",
+                "spot_name",
+                "wind_status",
+                "wave_height",
+                "wave_period",
+                "wind_direction",
+                "wave_direction",
+                "wind_speed",
+                "wind_approval",
+            ]
         ]
-    ]
     return df
 
 
