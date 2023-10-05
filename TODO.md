@@ -15,3 +15,4 @@ Hacer que sea lo más visual posible, mapa de viento quizás
 Arreglar el navegador bucle infinito hasta que escrapee
 Esconder o enseñar elementos de la página (seleccionar gráfica, tabla o las dos)
 Intentar hacer que al rodar el slider cambien las gráficas
+Poner un color definido a lo bueno y a lo malo en las gráficas
