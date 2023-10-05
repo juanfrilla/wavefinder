@@ -201,6 +201,17 @@ def plot_forecast_as_table(urls):
             pass
 
         try:
+            st.header("Aprobación del viento por día", divider="rainbow")
+            st.bar_chart(
+                st.session_state.forecast_df,
+                x="datetime",
+                y="spot_name",
+                color="wind_approval",
+            )
+        except:
+            pass
+        
+        try:
             st.header("Estado del viento por día", divider="rainbow")
             st.bar_chart(
                 st.session_state.forecast_df,
