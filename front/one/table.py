@@ -193,7 +193,7 @@ def plot_forecast_as_table(urls):
             st.header("Altura por día", divider="rainbow")
 
             # Replace this with your data source
-            data = st.session_state.forecast_graph
+            data = st.session_state.forecast_df
 
             # Create an Altair chart
             chart = (
@@ -205,10 +205,13 @@ def plot_forecast_as_table(urls):
                     color="spot_name:N",
                 )
                 .properties(width=600, height=400)
+                .configure_legend(orient='right')
             )
 
             # Display the chart using Streamlit's Altair component
-            st.altair_chart(chart, use_container_width=True)
+                # Display the chart using Streamlit's Altair component within a responsive container
+            st.container()  # Use st.container() in older Streamlit versions
+            st.altair_chart(chart)
 
         except Exception as e:
             st.write("An error occurred:", e)
