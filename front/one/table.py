@@ -205,8 +205,7 @@ def plot_forecast_as_table(urls):
                     y="wave_height:Q",
                     color="spot_name:N",
                     tooltip=[
-                        "date:T",
-                        "time:T",
+                        "datetime:T",
                         "spot_name:N",
                         "wave_height:Q",
                         "wind_approval:N",
