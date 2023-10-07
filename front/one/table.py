@@ -113,7 +113,7 @@ def plot_forecast_as_table(urls):
         st.title("SOUTH COAST OF LANZAROTE (WINDFINDER)")
     elif "windguru" in urls[0]:
         default_wave_height = 1.0
-        st.title("NORTH COAST OF LANZAROTE (WINDGURU)")
+        st.title("SPOTS DE SURF LANZAROTE (WINDGURU)")
     elif "surf-forecast" in urls[0]:
         default_wave_height = 1.0
         st.title("NORTH COAST OF LANZAROTE (SURF-FORECAST)")
