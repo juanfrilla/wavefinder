@@ -230,34 +230,46 @@ def plot_forecast_as_table(urls):
 
         try:
             st.header("Aprobación del viento por día", divider="rainbow")
-            st.bar_chart(
-                st.session_state.forecast_graph,
-                x="datetime",
-                y="spot_name",
-                color="wind_approval",
+            chart = (
+                alt.Chart(st.session_state.forecast_df)
+                .mark_bar()
+                .encode(
+                    x="datetime",
+                    y="spot_name",
+                    color="wind_approval:N",
+                )
             )
+            st.altair_chart(chart, use_container_width=True)
         except:
             pass
 
         try:
             st.header("Estado del viento por día", divider="rainbow")
-            st.bar_chart(
-                st.session_state.forecast_graph,
-                x="datetime",
-                y="spot_name",
-                color="wind_status",
+            chart = (
+                alt.Chart(st.session_state.forecast_df)
+                .mark_bar()
+                .encode(
+                    x="datetime",
+                    y="spot_name",
+                    color="wind_status:N",
+                )
             )
+            st.altair_chart(chart, use_container_width=True)
         except:
             pass
 
         try:
             st.header("Dirección del viento por día", divider="rainbow")
-            st.bar_chart(
-                st.session_state.forecast_graph,
-                x="datetime",
-                y="spot_name",
-                color="wind_direction",
+            chart = (
+                alt.Chart(st.session_state.forecast_df)
+                .mark_bar()
+                .encode(
+                    x="datetime",
+                    y="spot_name",
+                    color="wind_direction:N",
+                )
             )
+            st.altair_chart(chart, use_container_width=True)
         except:
             pass
 
