@@ -19,7 +19,7 @@ class Windguru(object):
 
     def beach_request(self, browser, url):
         r_text = render_html(
-            browser=browser, url=url, tag_to_wait="div.nadlegend", timeout=60 * 1000
+            browser=browser, url=url, tag_to_wait="table.tabulka", timeout=60 * 1000
         )
         return BeautifulSoup(r_text, "html.parser")
 
