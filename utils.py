@@ -7,6 +7,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import numpy as np
 import streamlit as st
 
@@ -142,6 +143,7 @@ def open_browser():
     options.add_argument("--disable-features=NetworkService")
     options.add_argument("--window-size=1920x1080")
     options.add_argument("--disable-features=VizDisplayCompositor")
+    options.page_load_strategy = "eager"
     browser = webdriver.Chrome(options=options)
     return browser
 
