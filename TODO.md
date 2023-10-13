@@ -17,3 +17,5 @@ Esconder o enseñar elementos de la página (seleccionar gráfica, tabla o las d
 Intentar hacer que al rodar el slider cambien las gráficas
 Poner un color definido a lo bueno y a lo malo en las gráficas
 Ponerle mareas, subiendo o bajando
+ponerle el concurrent.futures.ThreadPoolExecutor para los selenium a la vez y mirar el consumo de recursos siguiendo las guias de streamlit
+(https://blog.streamlit.io/3-steps-to-fix-app-memory-leaks/, https://blog.streamlit.io/common-app-problems-resource-limits/)
