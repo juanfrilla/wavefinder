@@ -151,11 +151,9 @@ def open_browser():
 
 def render_html(browser, url, tag_to_wait=None, timeout=10):
     browser.get(url)
-    sleep(3)
     if tag_to_wait:
-        WebDriverWait(browser, timeout).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
-        )
+        element = WebDriverWait(browser, timeout).until(lambda x: x.find_element(By.CSS_SELECTOR, tag_to_wait))
+        assert element
     html_content = browser.page_source
     return html_content
 
