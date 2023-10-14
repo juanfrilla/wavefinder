@@ -10,6 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 import numpy as np
 import streamlit as st
+from time import sleep
 
 MONTH_MAPPING = {
     "Ene": "01",
@@ -150,6 +151,7 @@ def open_browser():
 
 def render_html(browser, url, tag_to_wait=None, timeout=10):
     browser.get(url)
+    sleep(timeout)
     if tag_to_wait:
         WebDriverWait(browser, timeout).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
