@@ -145,6 +145,15 @@ def open_browser():
     options.add_argument("--window-size=1920x1080")
     options.add_argument("--disable-features=VizDisplayCompositor")
     options.page_load_strategy = "eager"
+    options.add_experimental_option(
+        "prefs",
+        {
+            # block image loading
+            "profile.managed_default_content_settings.images": 2,
+        },
+    )
+    options.add_argument("blink-settings=imagesEnabled=false")
+
     browser = webdriver.Chrome(options=options)
     return browser
 
@@ -152,7 +161,9 @@ def open_browser():
 def render_html(browser, url, tag_to_wait=None, timeout=10):
     browser.get(url)
     if tag_to_wait:
-        element = WebDriverWait(browser, timeout).until(lambda x: x.find_element(By.CSS_SELECTOR, tag_to_wait))
+        element = WebDriverWait(browser, timeout).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
+        )
         assert element
     html_content = browser.page_source
     return html_content
