@@ -17,8 +17,6 @@ def scrape_multiple_browser(urls, _object):
     finally:
         browser.close()
         browser.quit()
-    assert len(results) == len(urls)
-    #assert all(not df.empty for df in results)
     for url, content in zip(urls, results):
         df = utils.handle_wind(content)
         if not df.empty:
