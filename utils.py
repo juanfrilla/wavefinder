@@ -158,15 +158,22 @@ def open_browser():
     return browser
 
 
-def render_html(browser, url, tag_to_wait=None, timeout=10):
-    browser.get(url)
-    if tag_to_wait:
-        element = WebDriverWait(browser, timeout).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
-        )
-        assert element
-    html_content = browser.page_source
-    return html_content
+def render_html(url, tag_to_wait=None, timeout=10):
+    try:
+        browser = open_browser()
+        browser.get(url)
+        if tag_to_wait:
+            element = WebDriverWait(browser, timeout).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
+            )
+            assert element
+        html_content = browser.page_source
+        return html_content
+    except Exception as e:
+        raise e
+    finally:
+        browser.close()
+        browser.quit()
 
 
 def rename_key(dictionary, old_key, new_key):

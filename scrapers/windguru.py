@@ -17,10 +17,8 @@ class Windguru(object):
     def __init__(self):
         pass
 
-    def beach_request(self, browser, url):
-        r_text = render_html(
-            browser=browser, url=url, tag_to_wait="table.tabulka", timeout=60 * 1000
-        )
+    def beach_request(self, url):
+        r_text = render_html(url=url, tag_to_wait="table.tabulka", timeout=60 * 1000)
         return BeautifulSoup(r_text, "html.parser")
 
     def format_forecast(self, forecast: Dict) -> Dict:
@@ -70,7 +68,8 @@ class Windguru(object):
         return [self.parse_spot_name(soup) for _ in range(total_records)]
 
     def get_dataframe_from_soup(
-        self, soup: BeautifulSoup, url: str, index: int
+        self,
+        soup: BeautifulSoup,
     ) -> Dict:
         forecast = {}
         table = soup.find("table", class_="tabulka")
@@ -102,8 +101,8 @@ class Windguru(object):
             return pd.DataFrame(forecast)
         return pd.DataFrame()
 
-    def process_soup(self, soup, url, index):
-        df = self.get_dataframe_from_soup(soup, url, index)
+    def process_soup(self, soup):
+        df = self.get_dataframe_from_soup(soup)
         return self.format_dataframe(df)
 
     def parse_number_from_text(self, text):
@@ -163,6 +162,6 @@ class Windguru(object):
 
         return date_datetime.strftime("%d/%m/%Y")
 
-    def scrape(self, browser, url, index):
-        soup = self.beach_request(browser, url)
-        return self.process_soup(soup, url, index)
+    def scrape(self, url):
+        soup = self.beach_request(url)
+        return self.process_soup(soup)

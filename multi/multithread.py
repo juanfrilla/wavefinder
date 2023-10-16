@@ -3,22 +3,19 @@ import utils
 import pandas as pd
 from streamlit.runtime.scriptrunner import add_script_run_ctx
 from time import sleep
+import concurrent.futures
+import os
 
 
-# TODO : cambiar a yields para liberar memoria
 def scrape_multiple_browser(urls, _object):
     forecast = pd.DataFrame()
-    results = []
-    for index, url in enumerate(urls):
-        try:
-            browser = utils.open_browser()
-            result = _object.scrape(browser, url, index)
-        finally:
-            browser.close()
-            browser.quit()
-            results.append(result)
-    for url, content in zip(urls, results):
-        df = utils.handle_wind(content)
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=os.cpu_count() - 1
+    ) as executor:
+        results = list(executor.map(_object.scrape, urls))
+
+    for result in results:
+        df = utils.handle_wind(result)
         if not df.empty:
             forecast = utils.combine_df(df, forecast)
 
