@@ -16,10 +16,8 @@ class WindyApp(object):
     def __init__(self):
         pass
 
-    def beach_request(self, browser, url, timeout=10):
-        r_text = render_html(
-            browser=browser, url=url, tag_to_wait="tr.windywidgetdays", timeout=timeout
-        )
+    def beach_request(self, url, timeout=10):
+        r_text = render_html(url=url, tag_to_wait="tr.windywidgetdays", timeout=timeout)
         return BeautifulSoup(r_text, "html.parser")
 
     def parse_formated_time(self, soup: BeautifulSoup) -> list:
@@ -148,6 +146,6 @@ class WindyApp(object):
             "div.row > div.col-12.col-md-12.col-widget.px-0.px-sm-3.forecast-widget-wrapper"
         )[0]
 
-    def scrape(self, browser, url):
-        soup = self.beach_request(browser, url, 60)
+    def scrape(self, url):
+        soup = self.beach_request(url, 60)
         return self.process_soup(soup)
