@@ -41,5 +41,5 @@ def scrape_multiple_requests(urls, _object, batch_size=8):
             df = utils.handle_wind(df)
             dfs.append(df)
             forecast = utils.combine_df(forecast, df)
-            sleep(10)
+            #sleep(10)
     return forecast

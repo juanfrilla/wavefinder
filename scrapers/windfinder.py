@@ -10,7 +10,10 @@ from utils import (
 )
 import json
 import re
-#import chompjs
+import ast
+
+# import chompjs
+
 
 class WindFinder(object):
     def __init__(self):
@@ -53,23 +56,11 @@ class WindFinder(object):
     def parse_spot_name(self, soup):
         return soup.select("span#spotheader-spotname")[0].text.strip()
 
-    def parse_wave_directions(self, soup):
-        wave_direction_arrows = soup.select(
-            "div.directionarrow.icon-direction-stroke-grey"
-        )
-        return [
-            self.format_direction_arrow(wave_direction_arrow)
-            for wave_direction_arrow in wave_direction_arrows
-        ]
+    def parse_wave_directions(self, fetched_list):
+        return [angle_to_direction(int(element["wad"])) for element in fetched_list]
 
-    def parse_wind_directions(self, soup):
-        wind_direction_arrows = soup.select(
-            "div.directionarrow.icon-direction-solid-grey"
-        )
-        return [
-            self.format_direction_arrow(wind_direction_arrow)
-            for wind_direction_arrow in wind_direction_arrows
-        ]
+    def parse_wind_directions(self, fetched_list):
+        return [angle_to_direction(int(element["wd"])) for element in fetched_list]
 
     def parse_hour_intervals(self, soup):
         hour_intervals_table = soup.select(
@@ -89,18 +80,14 @@ class WindFinder(object):
             for wave_period_table in wave_periods_table
         ]
 
-    def parse_wave_heights(self, soup):
-        wave_heights_table = soup.select(
-            "div.data-waveheight.data--major.weathertable__cell > span.units-wh"
-        )
-        return [
-            float(self.text_strip(wave_height_table))
-            for wave_height_table in wave_heights_table
-        ]
+    def parse_wave_heights(self, fetched_list):
+        return [float(element["wh"]) for element in fetched_list]
 
-    def parse_wind_speeds(self, soup):
-        wind_speeds_table = soup.select("div.speed > span.data-wrap > span.units-ws")
-        return [float(self.text_strip(wind_speed)) for wind_speed in wind_speeds_table]
+    def parse_wind_speeds(self, fetched_list):
+        return [float(element["ws"]) for element in fetched_list]
+
+    def parse_datetimes(self, fetched_list):
+        return [(element["dtl"]) for element in fetched_list]
 
     def parse_spot_names(self, spot_name, total_records):
         return [spot_name for _ in range(total_records)]
@@ -124,13 +111,13 @@ class WindFinder(object):
             for wave_dir, wind_dir in zip(wave_directions, wind_directions)
         ]
 
-    def format_dataframe(self, df):
-        df = df.drop(
-            df[
-                (df["time"] == "01h") | (df["time"] == "04h") | (df["time"] == "22h")
-            ].index
-        )
-        return df
+    # def format_dataframe(self, df):
+    #     df = df.drop(
+    #         df[
+    #             (df["time"] == "01h") | (df["time"] == "04h") | (df["time"] == "22h")
+    #         ].index
+    #     )
+    #     return df
 
     def sample_soup(self, filename):
         html_content = import_html(filename)
@@ -143,32 +130,37 @@ class WindFinder(object):
             if "window.ctx.push" in script_text and "fcdata" in script_text.lower():
                 splitted = script_text.split("window.ctx.push(")
                 for splittext in splitted:
-                    without_push_splitted = splittext.replace("window.ctx.push(", "").replace(");", "").split("fcData: [")
+                    without_push_splitted = (
+                        splittext.replace("window.ctx.push(", "")
+                        .replace(");", "")
+                        .split("fcData:")
+                    )
                     if len(without_push_splitted) > 1:
-                        without_push_text = without_push_splitted[1].replace("fcData: [", "").replace("],", "")
-                        print()
-                #TODO javascript de windfinder
-                # pushes = script_text.split("window.ctx.push")
-                # data = json.loads(push)
-                # break
-                
-        wave_directions = self.parse_wave_directions(soup)
-        wind_directions = self.parse_wind_directions(soup)
+                        without_push_text = (
+                            without_push_splitted[1].split("]")[0].strip() + "]"
+                        )
+                        fetched_list = ast.literal_eval(without_push_text)
+
+        wave_directions = self.parse_wave_directions(fetched_list)
+        wind_directions = self.parse_wind_directions(fetched_list)
+        wave_heights = self.parse_wave_heights(fetched_list)
+        wind_speeds = self.parse_wind_speeds(fetched_list)
+        datetimes = self.parse_datetimes(fetched_list)
+        wind_statuses = self.parse_windstatus(wave_directions, wind_directions)
+        wave_periods = self.parse_wave_periods(soup)
+        total_records = len(datetimes)
+        spot_names = self.parse_spot_names(self.parse_spot_name(soup), total_records)
+
         data = {
-            "time": self.parse_hour_intervals(soup),
+            "datetime": datetimes,
             "wave_direction": wave_directions,
             "wind_direction": wind_directions,
-            "wind_status": self.parse_windstatus(wave_directions, wind_directions),
-            "wave_period": self.parse_wave_periods(soup),
-            "wave_height": self.parse_wave_heights(soup),
-            "wind_speed": self.parse_wind_speeds(soup),
+            "wind_status": wind_statuses,
+            "wave_period": wave_periods,
+            "wave_height": wave_heights,
+            "wind_speed": wind_speeds,
+            "spot_name": spot_names,
         }
-        total_records = len(data["time"])
-        data["spot_name"] = self.parse_spot_names(
-            self.parse_spot_name(soup), total_records
-        )
-        data["date"] = self.parse_dates_str(soup, total_records)
-        data = convert_all_values_of_dict_to_min_length(data)
         return data
 
     def get_dataframe_from_soup(self, soup):
@@ -177,7 +169,8 @@ class WindFinder(object):
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)
-        return self.format_dataframe(df)
+        return df
+        #return self.format_dataframe(df)
 
     def scrape(self, url):
         response = self.beach_request(url)

@@ -4,10 +4,11 @@ from utils import (
     convert_all_values_of_dict_to_min_length,
     get_wind_status,
     angle_to_direction,
-    generate_dates
+    generate_dates,
 )
 import pandas as pd
 import re
+from datetime import datetime
 
 
 class Wisuki(object):
@@ -81,7 +82,10 @@ class Wisuki(object):
 
     def parse_formated_waves_period(self, soup: BeautifulSoup) -> list:
         raw_periods = soup.select("td")
-        return [int(raw_period.text) if raw_period.text.strip() != "" else 0 for raw_period in raw_periods]
+        return [
+            int(raw_period.text) if raw_period.text.strip() != "" else 0
+            for raw_period in raw_periods
+        ]
 
     def parse_windstatus(self, wave_directions, wind_directions):
         return [
@@ -91,14 +95,13 @@ class Wisuki(object):
 
     def parse_spot_name(self, soup):
         input = soup.select("title")[0].text.strip()
-        pattern = r'en\s(.*?)\s\|\sWisuki'
+        pattern = r"en\s(.*?)\s\|\sWisuki"
         match = re.search(pattern, input)
 
         if match:
             return match.group(1)
         else:
             raise Exception("Pattern not found in the input string.")
-    
 
     def parse_spot_names(self, spot_name, total_records):
         return [spot_name for _ in range(total_records)]
@@ -109,7 +112,8 @@ class Wisuki(object):
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)
-        return self.format_dataframe(df)
+        return df
+        #return self.format_dataframe(df)
 
     def format_dataframe(self, df):
         df = df.drop(
@@ -134,6 +138,9 @@ class Wisuki(object):
     def parse_wave_rows(self, soup):
         return soup.select("tr.waves")
 
+    def generate_datetimes(self, dates, times):
+        return [datetime.strptime(f"{date} {time}", "%d/%m/%Y %H:%M") for date, time in zip(dates, times)]
+
     def obtain_data(self, soup):
         wind_rows = self.parse_wind_rows(soup)
         wave_rows = self.parse_wave_rows(soup)
@@ -146,9 +153,9 @@ class Wisuki(object):
         )  # este marca el tamaño de la lista
         times = self.parse_formated_time(soup)
         dates = generate_dates(times)
+        datetimes = self.generate_datetimes(dates, times)
         data = {
-            "date": dates,
-            "time": times,
+            "datetime": datetimes,
             "wave_direction": wave_directions,
             "wind_direction": wind_directions,
             "wind_status": self.parse_windstatus(wave_directions, wind_directions),
@@ -156,7 +163,7 @@ class Wisuki(object):
             "wave_height": waves_heigths,
             "wind_speed": wind_speeds,
         }
-        total_records = len(data["time"])
+        total_records = len(data["datetime"])
         data["spot_name"] = self.parse_spot_names(
             self.parse_spot_name(soup), total_records
         )

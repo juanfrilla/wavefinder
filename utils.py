@@ -194,17 +194,15 @@ def get_day_name(days_to_add: float) -> str:
 
 def final_forecast_format(df):
     if not df.empty:
-        df["datetime"] = pd.to_datetime(
-            arg=df["date"].astype(str) + " " + df["time"].astype(str),
-            format="%d/%m/%Y %H:%M",
-        )
+        # df["datetime"] = pd.to_datetime(
+        #     arg=df["date"].astype(str) + " " + df["time"].astype(str),
+        #     format="%d/%m/%Y %H:%M",
+        # )
         # df.drop(["date", "time"], axis=1, inplace=True)
         df.sort_values(by=["datetime", "spot_name"], ascending=[True, True])
 
         df = df[
             [
-                "date",
-                "time",
                 "datetime",
                 "spot_name",
                 "wind_status",

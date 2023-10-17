@@ -45,7 +45,12 @@ class Windguru(object):
         forecast["time"] = [
             dt.split(".")[1].replace("h", ":00") for dt in forecast["datetime"]
         ]
-        del forecast["datetime"]
+        forecast["datetime"] = [
+            datetime.strptime(f"{date} {time}", "%d/%m/%Y %H:%M")
+            for date, time in zip(forecast["date"], forecast["time"])
+        ]
+        del forecast["date"]
+        del forecast["time"]
 
         forecast["wind_status"] = self.parse_windstatus(
             forecast["wave_direction"], forecast["wind_direction"]
@@ -103,7 +108,8 @@ class Windguru(object):
 
     def process_soup(self, soup):
         df = self.get_dataframe_from_soup(soup)
-        return self.format_dataframe(df)
+        return df
+        # return self.format_dataframe(df)
 
     def parse_number_from_text(self, text):
         pattern = r"(\d+)°"
