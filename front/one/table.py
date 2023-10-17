@@ -64,7 +64,7 @@ def plot_selected_wave_period():
     )
 
 
-@st.cache_data(ttl="1h")
+@st.experimental_memo(ttl="1h")
 def load_forecast(urls):
     start_time = time.time()
     if "windfinder" in urls[0]:
@@ -132,7 +132,6 @@ def plot_forecast_as_table(urls):
 
     initial_forecast = load_forecast(urls)
     st.session_state.forecast_df = initial_forecast
-    st.session_state.forecast_graph = initial_forecast
     if st.session_state.forecast_df.empty:
         st.write("The DataFrame is empty.")
     else:
@@ -186,13 +185,6 @@ def plot_forecast_as_table(urls):
 
         # --- GROUP DATAFRAME AFTER SELECTION
         st.session_state.forecast_df = st.session_state.forecast_df[mask]
-
-        mask_graph = st.session_state.forecast_graph["spot_name"].isin(beach_selection)
-        st.session_state.forecast_graph = st.session_state.forecast_graph[mask_graph]
-
-        # # Extract date and time components
-        # st.session_state.forecast_df['date'] = st.session_state.forecast_df['datetime'].dt.date
-        # st.session_state.forecast_df['time'] = st.session_state.forecast_df['datetime'].dt.time
 
         try:
             st.header("Altura por día", divider="rainbow")

@@ -38,11 +38,8 @@ def scrape_multiple_requests(urls, _object, batch_size=8):
 
         for thread in threads:
             df = thread.join()
+            df = utils.handle_wind(df)
             dfs.append(df)
-        sleep(10)
-
-    for df in dfs:
-        df = utils.handle_wind(df)
-        forecast = utils.combine_df(forecast, df)
-
+            forecast = utils.combine_df(forecast, df)
+            sleep(10)
     return forecast

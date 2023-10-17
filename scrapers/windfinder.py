@@ -8,7 +8,9 @@ from utils import (
     convert_datestr_format,
     convert_all_values_of_dict_to_min_length,
 )
-
+import json
+import re
+#import chompjs
 
 class WindFinder(object):
     def __init__(self):
@@ -134,7 +136,22 @@ class WindFinder(object):
         html_content = import_html(filename)
         return BeautifulSoup(html_content, "html.parser")
 
-    def obtain_data(self, soup):
+    def obtain_data(self, soup: BeautifulSoup):
+        script_tags = soup.select("script")
+        for script in script_tags:
+            script_text = script.text
+            if "window.ctx.push" in script_text and "fcdata" in script_text.lower():
+                splitted = script_text.split("window.ctx.push(")
+                for splittext in splitted:
+                    without_push_splitted = splittext.replace("window.ctx.push(", "").replace(");", "").split("fcData: [")
+                    if len(without_push_splitted) > 1:
+                        without_push_text = without_push_splitted[1].replace("fcData: [", "").replace("],", "")
+                        print()
+                #TODO javascript de windfinder
+                # pushes = script_text.split("window.ctx.push")
+                # data = json.loads(push)
+                # break
+                
         wave_directions = self.parse_wave_directions(soup)
         wind_directions = self.parse_wind_directions(soup)
         data = {
