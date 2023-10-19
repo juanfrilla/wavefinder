@@ -23,7 +23,13 @@ class WindyApp(object):
     def parse_formated_time(self, soup: BeautifulSoup) -> list:
         raw_time = soup.select("tr.windywidgethours > td")[1:]
         base_time = datetime(2023, 1, 1, 0, 0)
-        return [base_time + timedelta(hours=int(time.text)) for time in raw_time]
+        return [(base_time + timedelta(hours=int(time.text))).time().strftime("%H:%M") for time in raw_time]
+    
+    def generate_datetimes(self, dates, times):
+        return [
+            datetime.strptime(f"{date} {time}", "%d/%m/%Y %H:%M")
+            for date, time in zip(dates, times)
+        ]
 
     def parse_number_from_style(self, style: str) -> int:
         regex = r"rotate\((\d+)deg\)"
@@ -120,9 +126,9 @@ class WindyApp(object):
         )  # este marca el tamaño de la lista
         times = self.parse_formated_time(soup)
         dates = generate_dates(times)
+        datetimes = self.generate_datetimes(dates, times)
         data = {
-            "date": dates,
-            "time": times,
+            "datetime": datetimes,
             "wave_direction": wave_directions,
             "wind_direction": wind_directions,
             "wind_status": self.parse_windstatus(wave_directions, wind_directions),
@@ -130,7 +136,7 @@ class WindyApp(object):
             "wave_height": waves_heigths,
             "wind_speed": wind_speeds,
         }
-        total_records = len(data["time"])
+        total_records = len(data["datetime"])
         data["spot_name"] = self.parse_spot_names(
             self.parse_spot_name(soup), total_records
         )
