@@ -155,11 +155,7 @@ class SurfForecast(object):
         df = df.drop(df[(df["time"] == "Night")].index)
         return df
 
-    def process_soup(self, soup):
-        df = self.get_dataframe_from_soup(soup)
-        return self.format_dataframe(df)
-
     def scrape(self, url):
         response = self.beach_request(url)
         soup = BeautifulSoup(response.text, "html.parser")
-        return self.process_soup(soup)
+        return self.get_dataframe_from_soup(soup)

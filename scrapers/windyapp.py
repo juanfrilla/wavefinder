@@ -99,10 +99,6 @@ class WindyApp(object):
         data = self.obtain_data(soup)
         return pd.DataFrame(data)
 
-    def process_soup(self, soup):
-        df = self.get_dataframe_from_soup(soup)
-        return self.format_dataframe(df)
-
     def format_dataframe(self, df):
         df = df.drop(
             df[
@@ -148,4 +144,4 @@ class WindyApp(object):
 
     def scrape(self, url):
         soup = self.beach_request(url, 60)
-        return self.process_soup(soup)
+        return self.get_dataframe_from_soup(soup)

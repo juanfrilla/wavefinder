@@ -10,7 +10,6 @@ from utils import (
 import re
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-import streamlit as st
 
 
 class Windguru(object):
@@ -106,11 +105,6 @@ class Windguru(object):
             return pd.DataFrame(forecast)
         return pd.DataFrame()
 
-    def process_soup(self, soup):
-        df = self.get_dataframe_from_soup(soup)
-        return df
-        # return self.format_dataframe(df)
-
     def parse_number_from_text(self, text):
         pattern = r"(\d+)°"
 
@@ -137,20 +131,6 @@ class Windguru(object):
                 for i in range(len(forecast[forecast_value]))
             ]
 
-    def format_dataframe(self, df: pd.DataFrame) -> pd.DataFrame:
-        # Hacerlo en menos lineas comprobando que la hora es de noche
-        if not df.empty:
-            df = df.drop(
-                df[
-                    (df["time"] == "03:00")
-                    | (df["time"] == "04:00")
-                    | (df["time"] == "05:00")
-                    | (df["time"] == "21:00")
-                    | (df["time"] == "22:00")
-                ].index
-            )
-        return df
-
     def datestr_to_backslashformat(self, input_text):
         # si es menor es del próximo mes, si es mayor o igual es de este mes
         day = re.search(r"\d+", input_text).group()
@@ -170,4 +150,4 @@ class Windguru(object):
 
     def scrape(self, url):
         soup = self.beach_request(url)
-        return self.process_soup(soup)
+        return self.get_dataframe_from_soup(soup)

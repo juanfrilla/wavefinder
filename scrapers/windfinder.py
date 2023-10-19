@@ -11,6 +11,8 @@ from utils import (
 import json
 import re
 import ast
+from datetime import datetime
+
 
 # import chompjs
 
@@ -86,8 +88,11 @@ class WindFinder(object):
     def parse_wind_speeds(self, fetched_list):
         return [float(element["ws"]) for element in fetched_list]
 
+    def date_str_to_datetime(self, date_string):
+        return datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S%z")
+
     def parse_datetimes(self, fetched_list):
-        return [(element["dtl"]) for element in fetched_list]
+        return [self.date_str_to_datetime((element["dtl"])) for element in fetched_list]
 
     def parse_spot_names(self, spot_name, total_records):
         return [spot_name for _ in range(total_records)]
@@ -110,14 +115,6 @@ class WindFinder(object):
             get_wind_status(wind_dir, wave_dir)
             for wave_dir, wind_dir in zip(wave_directions, wind_directions)
         ]
-
-    # def format_dataframe(self, df):
-    #     df = df.drop(
-    #         df[
-    #             (df["time"] == "01h") | (df["time"] == "04h") | (df["time"] == "22h")
-    #         ].index
-    #     )
-    #     return df
 
     def sample_soup(self, filename):
         html_content = import_html(filename)
@@ -167,12 +164,7 @@ class WindFinder(object):
         data = self.obtain_data(soup)
         return pd.DataFrame(data)
 
-    def process_soup(self, soup):
-        df = self.get_dataframe_from_soup(soup)
-        return df
-        #return self.format_dataframe(df)
-
     def scrape(self, url):
         response = self.beach_request(url)
         soup = BeautifulSoup(response.text, "html.parser")
-        return self.process_soup(soup)
+        return self.get_dataframe_from_soup(soup)

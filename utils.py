@@ -184,6 +184,27 @@ def rename_key(dictionary, old_key, new_key):
     return dictionary
 
 
+def get_date_name_column(df):
+    today = datetime.now().date()
+    tomorrow = today + timedelta(days=1)
+    day_after_tomorrow = today + timedelta(days=2)
+    yesterday = today - timedelta(days=1)
+    date_names = [
+        "Hoy"
+        if date.date() == today
+        else "Mañana"
+        if date.date() == tomorrow
+        else "Pasado"
+        if date.date() == day_after_tomorrow
+        else "Ayer"
+        if date.date() == yesterday
+        else "Otro día"
+        for date in df["datetime"]
+    ]
+    df["date_name"] = date_names
+    return df
+
+
 def get_day_name(days_to_add: float) -> str:
     today = date.today()
     day = today + timedelta(days=days_to_add)
@@ -194,15 +215,18 @@ def get_day_name(days_to_add: float) -> str:
 
 def final_forecast_format(df):
     if not df.empty:
-        # df["datetime"] = pd.to_datetime(
-        #     arg=df["date"].astype(str) + " " + df["time"].astype(str),
-        #     format="%d/%m/%Y %H:%M",
-        # )
-        # df.drop(["date", "time"], axis=1, inplace=True)
         df.sort_values(by=["datetime", "spot_name"], ascending=[True, True])
+        mask = ((df["datetime"].dt.time >= pd.to_datetime("06:00").time()) & (
+            df["datetime"].dt.time <= pd.to_datetime("19:00").time()
+        ))
+
+        df = df[mask]
+
+        df = get_date_name_column(df)
 
         df = df[
             [
+                "date_name",
                 "datetime",
                 "spot_name",
                 "wind_status",

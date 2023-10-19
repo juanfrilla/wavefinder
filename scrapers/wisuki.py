@@ -110,19 +110,6 @@ class Wisuki(object):
         data = self.obtain_data(soup)
         return pd.DataFrame(data)
 
-    def process_soup(self, soup):
-        df = self.get_dataframe_from_soup(soup)
-        return df
-        #return self.format_dataframe(df)
-
-    def format_dataframe(self, df):
-        df = df.drop(
-            df[
-                (df["time"] == "01h") | (df["time"] == "04h") | (df["time"] == "22h")
-            ].index
-        )
-        return df
-
     def parse_formated_time(self, soup: BeautifulSoup) -> list:
         raw_times = soup.select("tbody > tr")[0]
         times = []
@@ -139,7 +126,10 @@ class Wisuki(object):
         return soup.select("tr.waves")
 
     def generate_datetimes(self, dates, times):
-        return [datetime.strptime(f"{date} {time}", "%d/%m/%Y %H:%M") for date, time in zip(dates, times)]
+        return [
+            datetime.strptime(f"{date} {time}", "%d/%m/%Y %H:%M")
+            for date, time in zip(dates, times)
+        ]
 
     def obtain_data(self, soup):
         wind_rows = self.parse_wind_rows(soup)
@@ -176,4 +166,4 @@ class Wisuki(object):
 
     def scrape(self, url):
         soup = self.beach_request(url)
-        return self.process_soup(soup)
+        return self.get_dataframe_from_soup(soup)
