@@ -135,7 +135,7 @@ class WindFinder(object):
                     if len(without_push_splitted) > 1:
                         without_push_text = (
                             without_push_splitted[1].split("]")[0].strip() + "]"
-                        )
+                        ).replace(": null", ": 0")
                         fetched_list = ast.literal_eval(without_push_text)
 
         wave_directions = self.parse_wave_directions(fetched_list)
@@ -158,6 +158,7 @@ class WindFinder(object):
             "wind_speed": wind_speeds,
             "spot_name": spot_names,
         }
+        data = convert_all_values_of_dict_to_min_length(data)
         return data
 
     def get_dataframe_from_soup(self, soup):
