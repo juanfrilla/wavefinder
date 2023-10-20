@@ -216,9 +216,13 @@ def get_day_name(days_to_add: float) -> str:
 def final_forecast_format(df):
     if not df.empty:
         df.sort_values(by=["datetime", "spot_name"], ascending=[True, True])
-        mask = ((df["datetime"].dt.time >= pd.to_datetime("06:00").time()) & (
-            df["datetime"].dt.time <= pd.to_datetime("19:00").time()
-        ))
+        mask = (
+            pd.to_datetime(df["datetime"], utc=True).dt.time
+            >= pd.to_datetime("06:00").time()
+        ) & (
+            pd.to_datetime(df["datetime"], utc=True).dt.time
+            <= pd.to_datetime("19:00").time()
+        )
 
         df = df[mask]
 
