@@ -14,10 +14,19 @@ from APIS.telegram_api import TelegramBot
 import altair as alt
 import pandas as pd
 
-# DEFAULT_MIN_WAVE_HEIGHT = 1.30
-# DEFAULT_MIN_WAVE_HEIGHT = 1.0
 DEFAULT_MIN_WAVE_PERIOD = 7
 
+def plot_selected_wind_speed():
+    min_wind_speed = float(st.session_state.forecast_df["wind_speed"].min())
+    max_wind_speed = float(st.session_state.forecast_df["wind_speed"].max())
+    default_wind_speed_selection = (min_wind_speed, max_wind_speed)
+    return st.slider(
+        "Velocidad del viento (nudos)",
+        min_wind_speed,
+        max_wind_speed,
+        default_wind_speed_selection,
+        0.1,
+    )
 
 def get_default_wind_approval_selection(wind_approval_list):
     if (
@@ -154,6 +163,7 @@ def plot_forecast_as_table(urls):
         )
         selected_wave_height = plot_selected_wave_height(default_wave_height)
         selected_wave_period = plot_selected_wave_period()
+        selected_wind_speed = plot_selected_wind_speed()
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
 
@@ -180,6 +190,8 @@ def plot_forecast_as_table(urls):
             & (st.session_state.forecast_df["wave_height"] <= selected_wave_height[1])
             & (st.session_state.forecast_df["wave_period"] >= selected_wave_period[0])
             & (st.session_state.forecast_df["wave_period"] <= selected_wave_period[1])
+            & (st.session_state.forecast_df["wind_speed"] >= selected_wind_speed[0])
+            & (st.session_state.forecast_df["wind_speed"] <= selected_wind_speed[1])
             # & (st.session_state.forecast_df["tide_state"].isin(tides_state_selection))
         )
 
