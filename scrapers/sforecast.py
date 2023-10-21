@@ -116,6 +116,12 @@ class SurfForecast(object):
                 time_list.append(time)
         return time_list
 
+    def generate_datetimes(self, dates, times):
+        datetimes = []
+        for date, time in zip(dates, times):
+            datetimes.append(datetime.strptime(f"{date} {time}", "%d/%m/%Y %H:%M"))
+        return datetimes
+
     def get_dataframe_from_soup(self, soup):
         forecast = {}
         spot_name = self.parse_spot_name(soup)
@@ -144,8 +150,9 @@ class SurfForecast(object):
         forecast["wind_direction"] = self.get_formatted_wind_direction(forecast)
         forecast["wind_speed"] = self.get_formatted_wind_speed(forecast)
         forecast["wave_period"] = self.obtain_formated_wave_period(forecast)
-        forecast["time"] = self.obtain_formated_time(forecast)
-        forecast["date"] = generate_dates(forecast["time"])
+        times = self.obtain_formated_time(forecast)
+        dates = generate_dates(forecast["time"])
+        forecast["datetime"] = self.generate_datetimes(dates, times)
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
         forecast = convert_all_values_of_dict_to_min_length(forecast)
         return pd.DataFrame(forecast)
