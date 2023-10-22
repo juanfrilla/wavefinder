@@ -12,9 +12,10 @@ from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
 from APIS.telegram_api import TelegramBot
 import altair as alt
-import pandas as pd
+import polars as pl
 
 DEFAULT_MIN_WAVE_PERIOD = 7
+
 
 def plot_selected_wind_speed():
     min_wind_speed = float(st.session_state.forecast_df["wind_speed"].min())
@@ -27,6 +28,7 @@ def plot_selected_wind_speed():
         default_wind_speed_selection,
         0.1,
     )
+
 
 def get_default_wind_approval_selection(wind_approval_list):
     if (
@@ -107,6 +109,7 @@ def load_forecast(urls):
     return df
 
 
+@st.experimental_memo(ttl="23h")
 def load_tides():
     start_time = time.time()
     tide_scraper = TidesScraper()
@@ -141,15 +144,21 @@ def plot_forecast_as_table(urls):
 
     initial_forecast = load_forecast(urls)
     st.session_state.forecast_df = initial_forecast
-    if st.session_state.forecast_df.empty:
+    if st.session_state.forecast_df.is_empty():
         st.write("The DataFrame is empty.")
     else:
         # GET UNIQUES
-        date_name_list = st.session_state.forecast_df["date_name"].unique().tolist()
-        wind_status_list = st.session_state.forecast_df["wind_status"].unique().tolist()
-        all_beaches = st.session_state.forecast_df["spot_name"].unique().tolist()
+        date_name_list = (
+            st.session_state.forecast_df.to_pandas()["date_name"].unique().tolist()
+        )
+        wind_status_list = (
+            st.session_state.forecast_df.to_pandas()["wind_status"].unique().tolist()
+        )
+        all_beaches = (
+            st.session_state.forecast_df.to_pandas()["spot_name"].unique().tolist()
+        )
         all_wind_approvals = (
-            st.session_state.forecast_df["wind_approval"].unique().tolist()
+            st.session_state.forecast_df.to_pandas()["wind_approval"].unique().tolist()
         )
 
         # CREATE MULTISELECT
@@ -177,120 +186,150 @@ def plot_forecast_as_table(urls):
         #     "Estado de la marea:", tides_state, default=tides_state
         # )
         # --- FILTER DATAFRAME BASED ON SELECTION
+
+        date_name_condition = st.session_state.forecast_df["date_name"].is_in(
+            date_name_selection
+        )
+        wind_status_condition = st.session_state.forecast_df["wind_status"].is_in(
+            wind_status_selection
+        )
+        beach_condition = st.session_state.forecast_df["spot_name"].is_in(
+            beach_selection
+        )
+        wind_approval_condition = st.session_state.forecast_df["wind_approval"].is_in(
+            wind_approval_selection
+        )
+        wave_height_condition = (
+            st.session_state.forecast_df["wave_height"] >= selected_wave_height[0]
+        ) & (st.session_state.forecast_df["wave_height"] <= selected_wave_height[1])
+        wave_period_condition = (
+            st.session_state.forecast_df["wave_period"] >= selected_wave_period[0]
+        ) & (st.session_state.forecast_df["wave_period"] <= selected_wave_period[1])
+        wind_speed_condition = (
+            st.session_state.forecast_df["wind_speed"] >= selected_wind_speed[0]
+        ) & (st.session_state.forecast_df["wind_speed"] <= selected_wind_speed[1])
+        # tide_state_condition = forecast_df['tide_state'].is_in(tides_state_selection)  # Uncomment this line if you want to include this condition
+
+        # Combine conditions using bitwise AND operator
         mask = (
-            (st.session_state.forecast_df["date_name"].isin(date_name_selection))
-            & (st.session_state.forecast_df["wind_status"].isin(wind_status_selection))
-            & (st.session_state.forecast_df["spot_name"].isin(beach_selection))
-            & (
-                st.session_state.forecast_df["wind_approval"].isin(
-                    wind_approval_selection
-                )
-            )
-            & (st.session_state.forecast_df["wave_height"] >= selected_wave_height[0])
-            & (st.session_state.forecast_df["wave_height"] <= selected_wave_height[1])
-            & (st.session_state.forecast_df["wave_period"] >= selected_wave_period[0])
-            & (st.session_state.forecast_df["wave_period"] <= selected_wave_period[1])
-            & (st.session_state.forecast_df["wind_speed"] >= selected_wind_speed[0])
-            & (st.session_state.forecast_df["wind_speed"] <= selected_wind_speed[1])
-            # & (st.session_state.forecast_df["tide_state"].isin(tides_state_selection))
+            date_name_condition
+            & wind_status_condition
+            & beach_condition
+            & wind_approval_condition
+            & wave_height_condition
+            & wave_period_condition
+            & wind_speed_condition
         )
 
+        # # Filter the DataFrame
+        # forecast_df = forecast_df.filter(mask)
+
+        # mask = (
+        #     (pl.col("date_name").is_in(date_name_selection))
+        #     & (pl.col("wind_status").is_in(wind_status_selection))
+        #     & (pl.col("spot_name").is_in(beach_selection))
+        #     & (pl.col("wind_approval").is_in(wind_approval_selection))
+        #     & (pl.col("wave_height") >= selected_wave_height[0])
+        #     & (pl.col("wave_height") <= selected_wave_height[1])
+        #     & (pl.col("wave_period") >= selected_wave_period[0])
+        #     & (pl.col("wave_period") <= selected_wave_period[1])
+        #     & (pl.col("wind_speed") >= selected_wind_speed[0])
+        #     & (pl.col("wind_speed") <= selected_wind_speed[1])
+        # )
+
         # --- GROUP DATAFRAME AFTER SELECTION
-        st.session_state.forecast_df = st.session_state.forecast_df[mask]
+        st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
 
-        try:
-            st.header("Altura por día", divider="rainbow")
-            data = st.session_state.forecast_df
-            chart = (
-                alt.Chart(data)
-                .mark_line()
-                .encode(
-                    x="datetime:T",
-                    y="wave_height:Q",
-                    color="spot_name:N",
-                    tooltip=[
-                        alt.Tooltip("datetime:T", format="%d/%m/%Y", title="Date"),
-                        alt.Tooltip("datetime:T", format="%H:%M", title="Time"),
-                        "spot_name:N",
-                        "wave_height:Q",
-                        "wind_approval:N",
-                        "wind_status:N",
-                        "wind_direction:N",
-                        "wave_direction:N",
-                        "wave_period:Q",
-                    ],
-                )
-                .properties(width=600, height=400)
-                .configure_legend(orient="right")
+        # try:
+        st.header("Altura por día", divider="rainbow")
+        data = st.session_state.forecast_df
+        chart = (
+            alt.Chart(data)
+            .mark_line()
+            .encode(
+                x="datetime:T",
+                y="wave_height:Q",
+                color="spot_name:N",
+                tooltip=[
+                    alt.Tooltip("datetime:T", format="%d/%m/%Y", title="Date"),
+                    alt.Tooltip("datetime:T", format="%H:%M", title="Time"),
+                    "spot_name:N",
+                    "wave_height:Q",
+                    "wind_approval:N",
+                    "wind_status:N",
+                    "wind_direction:N",
+                    "wave_direction:N",
+                    "wave_period:Q",
+                ],
             )
+            .properties(width=600, height=400)
+            .configure_legend(orient="right")
+        )
 
-            st.container()
+        st.container()
 
-            zoomed_chart = chart.interactive().properties(width=600, height=400)
+        zoomed_chart = chart.interactive().properties(width=600, height=400)
 
-            st.altair_chart(zoomed_chart, use_container_width=True)
+        st.altair_chart(zoomed_chart, use_container_width=True)
 
-        except Exception as e:
-            st.write("An error occurred:", e)
+        # except Exception as e:
+        #     st.write("An error occurred:", e)
 
-        try:
-            st.header("Aprobación del viento por día", divider="rainbow")
-            chart = (
-                alt.Chart(st.session_state.forecast_df)
-                .mark_bar()
-                .encode(
-                    x="datetime",
-                    y="spot_name",
-                    color="wind_approval:N",
-                )
+        # try:
+        st.header("Aprobación del viento por día", divider="rainbow")
+        chart = (
+            alt.Chart(st.session_state.forecast_df)
+            .mark_bar()
+            .encode(
+                x="datetime:T",
+                y="spot_name:N",
+                color="wind_approval:N",
             )
-            st.altair_chart(chart, use_container_width=True)
-        except:
-            pass
+        )
+        st.altair_chart(chart, use_container_width=True)
+        # except:
+        #     pass
 
-        try:
-            st.header("Estado del viento por día", divider="rainbow")
-            chart = (
-                alt.Chart(st.session_state.forecast_df)
-                .mark_bar()
-                .encode(
-                    x="datetime",
-                    y="spot_name",
-                    color="wind_status:N",
-                )
+        # try:
+        st.header("Estado del viento por día", divider="rainbow")
+        chart = (
+            alt.Chart(st.session_state.forecast_df)
+            .mark_bar()
+            .encode(
+                x="datetime:T",
+                y="spot_name:N",
+                color="wind_status:N",
             )
-            st.altair_chart(chart, use_container_width=True)
-        except:
-            pass
+        )
+        st.altair_chart(chart, use_container_width=True)
+        # except:
+        #     pass
 
-        try:
-            st.header("Dirección del viento por día", divider="rainbow")
-            chart = (
-                alt.Chart(st.session_state.forecast_df)
-                .mark_bar()
-                .encode(
-                    x="datetime",
-                    y="spot_name",
-                    color="wind_direction:N",
-                )
+        # try:
+        st.header("Dirección del viento por día", divider="rainbow")
+        chart = (
+            alt.Chart(st.session_state.forecast_df)
+            .mark_bar()
+            .encode(
+                x="datetime:T",
+                y="spot_name:N",
+                color="wind_direction:N",
             )
-            st.altair_chart(chart, use_container_width=True)
-        except:
-            pass
+        )
+        st.altair_chart(chart, use_container_width=True)
+        # except:
+        #     pass
 
-        grouped_data = st.session_state.forecast_df.groupby("spot_name")
+        # grouped_data = st.session_state.forecast_df.groupby("spot_name")
         with st.container():
+            grouped_data = st.session_state.forecast_df.groupby("spot_name")
             for spot_name, group_df in grouped_data:
                 st.subheader(f"Spot: {spot_name}")
-                group_df = group_df.drop(columns=["spot_name"])
+                # group_df = group_df.drop_in_place("spot_name")
 
-                st.dataframe(
-                    group_df.style.set_properties(
-                        **{"overflow-y": "auto", "overflow-x": "auto"}
-                    ),
-                    hide_index=True,
-                )
+                st.dataframe(group_df.to_pandas(), hide_index=True)
 
+        # Display tide data
         st.session_state.tides_df = load_tides()
         st.subheader("Tabla de mareas")
         st.dataframe(st.session_state.tides_df, hide_index=True)

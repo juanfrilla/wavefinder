@@ -1,7 +1,7 @@
 import streamlit as st
 from multi.multiprocess import scrape_multiple_sites
 from utils import combine_df
-import pandas as pd
+import polars as pl
 
 DEFAULT_MIN_WAVE_HEIGHT = 1.30
 DEFAULT_MIN_WAVE_PERIOD = 7
@@ -51,7 +51,7 @@ def plot_selected_wave_period():
 def plot_forecast_as_table(urls):
 
     st.session_state.forecast_df = load_forecast(urls)
-    if st.session_state.forecast_df.empty:
+    if st.session_state.forecast_df.is_empty():
         st.write("The DataFrame is empty.")
     else:
         # GET UNIQUES
@@ -124,7 +124,7 @@ def plot_forecast_as_table(urls):
 
 @st.cache_data(ttl=7200)
 def load_forecast(_scraper_objects):
-    forecast = pd.DataFrame()
+    forecast = pl.DataFrame()
     list_of_df = list(scrape_multiple_sites(_scraper_objects))
     
     for df in list_of_df:

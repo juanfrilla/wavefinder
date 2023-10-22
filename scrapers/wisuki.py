@@ -6,7 +6,7 @@ from utils import (
     angle_to_direction,
     generate_dates,
 )
-import pandas as pd
+import polars as pl
 import re
 from datetime import datetime
 
@@ -108,7 +108,7 @@ class Wisuki(object):
 
     def get_dataframe_from_soup(self, soup):
         data = self.obtain_data(soup)
-        return pd.DataFrame(data)
+        return pl.DataFrame(data)
 
     def parse_formated_time(self, soup: BeautifulSoup) -> list:
         raw_times = soup.select("tbody > tr")[0]

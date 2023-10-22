@@ -1,8 +1,8 @@
 import locale
 from bs4 import BeautifulSoup
 from requests import Response
-import pandas as pd
-from datetime import datetime, date, timedelta
+import polars as pl
+from datetime import datetime, date, time, timedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -119,7 +119,8 @@ def import_html(filename):
 
 
 def combine_df(df1, df2):
-    df = pd.concat([df1, df2], axis=0, ignore_index=True)
+    # df = pl.concat([df1, df2], axis=0, ignore_index=True)
+    df = pl.concat([df1, df2])
     return df
 
 
@@ -184,24 +185,51 @@ def rename_key(dictionary, old_key, new_key):
     return dictionary
 
 
-def get_date_name_column(df):
+def handle_wind(df: pl.DataFrame) -> pl.DataFrame:
+    if not df.is_empty():
+        wind_speed = df["wind_speed"].cast(pl.Float32)
+
+        WIND_STATUS_HIGH_10 = (df["wind_status"] == "Offshore") | (
+            df["wind_status"] == "Cross-off"
+        )
+
+        WIND_STATUS_LESS_10 = (df["wind_status"] != "Offshore") & (
+            df["wind_status"] != "Cross-off"
+        )
+        WIND_SPEED_LESS_10 = wind_speed <= 10
+
+        wind_ok = (WIND_STATUS_LESS_10 & WIND_SPEED_LESS_10) | (WIND_STATUS_HIGH_10)
+
+        default = "Viento No Favorable"
+
+        df = df.with_columns(
+            pl.when(wind_ok)
+            .then("Viento Favorable")
+            .otherwise(default)
+            .alias("wind_approval")
+        )
+    return df
+
+
+def get_date_name_column(df: pl.DataFrame) -> pl.DataFrame:
     today = datetime.now().date()
     tomorrow = today + timedelta(days=1)
     day_after_tomorrow = today + timedelta(days=2)
     yesterday = today - timedelta(days=1)
-    date_names = [
-        "Hoy"
-        if date.date() == today
-        else "Mañana"
-        if date.date() == tomorrow
-        else "Pasado"
-        if date.date() == day_after_tomorrow
-        else "Ayer"
-        if date.date() == yesterday
-        else "Otro día"
-        for date in df["datetime"]
-    ]
-    df["date_name"] = date_names
+
+    df = df.with_columns(
+        pl.when((df["datetime"].dt.date()) == today)
+        .then("Hoy")
+        .when((df["datetime"].dt.date()) == tomorrow)
+        .then("Mañana")
+        .when((df["datetime"].dt.date()) == day_after_tomorrow)
+        .then("Pasado")
+        .when((df["datetime"].dt.date()) == yesterday)
+        .then("Ayer")
+        .otherwise("Otro día")
+        .alias("date_name")
+    )
+
     return df
 
 
@@ -213,18 +241,17 @@ def get_day_name(days_to_add: float) -> str:
     return day_name_number
 
 
-def final_forecast_format(df):
-    if not df.empty:
-        df.sort_values(by=["datetime", "spot_name"], ascending=[True, True])
-        mask = (
-            pd.to_datetime(df["datetime"], utc=True).dt.time
-            >= pd.to_datetime("06:00").time()
-        ) & (
-            pd.to_datetime(df["datetime"], utc=True).dt.time
-            <= pd.to_datetime("19:00").time()
-        )
+def final_forecast_format(df: pl.DataFrame):
+    if not df.is_empty():
+        df.sort(by=["datetime", "spot_name"], descending=[False, False])
+        datetimes = df["datetime"].cast(pl.Time)
+        _6_AM = time(hour=6, minute=0, second=0, microsecond=0)
+        _19_PM = time(hour=19, minute=0, second=0, microsecond=0)
+        # print()
+        mask = (datetimes >= _6_AM) & (datetimes <= _19_PM)
+        df = df.filter(mask)
 
-        df = df[mask]
+        # df = df[mask]
 
         df = get_date_name_column(df)
 
@@ -245,7 +272,7 @@ def final_forecast_format(df):
     return df
 
 
-def final_tides_format(df: pd.DataFrame) -> pd.DataFrame:
+def final_tides_format(df: pl.DataFrame) -> pl.DataFrame:
     pass
     return df
 
@@ -356,33 +383,6 @@ def obtain_minimum_len_of_dict_values(data: dict):
     for _, value in data.items():
         data_value_lens.append(len(value))
     return min(data_value_lens)
-
-
-def handle_wind(df: pd.DataFrame) -> pd.DataFrame:
-    if not df.empty:
-        wind_speed = df["wind_speed"].astype(float)
-
-        WIND_STATUS_HIGH_10 = (df["wind_status"] == "Offshore") | (
-            df["wind_status"] == "Cross-off"
-        )
-
-        WIND_STATUS_LESS_10 = (df["wind_status"] != "Offshore") & (
-            df["wind_status"] != "Cross-off"
-        )
-        WIND_SPEED_LESS_10 = wind_speed <= 10
-
-        wind_ok = (WIND_STATUS_LESS_10 & WIND_SPEED_LESS_10) | (WIND_STATUS_HIGH_10)
-
-        default = "Viento No Favorable"
-
-        str_list = ["Viento Favorable"]
-
-        df["wind_approval"] = np.select(
-            [wind_ok],
-            str_list,
-            default=default,
-        )
-    return df
 
 
 def generate_dates(times: list) -> list:

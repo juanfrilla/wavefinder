@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 from typing import Dict
-import pandas as pd
+import polars as pl
 from utils import (
     rename_key,
     angle_to_direction,
@@ -102,8 +102,8 @@ class Windguru(object):
             total_records = len(max(forecast.items(), key=lambda item: len(item[1]))[1])
             forecast["spot_name"] = self.parse_spot_names(soup, total_records)
             forecast = self.format_forecast(forecast)
-            return pd.DataFrame(forecast)
-        return pd.DataFrame()
+            return pl.DataFrame(forecast)
+        return pl.DataFrame()
 
     def parse_number_from_text(self, text):
         pattern = r"(\d+)°"

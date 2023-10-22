@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
 import requests
-import pandas as pd
+import polars as pl
 from utils import (
     rename_key,
     kmh_to_knots,
@@ -119,7 +119,12 @@ class SurfForecast(object):
     def generate_datetimes(self, dates, times):
         datetimes = []
         for date, time in zip(dates, times):
-            datetimes.append(datetime.strptime(f"{date} {time}", "%d/%m/%Y %H:%M"))
+            year = datetime.strptime(date, "%d/%m/%Y").year
+            month = datetime.strptime(date, "%d/%m/%Y").month
+            day = datetime.strptime(date, "%d/%m/%Y").day
+            hour = int(time.split(":")[0])
+            minute = int(time.split(":")[1])
+            datetimes.append(datetime(year, month, day, hour, minute))
         return datetimes
 
     def get_dataframe_from_soup(self, soup):
@@ -155,7 +160,8 @@ class SurfForecast(object):
         forecast["datetime"] = self.generate_datetimes(dates, times)
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
         forecast = convert_all_values_of_dict_to_min_length(forecast)
-        return pd.DataFrame(forecast)
+        df = pl.DataFrame(forecast)
+        return df
 
     def format_dataframe(self, df):
         # Hacerlo en menos lineas comprobando que la hora es de noche
@@ -165,4 +171,5 @@ class SurfForecast(object):
     def scrape(self, url):
         response = self.beach_request(url)
         soup = BeautifulSoup(response.text, "html.parser")
-        return self.get_dataframe_from_soup(soup)
+        df = self.get_dataframe_from_soup(soup)
+        return df

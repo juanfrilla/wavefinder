@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-import pandas as pd
+import polars as pl
 from datetime import datetime, timedelta
 from utils import (
     angle_to_direction,
@@ -103,7 +103,7 @@ class WindyApp(object):
 
     def get_dataframe_from_soup(self, soup):
         data = self.obtain_data(soup)
-        return pd.DataFrame(data)
+        return pl.DataFrame(data)
 
     def format_dataframe(self, df):
         df = df.drop(
