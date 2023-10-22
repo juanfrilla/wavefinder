@@ -272,54 +272,6 @@ def plot_forecast_as_table(urls):
 
         st.altair_chart(zoomed_chart, use_container_width=True)
 
-        # except Exception as e:
-        #     st.write("An error occurred:", e)
-
-        # try:
-        st.header("Aprobación del viento por día", divider="rainbow")
-        chart = (
-            alt.Chart(st.session_state.forecast_df)
-            .mark_bar()
-            .encode(
-                x="datetime:T",
-                y="spot_name:N",
-                color="wind_approval:N",
-            )
-        )
-        st.altair_chart(chart, use_container_width=True)
-        # except:
-        #     pass
-
-        # try:
-        st.header("Estado del viento por día", divider="rainbow")
-        chart = (
-            alt.Chart(st.session_state.forecast_df)
-            .mark_bar()
-            .encode(
-                x="datetime:T",
-                y="spot_name:N",
-                color="wind_status:N",
-            )
-        )
-        st.altair_chart(chart, use_container_width=True)
-        # except:
-        #     pass
-
-        # try:
-        st.header("Dirección del viento por día", divider="rainbow")
-        chart = (
-            alt.Chart(st.session_state.forecast_df)
-            .mark_bar()
-            .encode(
-                x="datetime:T",
-                y="spot_name:N",
-                color="wind_direction:N",
-            )
-        )
-        st.altair_chart(chart, use_container_width=True)
-        # except:
-        #     pass
-
         # grouped_data = st.session_state.forecast_df.groupby("spot_name")
         with st.container():
             grouped_data = st.session_state.forecast_df.groupby("spot_name")
