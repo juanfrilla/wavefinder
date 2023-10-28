@@ -2,7 +2,7 @@ WINDYAPP_URLS = [
         "https://windy.app/forecast2/spot/4016175/El%20Espino",
         "https://windy.app/forecast2/spot/5320955/Castillo+rubicon",
         "https://windy.app/forecast2/spot/302072/Beach+Honda+Spain+Playa+Honda",
-        "https://windy.app/forecast2/spot/647997/Faro+de+Pechiguera",
+        #"https://windy.app/forecast2/spot/647997/Faro+de+Pechiguera",
         "https://windy.app/forecast2/spot/5074651/puente+las+bolas",
         "https://windy.app/forecast2/spot/5334017/chucara",
         "https://windy.app/forecast2/spot/302056/Spain%20-%20Los%20Pocillos",

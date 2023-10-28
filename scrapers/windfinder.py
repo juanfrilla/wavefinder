@@ -88,11 +88,11 @@ class WindFinder(object):
     def parse_wind_speeds(self, fetched_list):
         return [float(element["ws"]) for element in fetched_list]
 
-    def date_str_to_datetime(self, date_string):
+    def date_datestr_to_datetime(self, date_string):
         return datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S%z")
 
     def parse_datetimes(self, fetched_list):
-        return [self.date_str_to_datetime((element["dtl"])) for element in fetched_list]
+        return [self.date_datestr_to_datetime((element["dtl"])) for element in fetched_list]
 
     def parse_spot_names(self, spot_name, total_records):
         return [spot_name for _ in range(total_records)]

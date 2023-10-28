@@ -121,25 +121,25 @@ def load_tides():
 
 def plot_forecast_as_table(urls):
     if "windfinder" in urls[0]:
-        default_wave_height = 2.50
+        default_wave_height = 3.0
         st.title("SOUTH COAST OF LANZAROTE (WINDFINDER)")
     elif "windguru" in urls[0]:
-        default_wave_height = 2.50
+        default_wave_height = 3.0
         st.title("SPOTS DE SURF LANZAROTE (WINDGURU)")
     elif "surf-forecast" in urls[0]:
         default_wave_height = 1.0
         st.title("NORTH COAST OF LANZAROTE (SURF-FORECAST)")
     elif "surfline" in urls[0]:
-        default_wave_height = 1.50
+        default_wave_height = 3.0
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (SURFLINE)")
     elif "windy.app" in urls[0]:
-        default_wave_height = 2.50
+        default_wave_height = 3.0
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (WINDY.APP)")
     elif "wisuki" in urls[0]:
-        default_wave_height = 2.50
+        default_wave_height = 3.0
         st.title("NORTH AND SOUTH COAST OF LANZAROTE (WISUKI)")
     elif "worldbeachguide" in urls[0]:
-        default_wave_height = 2.50
+        default_wave_height = 3.0
         st.title("SOUTH COAST OF LANZAROTE (WORLDBEACHGUIDE)")
 
     initial_forecast = load_forecast(urls)

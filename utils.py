@@ -340,13 +340,13 @@ def timestamp_to_datetimestr(timestamp_date: int, utc_offset: int) -> str:
     return datestr, timestr
 
 
-def str_to_datetime(dtstr, format) -> datetime:
+def datestr_to_datetime(dtstr, format) -> datetime:
     locale.setlocale(locale.LC_TIME, "es_ES.UTF-8")
     return datetime.strptime(dtstr, format)
 
 
 def get_datename(dt: str):
-    dt_dt = str_to_datetime(dt, INTERNAL_DATE_STR_FORMAT).date()
+    dt_dt = datestr_to_datetime(dt, INTERNAL_DATE_STR_FORMAT).date()
 
     today = datetime.now().date()
     tomorrow = today + timedelta(days=1)
@@ -389,7 +389,9 @@ def generate_dates(times: list) -> list:
     dates = []
     date = datetime.now().date()
     for index, time in enumerate(times):
-        if index - 1 >= 0 and time < times[index - 1]:
+        if index - 1 >= 0 and datestr_to_datetime(time, "%H:%M") < datestr_to_datetime(
+            times[index - 1], "%H:%M"
+        ):
             date += timedelta(days=1)
         date_str = datetime.strftime(date, "%d/%m/%Y")
         dates.append(date_str)

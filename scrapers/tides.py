@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 import os, datetime, pandas as pl
 from typing import Dict
 from requests import Session
-from utils import get_day_name, str_to_datetime
+from utils import get_day_name, datestr_to_datetime
 
 
 class TidesScraper(object):
@@ -39,7 +39,7 @@ class TidesScraper(object):
         days_string = [day_h3.text for day_h3 in s.select("h3")][2:]
         for table, day_string in zip(tables, days_string):
             format_day = "%A %d %B %Y"
-            tide_date = str_to_datetime(day_string, format_day).date()
+            tide_date = datestr_to_datetime(day_string, format_day).date()
             tablebody = table.find("tbody")
             rows = tablebody.find_all("tr")
             for row in rows:
@@ -50,7 +50,7 @@ class TidesScraper(object):
                         tides["tide"].append(current_sea_state)
                     elif ":" in cell.text:
                         format_time = "%H:%M"
-                        tide_time = str_to_datetime(cell.text, format_time).time()
+                        tide_time = datestr_to_datetime(cell.text, format_time).time()
                         tide_datetime_str = f"{tide_date} {tide_time}"
                         tides["datetime"].append(tide_datetime_str)
         return pl.DataFrame(tides)
