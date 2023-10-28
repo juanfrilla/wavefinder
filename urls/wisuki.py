@@ -3,7 +3,7 @@ WISUKI_URLS = [
         #"https://es.wisuki.com/forecast/6080/la-santa",
         #"https://es.wisuki.com/forecast/6269/caleta-caballo",
         #"https://es.wisuki.com/forecast/2833/famara",
-        "https://es.wisuki.com/forecast/2842/playa-del-risco",
+        #"https://es.wisuki.com/forecast/2842/playa-del-risco",
         #"https://es.wisuki.com/forecast/5987/orzola",
         #"https://es.wisuki.com/forecast/2834/jameos-del-agua",
         #"https://es.wisuki.com/forecast/2841/playa-de-la-garita",
