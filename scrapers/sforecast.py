@@ -111,8 +111,12 @@ class SurfForecast(object):
     def obtain_formated_time(self, forecast):
         time_list = []
         for time in forecast["time"]:
-            if time in ["AM", "PM"]:
-                time = time.replace("AM", "10:00").replace("PM", "16:00")
+            if time in ["AM", "PM", "Night"]:
+                time = (
+                    time.replace("AM", "10:00")
+                    .replace("PM", "16:00")
+                    .replace("Night", "22:00")
+                )
                 time_list.append(time)
         return time_list
 
@@ -161,12 +165,11 @@ class SurfForecast(object):
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
         forecast = convert_all_values_of_dict_to_min_length(forecast)
         df = pl.DataFrame(forecast)
+        df = self.remove_night_times(df)
         return df
 
-    def format_dataframe(self, df):
-        # Hacerlo en menos lineas comprobando que la hora es de noche
-        df = df.drop(df[(df["time"] == "Night")].index)
-        return df
+    def remove_night_times(self, df):
+        return df.filter(pl.col("time") != "Night")
 
     def scrape(self, url):
         response = self.beach_request(url)
