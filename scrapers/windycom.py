@@ -8,6 +8,7 @@ from utils import (
     render_html,
     import_html,
     timestamp_to_datetime,
+    feet_to_meters,
 )
 import re
 from datetime import datetime
@@ -61,7 +62,9 @@ class WindyCom(object):
         wave_heights = table.select(
             "tbody > tr.td-waves.height-waves.d-display-waves > td"
         )
-        wave_heights = [float(height.text[1:]) for height in wave_heights]
+        wave_heights = [
+            feet_to_meters(float(height.text[1:])) for height in wave_heights
+        ]
 
         return wave_heights
 
