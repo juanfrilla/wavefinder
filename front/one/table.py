@@ -8,6 +8,7 @@ from scrapers.sforecast import SurfForecast
 from scrapers.surfline import Surfline
 from scrapers.windyapp import WindyApp
 from scrapers.wisuki import Wisuki
+from scrapers.windycom import WindyCom
 from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
 from APIS.telegram_api import TelegramBot
@@ -103,6 +104,8 @@ def load_forecast(urls):
         df = multithread.scrape_multiple_requests(urls, Wisuki())
     elif "worldbeachguide" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, WorldBeachGuide())
+    elif "windy.com" in urls[0]:
+        df = multithread.scrape_multiple_requests(urls, WindyCom())
     df = final_forecast_format(df)
     print("--- %s seconds ---" % (time.time() - start_time))
 
@@ -122,25 +125,28 @@ def load_tides():
 def plot_forecast_as_table(urls):
     if "windfinder" in urls[0]:
         default_wave_height = 3.0
-        st.title("SOUTH COAST OF LANZAROTE (WINDFINDER)")
+        st.title("LANZAROTE (WINDFINDER)")
     elif "windguru" in urls[0]:
         default_wave_height = 3.0
-        st.title("SPOTS DE SURF LANZAROTE (WINDGURU)")
+        st.title("LANZAROTE (WINDGURU)")
     elif "surf-forecast" in urls[0]:
         default_wave_height = 1.0
-        st.title("NORTH COAST OF LANZAROTE (SURF-FORECAST)")
+        st.title("LANZAROTE (SURF-FORECAST)")
     elif "surfline" in urls[0]:
         default_wave_height = 3.0
-        st.title("NORTH AND SOUTH COAST OF LANZAROTE (SURFLINE)")
+        st.title("LANZAROTE (SURFLINE)")
     elif "windy.app" in urls[0]:
         default_wave_height = 3.0
-        st.title("NORTH AND SOUTH COAST OF LANZAROTE (WINDY.APP)")
+        st.title("LANZAROTE (WINDY.APP)")
     elif "wisuki" in urls[0]:
         default_wave_height = 3.0
-        st.title("NORTH AND SOUTH COAST OF LANZAROTE (WISUKI)")
+        st.title("LANZAROTE (WISUKI)")
     elif "worldbeachguide" in urls[0]:
         default_wave_height = 3.0
-        st.title("SOUTH COAST OF LANZAROTE (WORLDBEACHGUIDE)")
+        st.title("LANZAROTE (WORLDBEACHGUIDE)")
+    elif "windy.com" in urls[0]:
+        default_wave_height = 3.0
+        st.title("LANZAROTE (WINDY.COM)")
 
     initial_forecast = load_forecast(urls)
     st.session_state.forecast_df = initial_forecast

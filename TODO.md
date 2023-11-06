@@ -13,6 +13,6 @@ ponerle el concurrent.futures.ThreadPoolExecutor para los selenium a la vez y mi
 Cambiar pip por poetry
 Meterle pydantic
 Probar algún profiler, para trastear
-
+Meterle windycom
 
 Ponerle los plenos (cuando a todas horas del día las condiciones son buenas), o medios plenos, etc, Poner algo que diga dias con plenos, dependiendo de la pagina

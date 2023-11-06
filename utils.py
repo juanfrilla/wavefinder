@@ -138,24 +138,21 @@ def convert_datestr_format(datestr):
 
 
 def open_browser():
+    my_user_agent = (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+    )
+
     options = webdriver.ChromeOptions()
+    options.add_argument("--lang=es")
     options.add_argument("--headless")
+    options.add_argument(f"--user-agent={my_user_agent}")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
-    options.add_argument("--disable-features=NetworkService")
+    # options.add_argument("--disable-features=NetworkService")
     options.add_argument("--window-size=1920x1080")
-    options.add_argument("--disable-features=VizDisplayCompositor")
+    # options.add_argument("--disable-features=VizDisplayCompositor")
     options.page_load_strategy = "eager"
-    options.add_experimental_option(
-        "prefs",
-        {
-            # block image loading
-            "profile.managed_default_content_settings.images": 2,
-        },
-    )
-    options.add_argument("blink-settings=imagesEnabled=false")
-
     browser = webdriver.Chrome(options=options)
     return browser
 
