@@ -244,28 +244,30 @@ def final_forecast_format(df: pl.DataFrame):
         datetimes = df["datetime"].cast(pl.Time)
         _6_AM = time(hour=6, minute=0, second=0, microsecond=0)
         _19_PM = time(hour=19, minute=0, second=0, microsecond=0)
-        # print()
         mask = (datetimes >= _6_AM) & (datetimes <= _19_PM)
         df = df.filter(mask)
 
-        # df = df[mask]
-
         df = get_date_name_column(df)
 
-        df = df[
-            [
-                "date_name",
-                "datetime",
-                "spot_name",
-                "wind_status",
-                "wave_height",
-                "wave_period",
-                "wind_direction",
-                "wave_direction",
-                "wind_speed",
-                "wind_approval",
-            ]
+        common_columns = [
+            "date_name",
+            "datetime",
+            "spot_name",
+            "wind_status",
+            "wave_height",
+            "wave_period",
+            "wind_direction",
+            "wave_direction",
+            "wind_speed",
+            "wind_approval",
         ]
+        try:
+            df["swell_height"]
+            common_columns.append("swell_height")
+        except Exception as e:
+            pass
+
+        df = df[common_columns]
     return df
 
 

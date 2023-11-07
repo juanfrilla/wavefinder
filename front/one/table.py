@@ -60,6 +60,25 @@ def plot_selected_wave_height(default_wave_height):
     )
 
 
+def plot_selected_swell_height(default_swell_height=3.0):
+    try:
+        min_swell_height = float(st.session_state.forecast_df["swell_height"].min())
+        max_swell_height = float(st.session_state.forecast_df["swell_height"].max())
+        if max_swell_height < default_swell_height:
+            default_swell_height_selection = (1.0, default_swell_height)
+        else:
+            default_swell_height_selection = (default_swell_height, max_swell_height)
+        return st.slider(
+            "Altura del mar de fondo - swell (m)",
+            min_swell_height,
+            max_swell_height,
+            default_swell_height_selection,
+            0.1,
+        )
+    except Exception as e:
+        return None
+
+
 def plot_selected_wave_period():
     min_wave_period = int(st.session_state.forecast_df["wave_period"].min())
     max_wave_period = int(st.session_state.forecast_df["wave_period"].max())
@@ -177,6 +196,7 @@ def plot_forecast_as_table(urls):
             default=wind_status_list,
         )
         selected_wave_height = plot_selected_wave_height(default_wave_height)
+        selected_swell_height = plot_selected_swell_height()
         selected_wave_period = plot_selected_wave_period()
         selected_wind_speed = plot_selected_wind_speed()
 
@@ -214,7 +234,15 @@ def plot_forecast_as_table(urls):
         wind_speed_condition = (
             st.session_state.forecast_df["wind_speed"] >= selected_wind_speed[0]
         ) & (st.session_state.forecast_df["wind_speed"] <= selected_wind_speed[1])
-        # tide_state_condition = forecast_df['tide_state'].is_in(tides_state_selection)  # Uncomment this line if you want to include this condition
+        if selected_swell_height:
+            swell_height_condition = (
+                st.session_state.forecast_df["swell_height"] >= selected_swell_height[0]
+            ) & (
+                st.session_state.forecast_df["swell_height"] <= selected_swell_height[1]
+            )
+        else:
+            swell_height_condition = True
+            # tide_state_condition = forecast_df['tide_state'].is_in(tides_state_selection)  # Uncomment this line if you want to include this condition
 
         # Combine conditions using bitwise AND operator
         mask = (
@@ -225,6 +253,7 @@ def plot_forecast_as_table(urls):
             & wave_height_condition
             & wave_period_condition
             & wind_speed_condition
+            & swell_height_condition
         )
 
         # # Filter the DataFrame

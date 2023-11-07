@@ -58,6 +58,16 @@ class WindyCom(object):
         periods = [float(period.text) for period in periods]
         return periods
 
+    def get_swell_height(self, table):
+        swell_heights = table.select(
+            "tbody > tr.td-waves.height-waves.d-display-waves > td"
+        )
+        swell_heights = [
+            feet_to_meters(float(height.text[1:])) for height in swell_heights
+        ]
+        # swell_heights = [float(height.text[1:]) for height in swell_heights]
+        return swell_heights
+
     def get_wave_heights(self, table):
         wave_heights = table.select(
             "tbody > tr.td-swell1.height-swell1.d-display-waves > td"
@@ -66,6 +76,7 @@ class WindyCom(object):
         wave_heights = [
             feet_to_meters(float(height.text[1:])) for height in wave_heights
         ]
+        # wave_heights = [float(height.text[1:]) for height in wave_heights]
 
         return wave_heights
 
@@ -139,6 +150,7 @@ class WindyCom(object):
         forecast["spot_name"] = self.repeat_field_n_times(
             self.parse_spot_name(url), len(forecast["datetime"])
         )
+        forecast["swell_height"] = self.get_swell_height(table)
         return pl.DataFrame(forecast)
 
         # return self.get_dataframe_from_soup(soup)
