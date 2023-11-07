@@ -145,7 +145,7 @@ def plot_forecast_as_table(urls):
         default_wave_height = 3.0
         st.title("LANZAROTE (WORLDBEACHGUIDE)")
     elif "windy.com" in urls[0]:
-        default_wave_height = 3.0
+        default_wave_height = 1.0
         st.title("LANZAROTE (WINDY.COM)")
 
     initial_forecast = load_forecast(urls)

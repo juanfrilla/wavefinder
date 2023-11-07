@@ -60,8 +60,9 @@ class WindyCom(object):
 
     def get_wave_heights(self, table):
         wave_heights = table.select(
-            "tbody > tr.td-waves.height-waves.d-display-waves > td"
+            "tbody > tr.td-swell1.height-swell1.d-display-waves > td"
         )
+
         wave_heights = [
             feet_to_meters(float(height.text[1:])) for height in wave_heights
         ]
@@ -70,7 +71,7 @@ class WindyCom(object):
 
     def get_wave_directions(self, table):
         wave_directions = table.select(
-            "tbody > tr.td-waves.height-waves.d-display-waves > td > div"
+            "tbody > tr.td-swell1.height-swell1.d-display-waves > td > div"
         )
         return self.angles_to_text(wave_directions)
 
