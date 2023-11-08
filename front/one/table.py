@@ -60,7 +60,7 @@ def plot_selected_wave_height(default_wave_height):
     )
 
 
-def plot_selected_swell_height(default_swell_height=3.0):
+def plot_selected_swell_height(default_swell_height=2.0):
     try:
         min_swell_height = float(st.session_state.forecast_df["swell_height"].min())
         max_swell_height = float(st.session_state.forecast_df["swell_height"].max())
@@ -164,7 +164,7 @@ def plot_forecast_as_table(urls):
         default_wave_height = 3.0
         st.title("LANZAROTE (WORLDBEACHGUIDE)")
     elif "windy.com" in urls[0]:
-        default_wave_height = 1.0
+        default_wave_height = 0.90
         st.title("LANZAROTE (WINDY.COM)")
 
     initial_forecast = load_forecast(urls)
