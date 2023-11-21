@@ -16,3 +16,4 @@ Probar algún profiler, para trastear
 Meterle windycom
 
 Ponerle los plenos (cuando a todas horas del día las condiciones son buenas), o medios plenos, etc, Poner algo que diga dias con plenos, dependiendo de la pagina
+BUSCAR LA MANERA DE METERLE TODAS LAS URLS A SFORECAST
