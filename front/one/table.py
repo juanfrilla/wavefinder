@@ -193,7 +193,7 @@ def plot_forecast_as_table(urls):
         wind_status_selection = st.multiselect(
             "Estado del viento:",
             wind_status_list,
-            default=wind_status_list,
+            default=["Offshore", "Cross-off"],
         )
         selected_wave_height = plot_selected_wave_height(default_wave_height)
         selected_swell_height = plot_selected_swell_height()
