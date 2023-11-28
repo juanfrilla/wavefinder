@@ -15,7 +15,7 @@ from APIS.telegram_api import TelegramBot
 import altair as alt
 import polars as pl
 
-DEFAULT_MIN_WAVE_PERIOD = 7
+DEFAULT_MIN_WAVE_PERIOD = 10
 
 
 def plot_selected_wind_speed():
@@ -143,25 +143,25 @@ def load_tides():
 
 def plot_forecast_as_table(urls):
     if "windfinder" in urls[0]:
-        default_wave_height = 3.0
+        default_wave_height = 2.0
         st.title("LANZAROTE (WINDFINDER)")
     elif "windguru" in urls[0]:
-        default_wave_height = 3.0
+        default_wave_height = 2.0
         st.title("LANZAROTE (WINDGURU)")
     elif "surf-forecast" in urls[0]:
-        default_wave_height = 1.0
+        default_wave_height = 0.8
         st.title("LANZAROTE (SURF-FORECAST)")
     elif "surfline" in urls[0]:
         default_wave_height = 3.0
         st.title("LANZAROTE (SURFLINE)")
     elif "windy.app" in urls[0]:
-        default_wave_height = 3.0
+        default_wave_height = 2.0
         st.title("LANZAROTE (WINDY.APP)")
     elif "wisuki" in urls[0]:
-        default_wave_height = 3.0
+        default_wave_height = 2.0
         st.title("LANZAROTE (WISUKI)")
     elif "worldbeachguide" in urls[0]:
-        default_wave_height = 3.0
+        default_wave_height = 2.0
         st.title("LANZAROTE (WORLDBEACHGUIDE)")
     elif "windy.com" in urls[0]:
         default_wave_height = 0.90
