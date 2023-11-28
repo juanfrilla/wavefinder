@@ -9,4 +9,5 @@ SFORECAST_URLS = [
     "https://www.surf-forecast.com/breaks/El-Tiburon-Playa-Honda/forecasts/latest/six_day",
     "https://www.surf-forecast.com/breaks/Playa-Bastian-Costa-Teguise/forecasts/latest/six_day",
     "https://www.surf-forecast.com/breaks/Castillo-del-Rubicon-Playa-Blanca/forecasts/latest/six_day",
+    "https://www.surf-forecast.com/breaks/Barcarola-Puerto-del-Carmen/forecasts/latest/six_day",
 ]
