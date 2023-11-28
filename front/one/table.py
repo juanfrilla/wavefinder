@@ -16,6 +16,7 @@ import altair as alt
 import polars as pl
 
 DEFAULT_MIN_WAVE_PERIOD = 10
+DEFAULT_WAVE_HEIGHT = 0.9
 
 
 def plot_selected_wind_speed():
@@ -143,28 +144,20 @@ def load_tides():
 
 def plot_forecast_as_table(urls):
     if "windfinder" in urls[0]:
-        default_wave_height = 2.0
         st.title("LANZAROTE (WINDFINDER)")
     elif "windguru" in urls[0]:
-        default_wave_height = 2.0
         st.title("LANZAROTE (WINDGURU)")
     elif "surf-forecast" in urls[0]:
-        default_wave_height = 0.8
         st.title("LANZAROTE (SURF-FORECAST)")
     elif "surfline" in urls[0]:
-        default_wave_height = 3.0
         st.title("LANZAROTE (SURFLINE)")
     elif "windy.app" in urls[0]:
-        default_wave_height = 2.0
         st.title("LANZAROTE (WINDY.APP)")
     elif "wisuki" in urls[0]:
-        default_wave_height = 2.0
         st.title("LANZAROTE (WISUKI)")
     elif "worldbeachguide" in urls[0]:
-        default_wave_height = 2.0
         st.title("LANZAROTE (WORLDBEACHGUIDE)")
     elif "windy.com" in urls[0]:
-        default_wave_height = 0.90
         st.title("LANZAROTE (WINDY.COM)")
 
     initial_forecast = load_forecast(urls)
@@ -199,7 +192,7 @@ def plot_forecast_as_table(urls):
             wind_status_list,
             default=default,
         )
-        selected_wave_height = plot_selected_wave_height(default_wave_height)
+        selected_wave_height = plot_selected_wave_height(DEFAULT_WAVE_HEIGHT)
         selected_swell_height = plot_selected_swell_height()
         selected_wave_period = plot_selected_wave_period()
         selected_wind_speed = plot_selected_wind_speed()
