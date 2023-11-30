@@ -271,6 +271,40 @@ def plot_forecast_as_table(urls):
 
         # --- GROUP DATAFRAME AFTER SELECTION
         st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
+        try:
+            st.header("Energía por día", divider="rainbow")
+            data = st.session_state.forecast_df
+            chart = (
+                alt.Chart(data)
+                .mark_line()
+                .encode(
+                    x="datetime:T",
+                    y="energy:Q",
+                    color="spot_name:N",
+                    tooltip=[
+                        alt.Tooltip("datetime:T", format="%d/%m/%Y", title="Date"),
+                        alt.Tooltip("datetime:T", format="%H:%M", title="Time"),
+                        "spot_name:N",
+                        "wave_height:Q",
+                        "wind_approval:N",
+                        "wind_status:N",
+                        "wind_direction:N",
+                        "wave_direction:N",
+                        "wave_period:Q",
+                        "energy:Q",
+                    ],
+                )
+                .properties(width=600, height=400)
+                .configure_legend(orient="right")
+            )
+
+            st.container()
+
+            zoomed_chart = chart.interactive().properties(width=600, height=400)
+
+            st.altair_chart(zoomed_chart, use_container_width=True)
+        except Exception:
+            pass
 
         # try:
         st.header("Altura por día", divider="rainbow")
