@@ -271,7 +271,7 @@ def final_forecast_format(df: pl.DataFrame):
                         common_columns.index("wind_direction"), column
                     )
                 else:
-                    common_columns.insert(-1, column)
+                    common_columns.append(column)
             except Exception:
                 pass
 

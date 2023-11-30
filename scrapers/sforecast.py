@@ -44,6 +44,10 @@ class SurfForecast(object):
     def parse_spot_names(self, spot_name, total_records):
         return [spot_name for _ in range(total_records)]
 
+    def get_formated_energy(self, forecast):
+        energy = list(forecast["energy"])
+        return [int(element) for element in energy]
+
     def get_formatted_wind_status(self, forecast):
         new_wind_status = []
         translator = {
@@ -164,6 +168,7 @@ class SurfForecast(object):
         dates = generate_dates(times)
         forecast["datetime"] = self.generate_datetimes(dates, times)
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
+        forecast["energy"] = self.get_formated_energy(forecast)
         forecast = convert_all_values_of_dict_to_min_length(forecast)
         df = pl.DataFrame(forecast)
         df = self.remove_night_times(df)

@@ -17,6 +17,7 @@ import polars as pl
 
 DEFAULT_MIN_WAVE_PERIOD = 10
 DEFAULT_WAVE_HEIGHT = 0.9
+DEFAULT_MIN_WAVE_ENERGY = 100
 
 
 def plot_selected_wind_speed():
@@ -92,6 +93,22 @@ def plot_selected_wave_period():
         min_wave_period,
         max_wave_period,
         default_wave_period_selection,
+        1,
+    )
+
+
+def plot_selected_wave_energy():
+    min_wave_energy = int(st.session_state.forecast_df["energy"].min())
+    max_wave_energy = int(st.session_state.forecast_df["energy"].max())
+    if max_wave_energy < DEFAULT_MIN_WAVE_ENERGY:
+        default_wave_energy_selection = (0, DEFAULT_MIN_WAVE_ENERGY)
+    else:
+        default_wave_energy_selection = (DEFAULT_MIN_WAVE_ENERGY, max_wave_energy)
+    return st.slider(
+        "Energía de las olas (J)",
+        min_wave_energy,
+        max_wave_energy,
+        default_wave_energy_selection,
         1,
     )
 
@@ -195,6 +212,10 @@ def plot_forecast_as_table(urls):
         selected_wave_height = plot_selected_wave_height(DEFAULT_WAVE_HEIGHT)
         selected_swell_height = plot_selected_swell_height()
         selected_wave_period = plot_selected_wave_period()
+        try:
+            selected_wave_energy = plot_selected_wave_energy()
+        except Exception as e:
+            pass
         selected_wind_speed = plot_selected_wind_speed()
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
@@ -239,7 +260,13 @@ def plot_forecast_as_table(urls):
             )
         else:
             swell_height_condition = True
-            # tide_state_condition = forecast_df['tide_state'].is_in(tides_state_selection)  # Uncomment this line if you want to include this condition
+
+        if selected_wave_energy:
+            wave_energy_condition = (
+                st.session_state.forecast_df["energy"] >= selected_wave_energy[0]
+            ) & (st.session_state.forecast_df["energy"] <= selected_wave_energy[1])
+        else:
+            wave_energy_condition = True
 
         # Combine conditions using bitwise AND operator
         mask = (
@@ -251,6 +278,7 @@ def plot_forecast_as_table(urls):
             & wave_period_condition
             & wind_speed_condition
             & swell_height_condition
+            & wave_energy_condition
         )
 
         # # Filter the DataFrame
