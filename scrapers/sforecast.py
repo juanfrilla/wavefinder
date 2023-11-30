@@ -141,6 +141,7 @@ class SurfForecast(object):
             "energy",
             "wind",
             "wind-state",
+            "energy",
         ]
         for row_name in drn_list:
             forecast[row_name] = []

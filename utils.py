@@ -267,6 +267,12 @@ def final_forecast_format(df: pl.DataFrame):
         except Exception as e:
             pass
 
+        try:
+            df["energy"]
+            common_columns.append("energy")
+        except Exception as e:
+            pass
+
         df = df[common_columns]
     return df
 
