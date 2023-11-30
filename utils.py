@@ -261,17 +261,19 @@ def final_forecast_format(df: pl.DataFrame):
             "wind_speed",
             "wind_approval",
         ]
-        try:
-            df["swell_height"]
-            common_columns.append("swell_height")
-        except Exception as e:
-            pass
+        columns_to_check = ["swell_height", "energy"]
 
-        try:
-            df["energy"]
-            common_columns.append("energy")
-        except Exception as e:
-            pass
+        for column in columns_to_check:
+            try:
+                df[column]
+                if column == "energy":
+                    common_columns.insert(
+                        common_columns.index("wind_direction"), column
+                    )
+                else:
+                    common_columns.insert(-1, column)
+            except Exception:
+                pass
 
         df = df[common_columns]
     return df
