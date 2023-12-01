@@ -105,7 +105,7 @@ def plot_selected_wave_energy():
     else:
         default_wave_energy_selection = (DEFAULT_MIN_WAVE_ENERGY, max_wave_energy)
     return st.slider(
-        "Energía de las olas (J)",
+        "Energía de las olas (kJ)",
         min_wave_energy,
         max_wave_energy,
         default_wave_energy_selection,
@@ -281,23 +281,6 @@ def plot_forecast_as_table(urls):
             & wave_energy_condition
         )
 
-        # # Filter the DataFrame
-        # forecast_df = forecast_df.filter(mask)
-
-        # mask = (
-        #     (pl.col("date_name").is_in(date_name_selection))
-        #     & (pl.col("wind_status").is_in(wind_status_selection))
-        #     & (pl.col("spot_name").is_in(beach_selection))
-        #     & (pl.col("wind_approval").is_in(wind_approval_selection))
-        #     & (pl.col("wave_height") >= selected_wave_height[0])
-        #     & (pl.col("wave_height") <= selected_wave_height[1])
-        #     & (pl.col("wave_period") >= selected_wave_period[0])
-        #     & (pl.col("wave_period") <= selected_wave_period[1])
-        #     & (pl.col("wind_speed") >= selected_wind_speed[0])
-        #     & (pl.col("wind_speed") <= selected_wind_speed[1])
-        # )
-
-        # --- GROUP DATAFRAME AFTER SELECTION
         st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
         try:
             st.header("Energía por día", divider="rainbow")
@@ -334,70 +317,6 @@ def plot_forecast_as_table(urls):
         except Exception:
             pass
 
-        # try:
-        st.header("Altura por día", divider="rainbow")
-        data = st.session_state.forecast_df
-        chart = (
-            alt.Chart(data)
-            .mark_line()
-            .encode(
-                x="datetime:T",
-                y="wave_height:Q",
-                color="spot_name:N",
-                tooltip=[
-                    alt.Tooltip("datetime:T", format="%d/%m/%Y", title="Date"),
-                    alt.Tooltip("datetime:T", format="%H:%M", title="Time"),
-                    "spot_name:N",
-                    "wave_height:Q",
-                    "wind_approval:N",
-                    "wind_status:N",
-                    "wind_direction:N",
-                    "wave_direction:N",
-                    "wave_period:Q",
-                ],
-            )
-            .properties(width=600, height=400)
-            .configure_legend(orient="right")
-        )
-
-        st.container()
-
-        zoomed_chart = chart.interactive().properties(width=600, height=400)
-
-        st.altair_chart(zoomed_chart, use_container_width=True)
-
-        st.header("Periodo por día", divider="rainbow")
-        data = st.session_state.forecast_df
-        chart = (
-            alt.Chart(data)
-            .mark_line()
-            .encode(
-                x="datetime:T",
-                y="wave_period:Q",
-                color="spot_name:N",
-                tooltip=[
-                    alt.Tooltip("datetime:T", format="%d/%m/%Y", title="Date"),
-                    alt.Tooltip("datetime:T", format="%H:%M", title="Time"),
-                    "spot_name:N",
-                    "wave_height:Q",
-                    "wind_approval:N",
-                    "wind_status:N",
-                    "wind_direction:N",
-                    "wave_direction:N",
-                    "wave_period:Q",
-                ],
-            )
-            .properties(width=600, height=400)
-            .configure_legend(orient="right")
-        )
-
-        st.container()
-
-        zoomed_chart = chart.interactive().properties(width=600, height=400)
-
-        st.altair_chart(zoomed_chart, use_container_width=True)
-
-        # grouped_data = st.session_state.forecast_df.groupby("spot_name")
         with st.container():
             grouped_data = st.session_state.forecast_df.groupby("spot_name")
             for spot_name, group_df in grouped_data:
