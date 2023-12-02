@@ -20,6 +20,41 @@ DEFAULT_WAVE_HEIGHT = 0.9
 DEFAULT_MIN_WAVE_ENERGY = 100
 
 
+def plot_graph(variable):
+        try:
+            st.header(f"{variable} per day", divider="rainbow")
+            data = st.session_state.forecast_df
+            chart = (
+                alt.Chart(data)
+                .mark_line()
+                .encode(
+                    x="datetime:T",
+                    y=f"{variable}:Q",
+                    color="spot_name:N",
+                    tooltip=[
+                        alt.Tooltip("datetime:T", format="%d/%m/%Y", title="Date"),
+                        alt.Tooltip("datetime:T", format="%H:%M", title="Time"),
+                        "spot_name:N",
+                        "wave_height:Q",
+                        "wind_approval:N",
+                        "wind_status:N",
+                        "wind_direction:N",
+                        "wave_direction:N",
+                        "wave_period:Q",
+                    ],
+                )
+                .properties(width=600, height=400)
+                .configure_legend(orient="right")
+            )
+
+            st.container()
+
+            zoomed_chart = chart.interactive().properties(width=600, height=400)
+
+            st.altair_chart(zoomed_chart, use_container_width=True)
+        except Exception:
+            pass
+
 def plot_selected_wind_speed():
     min_wind_speed = float(st.session_state.forecast_df["wind_speed"].min())
     max_wind_speed = float(st.session_state.forecast_df["wind_speed"].max())
@@ -212,10 +247,8 @@ def plot_forecast_as_table(urls):
         selected_wave_height = plot_selected_wave_height(DEFAULT_WAVE_HEIGHT)
         selected_swell_height = plot_selected_swell_height()
         selected_wave_period = plot_selected_wave_period()
-        try:
+        if "surf-forecast" in urls[0]:
             selected_wave_energy = plot_selected_wave_energy()
-        except Exception as e:
-            pass
         selected_wind_speed = plot_selected_wind_speed()
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
@@ -261,7 +294,7 @@ def plot_forecast_as_table(urls):
         else:
             swell_height_condition = True
 
-        if selected_wave_energy:
+        if "surf-forecast" in urls[0]:
             wave_energy_condition = (
                 st.session_state.forecast_df["energy"] >= selected_wave_energy[0]
             ) & (st.session_state.forecast_df["energy"] <= selected_wave_energy[1])
@@ -282,40 +315,9 @@ def plot_forecast_as_table(urls):
         )
 
         st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
-        try:
-            st.header("Energía por día", divider="rainbow")
-            data = st.session_state.forecast_df
-            chart = (
-                alt.Chart(data)
-                .mark_line()
-                .encode(
-                    x="datetime:T",
-                    y="energy:Q",
-                    color="spot_name:N",
-                    tooltip=[
-                        alt.Tooltip("datetime:T", format="%d/%m/%Y", title="Date"),
-                        alt.Tooltip("datetime:T", format="%H:%M", title="Time"),
-                        "spot_name:N",
-                        "wave_height:Q",
-                        "wind_approval:N",
-                        "wind_status:N",
-                        "wind_direction:N",
-                        "wave_direction:N",
-                        "wave_period:Q",
-                        "energy:Q",
-                    ],
-                )
-                .properties(width=600, height=400)
-                .configure_legend(orient="right")
-            )
-
-            st.container()
-
-            zoomed_chart = chart.interactive().properties(width=600, height=400)
-
-            st.altair_chart(zoomed_chart, use_container_width=True)
-        except Exception:
-            pass
+        if "surf-forecast" in urls[0]:
+            plot_graph("energy")
+        plot_graph("wave_period")
 
         with st.container():
             grouped_data = st.session_state.forecast_df.groupby("spot_name")
