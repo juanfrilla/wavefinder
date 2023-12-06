@@ -15,7 +15,7 @@ from APIS.telegram_api import TelegramBot
 import altair as alt
 import polars as pl
 
-DEFAULT_MIN_WAVE_PERIOD = 10
+DEFAULT_MIN_WAVE_PERIOD = 7
 DEFAULT_WAVE_HEIGHT = 0.9
 DEFAULT_MIN_WAVE_ENERGY = 100
 
