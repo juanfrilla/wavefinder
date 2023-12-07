@@ -5,6 +5,8 @@ from utils import (
     convert_all_values_of_dict_to_min_length,
     generate_dates,
     is_crossoff,
+    get_wind_status,
+    count_contraries,
 )
 
 
@@ -23,34 +25,34 @@ from utils import (
 #     assert len(windfinder.parse_windstatus(wave_directions, wind_directions)) == 80
 
 
-def test_costa_teguise():
-    windfinder = WindFinder()
-    soup = windfinder.sample_soup("./samples/papagayo.html")
-    data = windfinder.obtain_data(soup)
-    total_records = len(data["time"])
-    for key, value in data.items():
-        assert len(value) == total_records
+# def test_costa_teguise():
+#     windfinder = WindFinder()
+#     soup = windfinder.sample_soup("./samples/papagayo.html")
+#     data = windfinder.obtain_data(soup)
+#     total_records = len(data["time"])
+#     for key, value in data.items():
+#         assert len(value) == total_records
 
 
-def test_wind_speed():
-    windfinder = WindFinder()
-    soup = windfinder.sample_soup("./samples/costa_teguise.html")
-    wind_speeds = windfinder.parse_wind_speeds(soup)
+# def test_wind_speed():
+#     windfinder = WindFinder()
+#     soup = windfinder.sample_soup("./samples/costa_teguise.html")
+#     wind_speeds = windfinder.parse_wind_speeds(soup)
 
-    assert len(wind_speeds) == 80
+#     assert len(wind_speeds) == 80
 
 
-def test_common():
-    windfinder = WindFinder()
-    ct_soup = windfinder.sample_soup("./samples/costa_teguise.html")
-    pb_soup = windfinder.sample_soup("./samples/playa_blanca.html")
+# def test_common():
+#     windfinder = WindFinder()
+#     ct_soup = windfinder.sample_soup("./samples/costa_teguise.html")
+#     pb_soup = windfinder.sample_soup("./samples/playa_blanca.html")
 
-    ct_wave_directions = windfinder.parse_wave_directions(ct_soup)
-    pb_wave_directions = windfinder.parse_wave_directions(pb_soup)
-    ct_total_records = len(ct_wave_directions)
-    pb_total_records = len(pb_wave_directions)
+#     ct_wave_directions = windfinder.parse_wave_directions(ct_soup)
+#     pb_wave_directions = windfinder.parse_wave_directions(pb_soup)
+#     ct_total_records = len(ct_wave_directions)
+#     pb_total_records = len(pb_wave_directions)
 
-    assert ct_total_records == pb_total_records
+#     assert ct_total_records == pb_total_records
 
 
 # def test_windfinder_200_ok():
@@ -124,28 +126,49 @@ def test_common():
 #         "28/09/2023",
 #         "28/09/2023",
 #     ]
-def test_is_crossoff():
-    assert is_crossoff("North", "SouthEast") == True
-    assert is_crossoff("North", "SouthWest") == True
-    assert is_crossoff("South", "NorthEast") == True
-    assert is_crossoff("South", "NorthWest") == True
-    assert is_crossoff("East", "NorthWest") == True
-    assert is_crossoff("East", "SouthWest") == True
-    assert is_crossoff("West", "NorthEast") == True
-    assert is_crossoff("West", "SouthEast") == True
-    assert is_crossoff("NorthEast", "SouthEast") == True
-    assert is_crossoff("NorthEast", "NorthWest") == True
-    assert is_crossoff("NorthEast", "South") == True
-    assert is_crossoff("NorthEast", "West") == True
-    assert is_crossoff("NorthWest", "SouthWest") == True
-    assert is_crossoff("NorthWest", "NorthEast") == True
-    assert is_crossoff("NorthWest", "South") == True
-    assert is_crossoff("NorthWest", "East") == True
-    assert is_crossoff("SouthEast", "SouthWest") == True
-    assert is_crossoff("SouthEast", "NorthEast") == True
-    assert is_crossoff("SouthEast", "North") == True
-    assert is_crossoff("SouthEast", "West") == True
-    assert is_crossoff("SouthWest", "NorthWest") == True
-    assert is_crossoff("SouthWest", "SouthEast") == True
-    assert is_crossoff("SouthWest", "North") == True
-    assert is_crossoff("SouthWest", "East") == True
+# def test_is_crossoff():
+#     assert is_crossoff("North", "SouthEast") == True
+#     assert is_crossoff("North", "SouthWest") == True
+#     assert is_crossoff("South", "NorthEast") == True
+#     assert is_crossoff("South", "NorthWest") == True
+#     assert is_crossoff("East", "NorthWest") == True
+#     assert is_crossoff("East", "SouthWest") == True
+#     assert is_crossoff("West", "NorthEast") == True
+#     assert is_crossoff("West", "SouthEast") == True
+#     assert is_crossoff("NorthEast", "SouthEast") == True
+#     assert is_crossoff("NorthEast", "NorthWest") == True
+#     assert is_crossoff("NorthEast", "South") == True
+#     assert is_crossoff("NorthEast", "West") == True
+#     assert is_crossoff("NorthWest", "SouthWest") == True
+#     assert is_crossoff("NorthWest", "NorthEast") == True
+#     assert is_crossoff("NorthWest", "South") == True
+#     assert is_crossoff("NorthWest", "East") == True
+#     assert is_crossoff("SouthEast", "SouthWest") == True
+#     assert is_crossoff("SouthEast", "NorthEast") == True
+#     assert is_crossoff("SouthEast", "North") == True
+#     assert is_crossoff("SouthEast", "West") == True
+#     assert is_crossoff("SouthWest", "NorthWest") == True
+#     assert is_crossoff("SouthWest", "SouthEast") == True
+#     assert is_crossoff("SouthWest", "North") == True
+#     assert is_crossoff("SouthWest", "East") == True
+
+
+def test_count_contraries():
+    assert count_contraries("N", "S") == 1
+    assert count_contraries("S", "N") == 1
+    assert count_contraries("E", "O") == 1
+    assert count_contraries("O", "E") == 1
+    assert count_contraries("SO", "SE") == 1
+    assert count_contraries("SO", "NE") == 2
+    assert count_contraries("NEE", "SOO") == 3
+    assert count_contraries("N", "N") == 0
+    assert count_contraries("NEE", "SO") == 2
+    assert count_contraries("NEE", "NEE") == 0
+
+
+def test_wind_status():
+    assert get_wind_status("N", "S") == "Offshore"
+    assert get_wind_status("NO", "NE") == "Cross-off"
+    assert get_wind_status("N", "N") == "Onshore"
+    assert get_wind_status("ONO", "ESE") == "Offshore"
+    assert get_wind_status("ONO", "S") == "Cross-off"

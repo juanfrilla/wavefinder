@@ -29,12 +29,10 @@ class Windguru(object):
         forecast = rename_key(forecast, "tabid_0_0_WINDSPD", "wind_speed")
 
         forecast["wind_direction"] = [
-            angle_to_direction(self.parse_number_from_text(element))
-            for element in forecast["wind_direction"]
+            self.parse_text_from_text(element) for element in forecast["wind_direction"]
         ]
         forecast["wave_direction"] = [
-            angle_to_direction(self.parse_number_from_text(element))
-            for element in forecast["wave_direction"]
+            self.parse_text_from_text(element) for element in forecast["wave_direction"]
         ]
 
         forecast["date"] = [
@@ -94,7 +92,7 @@ class Windguru(object):
                 forecast[id] = []
                 for cell in cells:
                     if ("SMER" in id) | ("DIRPW" in id):
-                        value = cell.find("span")["title"]
+                        value = cell.find("span")["title"].replace("W", "O")
                     else:
                         value = cell.get_text()
                     forecast[id].append(value)
@@ -112,6 +110,9 @@ class Windguru(object):
         if match:
             return int(match.group(1))
         return None
+
+    def parse_text_from_text(self, text):
+        return text.split(" ")[0]
 
     def parse_windstatus(self, wave_directions, wind_directions):
         return [
@@ -150,4 +151,5 @@ class Windguru(object):
 
     def scrape(self, url):
         soup = self.beach_request(url)
+        df = self.get_dataframe_from_soup(soup)
         return self.get_dataframe_from_soup(soup)

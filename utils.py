@@ -30,14 +30,16 @@ MONTH_MAPPING = {
 INTERNAL_DATE_STR_FORMAT = "%d/%m/%Y"
 INTERNAL_TIME_STR_FORMAT = "%H:%M:%S"
 
+CONTRARIES = {"N": "S", "S": "N", "E": "O", "O": "E"}
 
-def get_wind_status(wind_direction, wave_direction):
-    if is_offshore(wind_direction, wave_direction):
-        return "Offshore"
-    elif is_crossoff(wind_direction, wave_direction):
-        return "Cross-off"
-    else:
-        return "Onshore"
+
+# def get_wind_status(wind_direction, wave_direction):
+#     if is_offshore(wind_direction, wave_direction):
+#         return "Offshore"
+#     elif is_crossoff(wind_direction, wave_direction):
+#         return "Cross-off"
+#     else:
+#         return "Onshore"
 
 
 # margen de 20 grados en N,S,E,O
@@ -80,29 +82,49 @@ def angle_to_direction(angle):
 
 def is_offshore(wind_direction, wave_direction):
     offshore_mapping = {
-        "North": ["South"],
-        "South": ["North"],
-        "East": ["West"],
-        "West": ["East"],
-        "NorthEast": ["SouthWest"],
-        "SouthWest": ["NorthEast"],
-        "NorthWest": ["SouthEast"],
-        "SouthEast": ["NorthWest"],
+        "N": "S",
+        "E": "O",
+        "NO": "SE",
+        "SO": "NE",
+        "ONO": "ESE",
+        "ONE": "ENO",
+        "ONS": "E",
+        "OES": "",
+        "ESE": "",
+        "ESS": "",
+        "NOO": "",
+        "NOE": "",
+        "NOS": "",
+        "NEO": "",
+        "NEE": "",
+        "NES": "",
+        "SOO": "",
+        "SOE": "",
+        "SON": "",
+        "SEO": "",
+        "SEE": "",
+        "SEN": "",
+        "OON": "",
+        "OOE": "",
+        "OOS": "",
+        "OEN": "",
+        "OEE": "",
+        "OES": "",
     }
 
-    return wind_direction in offshore_mapping.get(wave_direction, [])
+    return wind_direction == offshore_mapping.get(wave_direction, [])
 
 
 def is_crossoff(wind_direction, wave_direction):
     cross_offshore_mapping = {
-        "North": ["SouthEast", "SouthWest"],
-        "South": ["NorthEast", "NorthWest"],
-        "East": ["NorthWest", "SouthWest"],
-        "West": ["NorthEast", "SouthEast"],
-        "NorthEast": ["SouthEast", "NorthWest", "South", "West"],
-        "NorthWest": ["SouthWest", "NorthEast", "South", "East"],
-        "SouthEast": ["SouthWest", "NorthEast", "North", "West"],
-        "SouthWest": ["NorthWest", "SouthEast", "North", "East"],
+        "N": ["SE", "SO"],
+        "S": ["NE", "NO"],
+        "E": ["NO", "SO"],
+        "O": ["NE", "SE"],
+        "NE": ["SE", "NO", "S", "O"],
+        "NO": ["SO", "NE", "S", "E"],
+        "SE": ["SO", "NE", "N", "O"],
+        "SO": ["NO", "SE", "N", "E"],
     }
     return wind_direction in cross_offshore_mapping.get(wave_direction, [])
 
@@ -403,3 +425,56 @@ def generate_dates(times: list) -> list:
         date_str = datetime.strftime(date, "%d/%m/%Y")
         dates.append(date_str)
     return dates
+
+
+# def check_conditions(wind_direction, wave_direction):
+#     # Define the contraries
+#     contraries = {"N": "S", "S": "N", "E": "O", "O": "E"}
+#     return contraries
+
+
+def are_contraries(dir1, dir2):
+    return CONTRARIES.get(dir1) == dir2
+
+
+def get_maximum_len_str(wind_direction, wave_direction):
+    if len(wind_direction) > len(wave_direction):
+        return wind_direction
+    else:
+        return wave_direction
+
+
+def get_minimum_len_str(wind_direction, wave_direction):
+    if len(wind_direction) > len(wave_direction):
+        return wave_direction
+    else:
+        return wind_direction
+
+
+def count_contraries(wind_direction, wave_direction):
+    counter = 0
+    if len(wind_direction) == len(wave_direction):
+        for i in range(len(wind_direction)):
+            if are_contraries(wind_direction[i], wave_direction[i]):
+                counter += 1
+    else:
+        max_len_str = get_maximum_len_str(wind_direction, wave_direction)
+        min_len_str = get_minimum_len_str(wind_direction, wave_direction)
+        for mili in min_len_str:
+            for mali in max_len_str:
+                if are_contraries(mili, mali):
+                    counter += 1
+                if counter >= len(min_len_str):
+                    break
+    return counter
+
+
+def get_wind_status(wind_direction, wave_direction):
+    wd_len = len(wind_direction)
+    wv_len = len(wave_direction)
+    len_contraries = count_contraries(wind_direction, wave_direction)
+    if wd_len == wv_len and wd_len == len_contraries:
+        return "Offshore"
+    elif len_contraries >= 1:
+        return "Cross-off"
+    return "Onshore"
