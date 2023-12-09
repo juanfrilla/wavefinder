@@ -9,6 +9,7 @@ from utils import (
 )
 from datetime import datetime, timedelta
 import re
+from dateutil import parser
 
 
 class SurfForecast(object):
@@ -17,6 +18,7 @@ class SurfForecast(object):
             "authority": "www.surf-forecast.com",
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "accept-language": "es-ES,es;q=0.9",
+            "Accept-Language": "es-ES,es;q=0.9",
             "cache-control": "max-age=0",
             "if-none-match": 'W/"d86aa45153cc2e059ce6221affec67a7"',
             "sec-ch-ua": '"Chromium";v="116", "Not)A;Brand";v="24", "Google Chrome";v="116"',
@@ -113,15 +115,7 @@ class SurfForecast(object):
         return wind_direction_list
 
     def convert_to_Hm(self, time_str):
-        # Preprocess the string to replace '0' with '12' if needed
-        if time_str.startswith("0"):
-            time_str = "12" + time_str[1:]
-
-        # Use %I for hours and %p for AM/PM
-        datetime_object = datetime.strptime(time_str, "%I%p")
-
-        # Format the result as 'H:m'
-        return datetime_object.strftime("%H:%M")
+        return parser.parse(time_str).strftime("%H:%M")
 
     def obtain_formated_time(self, forecast):
         time_list = []
