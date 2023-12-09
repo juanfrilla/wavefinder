@@ -112,16 +112,29 @@ class SurfForecast(object):
                 wind_direction_list.append(kmh_to_knots(wind_speed))
         return wind_direction_list
 
+    def convert_to_Hm(self, time_str):
+        # Preprocess the string to replace '0' with '12' if needed
+        if time_str.startswith("0"):
+            time_str = "12" + time_str[1:]
+
+        # Use %I for hours and %p for AM/PM
+        datetime_object = datetime.strptime(time_str, "%I%p")
+
+        # Format the result as 'H:m'
+        return datetime_object.strftime("%H:%M")
+
     def obtain_formated_time(self, forecast):
         time_list = []
         for time in forecast["time"]:
-            if time in ["AM", "PM", "Night"]:
-                time = (
-                    time.replace("AM", "10:00")
-                    .replace("PM", "16:00")
-                    .replace("Night", "22:00")
-                )
-                time_list.append(time)
+            time.replace("\u2009", "")
+            # if time in ["AM", "PM", "Night"]:
+            # time = (
+            #     time.replace("AM", "10:00")
+            #     .replace("PM", "16:00")
+            #     .replace("Night", "22:00")
+            # )
+            extracted_time = time.replace("\u2009", "")
+            time_list.append(self.convert_to_Hm(extracted_time))
         return time_list
 
     def generate_datetimes(self, dates, times):
@@ -169,7 +182,7 @@ class SurfForecast(object):
         forecast["datetime"] = self.generate_datetimes(dates, times)
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
         forecast["energy"] = self.get_formated_energy(forecast)
-        forecast = convert_all_values_of_dict_to_min_length(forecast)
+        # forecast = convert_all_values_of_dict_to_min_length(forecast)
         df = pl.DataFrame(forecast)
         df = self.remove_night_times(df)
         return df
