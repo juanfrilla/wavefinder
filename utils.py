@@ -205,7 +205,7 @@ def rename_key(dictionary, old_key, new_key):
 
 
 def handle_wind(df: pl.DataFrame) -> pl.DataFrame:
-    if not df.is_empty():
+    if df is not None and not df.is_empty():
         wind_speed = df["wind_speed"].cast(pl.Float32)
 
         WIND_STATUS_HIGH_10 = (df["wind_status"] == "Offshore") | (

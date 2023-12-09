@@ -184,7 +184,7 @@ class SurfForecast(object):
         forecast["energy"] = self.get_formated_energy(forecast)
         # forecast = convert_all_values_of_dict_to_min_length(forecast)
         df = pl.DataFrame(forecast)
-        df = self.remove_night_times(df)
+        # df = self.remove_night_times(df)
         return df
 
     def remove_night_times(self, df):
