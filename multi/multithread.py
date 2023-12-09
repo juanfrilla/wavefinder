@@ -37,6 +37,7 @@ def scrape_multiple_requests(urls, _object, batch_size=8):
 
         for thread in threads:
             df = thread.join()
-            df = utils.handle_wind(df)
-            forecast = utils.combine_df(forecast, df)
+            if df is not None and not df.is_empty():
+                df = utils.handle_wind(df)
+                forecast = utils.combine_df(forecast, df)
     return forecast

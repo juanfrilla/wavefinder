@@ -205,28 +205,27 @@ def rename_key(dictionary, old_key, new_key):
 
 
 def handle_wind(df: pl.DataFrame) -> pl.DataFrame:
-    if df is not None and not df.is_empty():
-        wind_speed = df["wind_speed"].cast(pl.Float32)
+    wind_speed = df["wind_speed"].cast(pl.Float32)
 
-        WIND_STATUS_HIGH_10 = (df["wind_status"] == "Offshore") | (
-            df["wind_status"] == "Cross-off"
-        )
+    WIND_STATUS_HIGH_10 = (df["wind_status"] == "Offshore") | (
+        df["wind_status"] == "Cross-off"
+    )
 
-        WIND_STATUS_LESS_10 = (df["wind_status"] != "Offshore") & (
-            df["wind_status"] != "Cross-off"
-        )
-        WIND_SPEED_LESS_10 = wind_speed <= 10
+    WIND_STATUS_LESS_10 = (df["wind_status"] != "Offshore") & (
+        df["wind_status"] != "Cross-off"
+    )
+    WIND_SPEED_LESS_10 = wind_speed <= 10
 
-        wind_ok = (WIND_STATUS_LESS_10 & WIND_SPEED_LESS_10) | (WIND_STATUS_HIGH_10)
+    wind_ok = (WIND_STATUS_LESS_10 & WIND_SPEED_LESS_10) | (WIND_STATUS_HIGH_10)
 
-        default = "Viento No Favorable"
+    default = "Viento No Favorable"
 
-        df = df.with_columns(
-            pl.when(wind_ok)
-            .then("Viento Favorable")
-            .otherwise(default)
-            .alias("wind_approval")
-        )
+    df = df.with_columns(
+        pl.when(wind_ok)
+        .then("Viento Favorable")
+        .otherwise(default)
+        .alias("wind_approval")
+    )
     return df
 
 
