@@ -328,9 +328,9 @@ def plot_forecast_as_table(urls):
             grouped_data = st.session_state.forecast_df.groupby("spot_name")
             for spot_name, group_df in grouped_data:
                 st.subheader(f"Spot: {spot_name}")
-                # group_df = group_df.drop_in_place("spot_name")
+                forecast_df_dropped = group_df.drop(columns=["spot_name"])
 
-                st.dataframe(group_df.to_pandas(), hide_index=True)
+                st.dataframe(forecast_df_dropped.to_pandas(), hide_index=True)
 
         # Display tide data
         st.session_state.tides_df = load_tides()
