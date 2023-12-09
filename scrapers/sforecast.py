@@ -193,5 +193,8 @@ class SurfForecast(object):
     def scrape(self, url):
         response = self.beach_request(url)
         soup = BeautifulSoup(response.text, "html.parser")
-        df = self.get_dataframe_from_soup(soup)
+        try:
+            df = self.get_dataframe_from_soup(soup)
+        except Exception as e:
+            raise ValueError(f"Error scraping {url}: {e}")
         return df
