@@ -7,7 +7,7 @@ WINDGURU_URLS = [
     "https://www.windguru.cz/49328",  # famara
     #"https://www.windguru.cz/501282", # janubio
     "https://www.windguru.cz/49319", # playa dorada
-    "https://www.windguru.cz/430882", # puerto calero
+    #"https://www.windguru.cz/430882", # puerto calero
     "https://www.windguru.cz/49320", # los pocillos
     "https://www.windguru.cz/49321", # matagorda
     "https://www.windguru.cz/49322", # playa honda
