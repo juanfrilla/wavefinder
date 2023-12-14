@@ -18,3 +18,4 @@ Meterle windycom
 Ponerle los plenos (cuando a todas horas del día las condiciones son buenas), o medios plenos, etc, Poner algo que diga dias con plenos, dependiendo de la pagina
 TODO: arreglar surfline
 TODO: sforecast añadirle los dias del final
+TODO: notificaciones telegram 

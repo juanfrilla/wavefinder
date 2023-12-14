@@ -20,6 +20,16 @@ DEFAULT_WAVE_HEIGHT = 0.9
 DEFAULT_MIN_WAVE_ENERGY = 100
 
 
+def get_list_of_spots_sorted_by_param(param, grouped_data):
+    max_energy_per_spot = grouped_data.groupby("spot_name").agg(
+        pl.col(param).max().alias("max_energy")
+    )
+
+    return max_energy_per_spot.sort("max_energy", descending=True)[
+        "spot_name"
+    ].to_list()
+
+
 def plot_graph(variable):
     try:
         st.header(f"{variable} per day", divider="rainbow")
@@ -149,7 +159,7 @@ def plot_selected_wave_energy():
     )
 
 
-@st.experimental_memo(ttl="1h")
+@st.cache_data(ttl="1h")
 def load_forecast(urls):
     start_time = time.time()
     if "windfinder" in urls[0]:
@@ -185,7 +195,7 @@ def load_forecast(urls):
     return df
 
 
-@st.experimental_memo(ttl="23h")
+@st.cache_data(ttl="23h")
 def load_tides():
     start_time = time.time()
     tide_scraper = TidesScraper()
@@ -324,15 +334,29 @@ def plot_forecast_as_table(urls):
             plot_graph("energy")
         plot_graph("wave_period")
 
+        if "surf-forecast" in urls[0]:
+            grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
+                pl.col("energy").max().alias("total_energy")
+            )
+            grouped_data = grouped_data.sort("total_energy", descending=True)
+        else:
+            grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
+                pl.col("period").max().alias("total_period")
+            )
+            grouped_data = grouped_data.sort("total_period", descending=True)
+
         with st.container():
-            grouped_data = st.session_state.forecast_df.groupby("spot_name")
-            for spot_name, group_df in grouped_data:
+            for i in range(len(grouped_data)):
+                spot_name = grouped_data[i]["spot_name"].to_numpy()[0]
+                group_df = st.session_state.forecast_df.filter(
+                    pl.col("spot_name") == spot_name
+                )
+
                 st.subheader(f"Spot: {spot_name}")
-                forecast_df_dropped = group_df.drop(columns=["spot_name"])
+                forecast_df_dropped = group_df.drop("spot_name")
 
-                st.dataframe(forecast_df_dropped.to_pandas(), hide_index=True)
+                st.dataframe(forecast_df_dropped, hide_index=True)
 
-        # Display tide data
         st.session_state.tides_df = load_tides()
         st.subheader("Tabla de mareas")
         st.dataframe(st.session_state.tides_df, hide_index=True)

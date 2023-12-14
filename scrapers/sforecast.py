@@ -120,15 +120,21 @@ class SurfForecast(object):
     def obtain_formated_time(self, forecast):
         time_list = []
         for time in forecast["time"]:
-            time.replace("\u2009", "")
-            # if time in ["AM", "PM", "Night"]:
-            # time = (
-            #     time.replace("AM", "10:00")
-            #     .replace("PM", "16:00")
-            #     .replace("Night", "22:00")
-            # )
-            extracted_time = time.replace("\u2009", "")
-            time_list.append(self.convert_to_Hm(extracted_time))
+            if "\u2009" in time:
+                extracted_time = self.convert_to_Hm(time.replace("\u2009", ""))
+            elif time in ["mañana", "tarde", "noche"]:
+                extracted_time = (
+                    time.replace("mañana", "10:00")
+                    .replace("tarde", "16:00")
+                    .replace("noche", "22:00")
+                )
+            elif time in ["AM", "PM", "Night"]:
+                extracted_time = (
+                    time.replace("AM", "10:00")
+                    .replace("PM", "16:00")
+                    .replace("Night", "22:00")
+                )
+            time_list.append(extracted_time)
         return time_list
 
     def generate_datetimes(self, dates, times):
@@ -187,8 +193,5 @@ class SurfForecast(object):
     def scrape(self, url):
         response = self.beach_request(url)
         soup = BeautifulSoup(response.text, "html.parser")
-        try:
-            df = self.get_dataframe_from_soup(soup)
-        except Exception as e:
-            raise ValueError(f"Error scraping {url}: {e}")
+        df = self.get_dataframe_from_soup(soup)
         return df
