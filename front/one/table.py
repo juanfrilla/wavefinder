@@ -341,7 +341,7 @@ def plot_forecast_as_table(urls):
             grouped_data = grouped_data.sort("total_energy", descending=True)
         else:
             grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
-                pl.col("period").max().alias("total_period")
+                pl.col("wave_period").max().alias("total_period")
             )
             grouped_data = grouped_data.sort("total_period", descending=True)
 
