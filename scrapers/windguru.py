@@ -3,9 +3,10 @@ from typing import Dict
 import polars as pl
 from utils import (
     rename_key,
-    angle_to_direction,
+    generate_tides,
     get_wind_status,
     render_html,
+    generate_datetimes,
 )
 import re
 from datetime import datetime
@@ -20,7 +21,7 @@ class Windguru(object):
         r_text = render_html(url=url, tag_to_wait="table.tabulka", timeout=60 * 1000)
         return BeautifulSoup(r_text, "html.parser")
 
-    def format_forecast(self, forecast: Dict) -> Dict:
+    def format_forecast(self, forecast: Dict, tides: dict) -> Dict:
         forecast = rename_key(forecast, "tabid_0_0_dates", "datetime")
         forecast = rename_key(forecast, "tabid_0_0_SMER", "wind_direction")
         forecast = rename_key(forecast, "tabid_0_0_HTSGW", "wave_height")
@@ -42,12 +43,9 @@ class Windguru(object):
         forecast["time"] = [
             dt.split(".")[1].replace("h", ":00") for dt in forecast["datetime"]
         ]
-        forecast["datetime"] = [
-            datetime.strptime(f"{date} {time}", "%d/%m/%Y %H:%M")
-            for date, time in zip(forecast["date"], forecast["time"])
-        ]
-        del forecast["date"]
-        del forecast["time"]
+        forecast["datetime"] = generate_datetimes(forecast["date"], forecast["time"])
+        # del forecast["date"]
+        # del forecast["time"]
 
         forecast["wind_status"] = self.parse_windstatus(
             forecast["wave_direction"], forecast["wind_direction"]
@@ -61,6 +59,7 @@ class Windguru(object):
         forecast["wind_speed"] = self.format_dict_digit_all_values(
             forecast, "wind_speed", "float"
         )
+        forecast["tide"] = generate_tides(tides, forecast["datetime"])
         return forecast
 
     def parse_spot_name(self, soup):
@@ -69,10 +68,7 @@ class Windguru(object):
     def parse_spot_names(self, soup, total_records):
         return [self.parse_spot_name(soup) for _ in range(total_records)]
 
-    def get_dataframe_from_soup(
-        self,
-        soup: BeautifulSoup,
-    ) -> Dict:
+    def get_dataframe_from_soup(self, soup: BeautifulSoup, tides: dict) -> Dict:
         forecast = {}
         table = soup.find("table", class_="tabulka")
         tablebody = table.find("tbody")
@@ -99,7 +95,7 @@ class Windguru(object):
         if forecast != {}:
             total_records = len(max(forecast.items(), key=lambda item: len(item[1]))[1])
             forecast["spot_name"] = self.parse_spot_names(soup, total_records)
-            forecast = self.format_forecast(forecast)
+            forecast = self.format_forecast(forecast, tides)
             return pl.DataFrame(forecast)
         return pl.DataFrame()
 
@@ -143,13 +139,16 @@ class Windguru(object):
             month = new_date.month
         elif int(day) >= current_date.day:
             month = current_date.month
-        year = current_date.year
-
+        if int(month) < current_date.month:
+            new_date = current_date + relativedelta(years=1)
+            year = new_date.year
+        elif int(month) >= current_date.month:
+            year = current_date.year
         date_datetime = datetime.strptime(f"{day}/{month}/{year}", "%d/%m/%Y")
 
         return date_datetime.strftime("%d/%m/%Y")
 
-    def scrape(self, url):
+    def scrape(self, arguments: tuple):
+        url, tides = arguments
         soup = self.beach_request(url)
-        df = self.get_dataframe_from_soup(soup)
-        return self.get_dataframe_from_soup(soup)
+        return self.get_dataframe_from_soup(soup, tides)

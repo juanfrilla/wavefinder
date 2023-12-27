@@ -42,8 +42,8 @@ def plot_graph(variable):
                 y=f"{variable}:Q",
                 color="spot_name:N",
                 tooltip=[
-                    alt.Tooltip("datetime:T", format="%d/%m/%Y", title="Date"),
-                    alt.Tooltip("datetime:T", format="%H:%M", title="Time"),
+                    alt.Tooltip("date:T", format="%d/%m/%Y", title="Date"),
+                    alt.Tooltip("time:T", format="%H:%M", title="Time"),
                     "spot_name:N",
                     "wave_height:Q",
                     "wind_approval:N",
@@ -161,11 +161,13 @@ def plot_selected_wave_energy():
 
 @st.cache_data(ttl="1h")
 def load_forecast(urls):
+    tide_scraper = TidesScraper()
+    tides = tide_scraper.scrape_graph()
     start_time = time.time()
     if "windfinder" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, WindFinder())
     elif "windguru" in urls[0]:
-        df = multithread.scrape_multiple_browser(urls, Windguru())
+        df = multithread.scrape_multiple_browser(urls, Windguru(), tides)
         # api_token =st.secrets["TELEGRAM_API_TOKEN"]
         # chat_id = st.secrets["TELEGRAM_CHAT_ID"]
         # telegram_bot = TelegramBot(api_token, chat_id)
@@ -178,7 +180,7 @@ def load_forecast(urls):
         #     telegram_bot.send_message(string)
 
     elif "surf-forecast" in urls[0]:
-        df = multithread.scrape_multiple_requests(urls, SurfForecast())
+        df = multithread.scrape_multiple_requests(urls, SurfForecast(), tides)
     elif "surfline" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, Surfline())
     elif "windy.app" in urls[0]:
@@ -190,16 +192,6 @@ def load_forecast(urls):
     elif "windy.com" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, WindyCom())
     df = final_forecast_format(df)
-    print("--- %s seconds ---" % (time.time() - start_time))
-
-    return df
-
-
-@st.cache_data(ttl="23h")
-def load_tides():
-    start_time = time.time()
-    tide_scraper = TidesScraper()
-    df = tide_scraper.scrape_table()
     print("--- %s seconds ---" % (time.time() - start_time))
 
     return df
@@ -228,18 +220,13 @@ def plot_forecast_as_table(urls):
     if st.session_state.forecast_df.is_empty():
         st.write("The DataFrame is empty.")
     else:
-        # GET UNIQUES
-        date_name_list = (
-            st.session_state.forecast_df.to_pandas()["date_name"].unique().tolist()
+        date_name_list = list(set(st.session_state.forecast_df["date_name"].to_list()))
+        wind_status_list = list(
+            set(st.session_state.forecast_df["wind_status"].to_list())
         )
-        wind_status_list = (
-            st.session_state.forecast_df.to_pandas()["wind_status"].unique().tolist()
-        )
-        all_beaches = (
-            st.session_state.forecast_df.to_pandas()["spot_name"].unique().tolist()
-        )
-        all_wind_approvals = (
-            st.session_state.forecast_df.to_pandas()["wind_approval"].unique().tolist()
+        all_beaches = list(set(st.session_state.forecast_df["spot_name"].to_list()))
+        all_wind_approvals = list(
+            set(st.session_state.forecast_df["wind_approval"].to_list())
         )
 
         # CREATE MULTISELECT
@@ -273,11 +260,6 @@ def plot_forecast_as_table(urls):
             all_wind_approvals,
             default=get_default_wind_approval_selection(all_wind_approvals),
         )
-
-        # tides_state_selection = st.multiselect(
-        #     "Estado de la marea:", tides_state, default=tides_state
-        # )
-        # --- FILTER DATAFRAME BASED ON SELECTION
 
         date_name_condition = st.session_state.forecast_df["date_name"].is_in(
             date_name_selection
@@ -354,9 +336,6 @@ def plot_forecast_as_table(urls):
 
                 st.subheader(f"Spot: {spot_name}")
                 forecast_df_dropped = group_df.drop("spot_name")
+                forecast_df_dropped = forecast_df_dropped.drop("datetime")
 
                 st.dataframe(forecast_df_dropped, hide_index=True)
-
-        st.session_state.tides_df = load_tides()
-        st.subheader("Tabla de mareas")
-        st.dataframe(st.session_state.tides_df, hide_index=True)

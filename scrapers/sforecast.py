@@ -4,8 +4,9 @@ import polars as pl
 from utils import (
     rename_key,
     kmh_to_knots,
-    convert_all_values_of_dict_to_min_length,
     generate_dates,
+    generate_tides,
+    generate_datetimes,
 )
 from datetime import datetime, timedelta
 import re
@@ -137,18 +138,7 @@ class SurfForecast(object):
             time_list.append(extracted_time)
         return time_list
 
-    def generate_datetimes(self, dates, times):
-        datetimes = []
-        for date, time in zip(dates, times):
-            year = datetime.strptime(date, "%d/%m/%Y").year
-            month = datetime.strptime(date, "%d/%m/%Y").month
-            day = datetime.strptime(date, "%d/%m/%Y").day
-            hour = int(time.split(":")[0])
-            minute = int(time.split(":")[1])
-            datetimes.append(datetime(year, month, day, hour, minute))
-        return datetimes
-
-    def get_dataframe_from_soup(self, soup):
+    def get_dataframe_from_soup(self, soup, tides):
         forecast = {}
         spot_name = self.parse_spot_name(soup)
         drn_list = [
@@ -179,9 +169,13 @@ class SurfForecast(object):
         forecast["wave_period"] = self.obtain_formated_wave_period(forecast)
         times = self.obtain_formated_time(forecast)
         dates = generate_dates(times)
-        forecast["datetime"] = self.generate_datetimes(dates, times)
+        datetimes = generate_datetimes(dates, times)
+        forecast["time"] = times
+        forecast["date"] = dates
+        forecast["datetime"] = datetimes
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
         forecast["energy"] = self.get_formated_energy(forecast)
+        forecast["tide"] = generate_tides(tides, datetimes)
         # forecast = convert_all_values_of_dict_to_min_length(forecast)
         df = pl.DataFrame(forecast)
         # df = self.remove_night_times(df)
@@ -190,8 +184,8 @@ class SurfForecast(object):
     def remove_night_times(self, df):
         return df.filter(pl.col("time") != "Night")
 
-    def scrape(self, url):
+    def scrape(self, url, tides):
         response = self.beach_request(url)
         soup = BeautifulSoup(response.text, "html.parser")
-        df = self.get_dataframe_from_soup(soup)
+        df = self.get_dataframe_from_soup(soup, tides)
         return df

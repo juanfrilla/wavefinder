@@ -33,15 +33,6 @@ INTERNAL_TIME_STR_FORMAT = "%H:%M:%S"
 CONTRARIES = {"N": "S", "S": "N", "E": "O", "O": "E"}
 
 
-# def get_wind_status(wind_direction, wave_direction):
-#     if is_offshore(wind_direction, wave_direction):
-#         return "Offshore"
-#     elif is_crossoff(wind_direction, wave_direction):
-#         return "Cross-off"
-#     else:
-#         return "Onshore"
-
-
 # margen de 20 grados en N,S,E,O
 def angle_to_direction(angle):
     angle %= 360
@@ -236,13 +227,13 @@ def get_date_name_column(df: pl.DataFrame) -> pl.DataFrame:
     yesterday = today - timedelta(days=1)
 
     df = df.with_columns(
-        pl.when((df["datetime"].dt.date()) == today)
+        pl.when((df["date"]) == today)
         .then("Hoy")
-        .when((df["datetime"].dt.date()) == tomorrow)
+        .when((df["date"]) == tomorrow)
         .then("Mañana")
-        .when((df["datetime"].dt.date()) == day_after_tomorrow)
+        .when((df["date"]) == day_after_tomorrow)
         .then("Pasado")
-        .when((df["datetime"].dt.date()) == yesterday)
+        .when((df["date"]) == yesterday)
         .then("Ayer")
         .otherwise("Otro día")
         .alias("date_name")
@@ -261,8 +252,14 @@ def get_day_name(days_to_add: float) -> str:
 
 def final_forecast_format(df: pl.DataFrame):
     if not df.is_empty():
-        df.sort(by=["datetime", "spot_name"], descending=[False, False])
-        datetimes = df["datetime"].cast(pl.Time)
+        df.sort(by=["date", "time", "spot_name"], descending=[True, True, True])
+        # datetimes = df["time"].cast(pl.Time)
+        df = df.with_columns(
+            pl.col("time")
+            .str.strptime(pl.Time, format="%H:%M", strict=False)
+            .alias("parsed time")
+        )
+        datetimes = df["parsed time"]
         _6_AM = time(hour=6, minute=0, second=0, microsecond=0)
         _19_PM = time(hour=19, minute=0, second=0, microsecond=0)
         mask = (datetimes >= _6_AM) & (datetimes <= _19_PM)
@@ -272,8 +269,11 @@ def final_forecast_format(df: pl.DataFrame):
 
         common_columns = [
             "date_name",
+            "date",
+            "time",
             "datetime",
             "spot_name",
+            "tide",
             "wind_status",
             "wave_height",
             "wave_period",
@@ -424,12 +424,6 @@ def generate_dates(times: list) -> list:
     return dates
 
 
-# def check_conditions(wind_direction, wave_direction):
-#     # Define the contraries
-#     contraries = {"N": "S", "S": "N", "E": "O", "O": "E"}
-#     return contraries
-
-
 def are_contraries(dir1, dir2):
     return CONTRARIES.get(dir1) == dir2
 
@@ -475,3 +469,48 @@ def get_wind_status(wind_direction, wave_direction):
     elif len_contraries >= 1:
         return "Cross-off"
     return "Onshore"
+
+
+def generate_tides(tide_data: dict, forecast_datetimes: dict) -> list:
+    tide_status_list = []
+    tides_datetimes_list = tide_data.get("datetime")
+    tides_tide_list = tide_data.get("tide")
+
+    for forecast_datetime in forecast_datetimes:
+        closest_datetime = min(
+            tides_datetimes_list, key=lambda dt: abs(dt - forecast_datetime)
+        )
+        closest_datetime_index = tides_datetimes_list.index(closest_datetime)
+        tide_status = tides_tide_list[closest_datetime_index]
+        try:
+            next_tide_hour = tides_datetimes_list[closest_datetime_index + 1].time()
+        except IndexError:
+            # Entre marea alta y baja transcurren 6h y 12.5 min.
+            next_tide_hour = (
+                closest_datetime + timedelta(hours=6, minutes=12.5)
+            ).time()
+        tide_hour = closest_datetime.time()
+
+        if forecast_datetime > closest_datetime:
+            status = "Bajando" if tide_status == "pleamar" else "Subiendo"
+            s = f"{status} hasta las {next_tide_hour}"
+        elif forecast_datetime < closest_datetime:
+            status = "Subiendo" if tide_status == "pleamar" else "Bajando"
+            s = f"{status} hasta las {tide_hour}"
+        else:
+            s = f"{tide_status} del todo a las {tide_hour}"
+        tide_status_list.append(s)
+
+    return tide_status_list
+
+
+def generate_datetimes(dates, times):
+    datetimes = []
+    for date, time in zip(dates, times):
+        year = datetime.strptime(date, "%d/%m/%Y").year
+        month = datetime.strptime(date, "%d/%m/%Y").month
+        day = datetime.strptime(date, "%d/%m/%Y").day
+        hour = int(time.split(":")[0])
+        minute = int(time.split(":")[1])
+        datetimes.append(datetime(year, month, day, hour, minute))
+    return datetimes

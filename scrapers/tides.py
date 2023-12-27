@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-import os, datetime, pandas as pl
+import os, datetime, polars as pl
 from typing import Dict
 from requests import Session
 from utils import get_day_name, datestr_to_datetime
@@ -51,9 +51,10 @@ class TidesScraper(object):
                     elif ":" in cell.text:
                         format_time = "%H:%M"
                         tide_time = datestr_to_datetime(cell.text, format_time).time()
-                        tide_datetime_str = f"{tide_date} {tide_time}"
-                        tides["datetime"].append(tide_datetime_str)
-        return pl.DataFrame(tides)
+                        tide_datetime = datetime.datetime.combine(tide_date, tide_time)
+                        tides["datetime"].append(tide_datetime)
+        return tides
+        # return pl.DataFrame(tides)
 
     def scrape_table(self) -> Dict:
         response = self.session.get(url=self.link, headers=self.headers)
