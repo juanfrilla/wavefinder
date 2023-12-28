@@ -220,20 +220,21 @@ def handle_wind(df: pl.DataFrame) -> pl.DataFrame:
     return df
 
 
-def get_date_name_column(df: pl.DataFrame) -> pl.DataFrame:
-    today = datetime.now().date()
-    tomorrow = today + timedelta(days=1)
-    day_after_tomorrow = today + timedelta(days=2)
-    yesterday = today - timedelta(days=1)
+def create_date_name_column(df: pl.DataFrame) -> pl.DataFrame:
+    today_dt = datetime.now().date()
+    today_str = datetime_to_str(datetime.now().date(), "%d/%m/%Y")
+    tomorrow_str = datetime_to_str(today_dt + timedelta(days=1), "%d/%m/%Y")
+    day_after_tomorrow_str = datetime_to_str(today_dt + timedelta(days=2), "%d/%m/%Y")
+    yesterday_str = datetime_to_str(today_dt - timedelta(days=1), "%d/%m/%Y")
 
     df = df.with_columns(
-        pl.when((df["date"]) == today)
+        pl.when((df["date"]) == today_str)
         .then("Hoy")
-        .when((df["date"]) == tomorrow)
+        .when((df["date"]) == tomorrow_str)
         .then("Mañana")
-        .when((df["date"]) == day_after_tomorrow)
+        .when((df["date"]) == day_after_tomorrow_str)
         .then("Pasado")
-        .when((df["date"]) == yesterday)
+        .when((df["date"]) == yesterday_str)
         .then("Ayer")
         .otherwise("Otro día")
         .alias("date_name")
@@ -265,7 +266,7 @@ def final_forecast_format(df: pl.DataFrame):
         mask = (datetimes >= _6_AM) & (datetimes <= _19_PM)
         df = df.filter(mask)
 
-        df = get_date_name_column(df)
+        df = create_date_name_column(df)
 
         common_columns = [
             "date_name",
