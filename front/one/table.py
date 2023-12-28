@@ -220,6 +220,7 @@ def plot_forecast_as_table(urls):
     if st.session_state.forecast_df.is_empty():
         st.write("The DataFrame is empty.")
     else:
+        date_list = list(set(st.session_state.forecast_df["date"].to_list()))
         date_name_list = list(set(st.session_state.forecast_df["date_name"].to_list()))
         wind_status_list = list(
             set(st.session_state.forecast_df["wind_status"].to_list())
@@ -231,8 +232,9 @@ def plot_forecast_as_table(urls):
 
         # CREATE MULTISELECT
         date_name_selection = st.multiselect(
-            "Fecha:", date_name_list, default=date_name_list
+            "Nombre del día:", date_name_list, default=date_name_list
         )
+        date_selection = st.multiselect("Fecha:", date_list, default=date_list)
         if "Glass" in wind_status_list:
             default = ["Offshore", "Cross-off", "Glass"]
         elif "Cross-off" in wind_status_list and "Offshore" in wind_status_list:
@@ -261,6 +263,7 @@ def plot_forecast_as_table(urls):
             default=get_default_wind_approval_selection(all_wind_approvals),
         )
 
+        date_condition = st.session_state.forecast_df["date"].is_in(date_selection)
         date_name_condition = st.session_state.forecast_df["date_name"].is_in(
             date_name_selection
         )
@@ -300,7 +303,8 @@ def plot_forecast_as_table(urls):
 
         # Combine conditions using bitwise AND operator
         mask = (
-            date_name_condition
+            date_condition
+            & date_name_condition
             & wind_status_condition
             & beach_condition
             & wind_approval_condition
