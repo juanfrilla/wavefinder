@@ -125,15 +125,15 @@ class SurfForecast(object):
                 extracted_time = self.convert_to_Hm(time.replace("\u2009", ""))
             elif time in ["mañana", "tarde", "noche"]:
                 extracted_time = (
-                    time.replace("mañana", "10:00")
-                    .replace("tarde", "16:00")
-                    .replace("noche", "22:00")
+                    time.replace("mañana", "09:00")
+                    .replace("tarde", "15:00")
+                    .replace("noche", "21:00")
                 )
             elif time in ["AM", "PM", "Night"]:
                 extracted_time = (
-                    time.replace("AM", "10:00")
-                    .replace("PM", "16:00")
-                    .replace("Night", "22:00")
+                    time.replace("AM", "09:00")
+                    .replace("PM", "15:00")
+                    .replace("Night", "21:00")
                 )
             time_list.append(extracted_time)
         return time_list
