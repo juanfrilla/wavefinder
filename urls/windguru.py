@@ -12,6 +12,6 @@ WINDGURU_URLS = [
     "https://www.windguru.cz/49321",  # matagorda
     "https://www.windguru.cz/49322",  # playa honda
     # "https://www.windguru.cz/49324", # los charcos
-    # "https://www.windguru.cz/501281", #la santa
+    "https://www.windguru.cz/501281",  # la santa
     "https://www.windguru.cz/830259",  # arrecife
 ]
