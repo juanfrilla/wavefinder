@@ -14,6 +14,7 @@ from scrapers.tides import TidesScraper
 from APIS.telegram_api import TelegramBot
 import altair as alt
 import polars as pl
+from datetime import datetime
 
 DEFAULT_MIN_WAVE_PERIOD = 7
 DEFAULT_WAVE_HEIGHT = 0.9
@@ -197,6 +198,11 @@ def load_forecast(urls):
     return df
 
 
+def custom_sort_key(item):
+    custom_order = {"Hoy": 1, "Mañana": 2, "Pasado": 3, "Otro día": 4}
+    return custom_order.get(item, 5)
+
+
 def plot_forecast_as_table(urls):
     if "windfinder" in urls[0]:
         st.title("LANZAROTE (WINDFINDER)")
@@ -340,6 +346,9 @@ def plot_forecast_as_table(urls):
 
                 st.subheader(f"Spot: {spot_name}")
                 forecast_df_dropped = group_df.drop("spot_name")
+                forecast_df_dropped = forecast_df_dropped.sort(
+                    "datetime", descending=False
+                )
                 forecast_df_dropped = forecast_df_dropped.drop("datetime")
 
                 st.dataframe(forecast_df_dropped, hide_index=True)
