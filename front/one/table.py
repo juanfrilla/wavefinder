@@ -349,6 +349,7 @@ def plot_forecast_as_table(urls):
                 forecast_df_dropped = forecast_df_dropped.sort(
                     "datetime", descending=False
                 )
-                forecast_df_dropped = forecast_df_dropped.drop("datetime")
-
+                forecast_df_dropped = forecast_df_dropped.unique(
+                    subset=["datetime"]
+                ).drop("datetime")
                 st.dataframe(forecast_df_dropped, hide_index=True)
