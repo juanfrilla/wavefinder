@@ -274,12 +274,12 @@ def final_forecast_format(df: pl.DataFrame):
             "time",
             "datetime",
             "spot_name",
-            "tide",
             "wind_status",
             "wave_height",
             "wave_period",
             "wind_direction",
             "wave_direction",
+            "tide",
             "wind_speed",
             "wind_approval",
         ]
