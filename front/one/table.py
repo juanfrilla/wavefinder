@@ -11,7 +11,7 @@ from scrapers.wisuki import Wisuki
 from scrapers.windycom import WindyCom
 from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
-from APIS.telegram_api import TelegramBot
+from APIS.discord_api import DiscordBot
 import altair as alt
 import polars as pl
 from datetime import datetime
@@ -160,7 +160,84 @@ def plot_selected_wave_energy():
     )
 
 
-@st.cache_data(ttl="1h")
+def handle_alerts(df: pl.DataFrame):
+    DATE_NAME_IN_LIST = df["date_name"].is_in(["Hoy", "Mañana", "Pasado"])
+    WIND_STATUS_IN_LIST = df["wind_status"].is_in(["Offshore", "Cross-off", "Glass"])
+    papagayo_conditions = (
+        df["spot_name"].str.contains("Playa de la Cera")
+        & (df["energy"] >= 1500)
+        & (df["wave_direction"] == "WNW")
+        & (DATE_NAME_IN_LIST)
+        & (WIND_STATUS_IN_LIST)
+    )
+    caleta_caballo_conditions = (
+        (df["wind_direction"].str == "W" or df["wind_direction"].str.contains("SW"))
+        & (df["spot_name"].str.contains("Caleta de Cabello"))
+        & (DATE_NAME_IN_LIST)
+        & (WIND_STATUS_IN_LIST)
+    )
+    famara_conditions = (
+        (df["wind_direction"].str.contains("S"))
+        & (df["spot_name"].str.contains("Famara"))
+        & (df["energy"] >= 100)
+        & (DATE_NAME_IN_LIST)
+        & (WIND_STATUS_IN_LIST)
+    )
+    tiburon_conditions = (
+        df["spot_name"].str.contains("Tiburon")
+        & (df["energy"] >= 1000)
+        & (DATE_NAME_IN_LIST)
+        & (WIND_STATUS_IN_LIST)
+    )
+    barcarola_conditions = (
+        df["spot_name"].str.contains("Barcarola")
+        & (df["energy"] >= 1000)
+        & (DATE_NAME_IN_LIST)
+        & (WIND_STATUS_IN_LIST)
+    )
+
+    bastian_conditions = (
+        df["spot_name"].str.contains("Bastián")
+        & (df["energy"] >= 1000)
+        & (DATE_NAME_IN_LIST)
+        & (WIND_STATUS_IN_LIST)
+    )
+    punta_conditions = (
+        df["spot_name"].str.contains("punta de Mujeres")
+        & (df["wind_direction"].str.contains("N"))
+        & (df["energy"] >= 1000)
+        & (DATE_NAME_IN_LIST)
+        & (WIND_STATUS_IN_LIST)
+    )
+    arrieta_conditions = (
+        df["spot_name"].str.contains("Arrieta")
+        & (df["wind_direction"].str.contains("N"))
+        & (df["energy"] >= 1000)
+        & (DATE_NAME_IN_LIST)
+        & (WIND_STATUS_IN_LIST)
+    )
+    spots_conditions = [
+        papagayo_conditions,
+        caleta_caballo_conditions,
+        tiburon_conditions,
+        barcarola_conditions,
+        bastian_conditions,
+        punta_conditions,
+        arrieta_conditions,
+        famara_conditions,
+    ]
+    for condition in spots_conditions:
+        if condition.any():
+            result_df = df.filter(condition)
+            discort_bot = DiscordBot()
+            for row in result_df.rows(named=True):
+                discort_bot.waves_alert(
+                    f"**{row['spot_name'].upper()}**: {row['date_name']}, día {row['date']} a las {row['time']} con una energía de {row['energy']}, una direccion del viento de {row['wind_direction']} y una direccion de la ola de {row['wave_direction']} y la marea estará {row['tide']}"
+                )
+    return
+
+
+@st.cache_data(ttl="12h")
 def load_forecast(urls):
     tide_scraper = TidesScraper()
     tides = tide_scraper.scrape_graph()
@@ -193,6 +270,7 @@ def load_forecast(urls):
     elif "windy.com" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, WindyCom())
     df = final_forecast_format(df)
+    handle_alerts(df)
     print("--- %s seconds ---" % (time.time() - start_time))
 
     return df
