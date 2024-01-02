@@ -237,7 +237,7 @@ def handle_alerts(df: pl.DataFrame):
     return
 
 
-@st.cache_data(ttl="12h")
+@st.cache_data(ttl="6h")
 def load_forecast(urls):
     tide_scraper = TidesScraper()
     tides = tide_scraper.scrape_graph()
