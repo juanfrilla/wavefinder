@@ -319,18 +319,10 @@ def plot_forecast_as_table(urls):
             "Nombre del día:", date_name_list, default=date_name_list
         )
         date_selection = st.multiselect("Fecha:", date_list, default=date_list)
-        if "Glass" in wind_status_list:
-            default = ["Offshore", "Cross-off", "Glass"]
-        elif "Cross-off" in wind_status_list and "Offshore" in wind_status_list:
-            default = ["Cross-off", "Offshore"]
-        elif "Cross-off" in wind_status_list and "Offshore" not in wind_status_list:
-            default = ["Cross-off"]
-        elif "Offshore" in wind_status_list and "Cross-off" not in wind_status_list:
-            default = ["Offshore"]
         wind_status_selection = st.multiselect(
             "Estado del viento:",
             wind_status_list,
-            default=default,
+            default=wind_status_list,
         )
         selected_wave_height = plot_selected_wave_height(DEFAULT_WAVE_HEIGHT)
         selected_swell_height = plot_selected_swell_height()
