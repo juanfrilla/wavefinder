@@ -203,18 +203,18 @@ def handle_alerts(df: pl.DataFrame):
         & (WIND_STATUS_IN_LIST)
     )
     punta_conditions = (
-        df["spot_name"].str.contains("punta de Mujeres")
+        df["spot_name"].str.contains("Punta de Mujeres")
         & (df["wind_direction"].str.contains("N"))
+        & (df["wave_direction"].str.contains("E"))
         & (df["energy"] >= 1000)
         & (DATE_NAME_IN_LIST)
-        & (WIND_STATUS_IN_LIST)
     )
     arrieta_conditions = (
         df["spot_name"].str.contains("Arrieta")
         & (df["wind_direction"].str.contains("N"))
+        & (df["wave_direction"].str.contains("E"))
         & (df["energy"] >= 1000)
         & (DATE_NAME_IN_LIST)
-        & (WIND_STATUS_IN_LIST)
     )
     spots_conditions = [
         papagayo_conditions,
