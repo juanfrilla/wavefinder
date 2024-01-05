@@ -275,11 +275,11 @@ def final_forecast_format(df: pl.DataFrame):
             "datetime",
             "spot_name",
             "wind_status",
-            "wave_height",
-            "wave_period",
             "wind_direction",
             "wave_direction",
             "tide",
+            "wave_height",
+            "wave_period",
             "wind_speed",
             "wind_approval",
         ]
@@ -289,7 +289,9 @@ def final_forecast_format(df: pl.DataFrame):
             try:
                 df[column]
                 if column == "energy":
-                    common_columns.insert(common_columns.index("wave_height"), column)
+                    common_columns.insert(
+                        common_columns.index("wind_direction"), column
+                    )
                 else:
                     common_columns.append(column)
             except Exception:
