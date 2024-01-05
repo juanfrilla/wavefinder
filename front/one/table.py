@@ -166,9 +166,8 @@ def handle_alerts(df: pl.DataFrame):
     papagayo_conditions = (
         df["spot_name"].str.contains("Playa de la Cera")
         & (df["energy"] >= 1500)
-        & (df["wave_direction"] == "WNW")
+        & ((df["wave_direction"] == "WNW") | (df["wave_direction"] == "W"))
         & (DATE_NAME_IN_LIST)
-        & (WIND_STATUS_IN_LIST)
     )
     caleta_caballo_conditions = (
         (df["wind_direction"].str == "W" or df["wind_direction"].str.contains("SW"))
