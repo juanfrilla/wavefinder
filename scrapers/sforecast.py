@@ -11,6 +11,7 @@ from utils import (
 from datetime import datetime, timedelta
 import re
 from dateutil import parser
+from APIS.discord_api import DiscordBot
 
 
 class SurfForecast(object):
@@ -180,6 +181,86 @@ class SurfForecast(object):
         df = pl.DataFrame(forecast)
         # df = self.remove_night_times(df)
         return df
+
+    def handle_sforecast_alerts(self, df: pl.DataFrame):
+        DATE_NAME_IN_LIST = df["date_name"].is_in(["Hoy", "Mañana", "Pasado"])
+        WIND_STATUS_IN_LIST = df["wind_status"].is_in(
+            ["Offshore", "Cross-off", "Glass"]
+        )
+        papagayo_conditions = (
+            df["spot_name"].str.contains("Playa de la Cera")
+            & (df["energy"] >= 1500)
+            & ((df["wave_direction"] == "WNW") | (df["wave_direction"] == "W"))
+            & (DATE_NAME_IN_LIST)
+        )
+        caleta_caballo_conditions = (
+            (
+                (df["wind_direction"].str == "W")
+                or (df["wind_direction"].str.contains("SW"))
+            )
+            & (df["spot_name"].str.contains("Caleta de Cabello"))
+            & (DATE_NAME_IN_LIST)
+            & (WIND_STATUS_IN_LIST)
+        )
+        famara_conditions = (
+            (df["wind_direction"].str.contains("S"))
+            & (df["spot_name"].str.contains("Famara"))
+            & (df["energy"] >= 100)
+            & (DATE_NAME_IN_LIST)
+            & (WIND_STATUS_IN_LIST)
+        )
+        tiburon_conditions = (
+            df["spot_name"].str.contains("Tiburon")
+            & (df["energy"] >= 1000)
+            & (DATE_NAME_IN_LIST)
+            & (WIND_STATUS_IN_LIST)
+        )
+        barcarola_conditions = (
+            df["spot_name"].str.contains("Barcarola")
+            & (df["energy"] >= 1000)
+            & (DATE_NAME_IN_LIST)
+            & (WIND_STATUS_IN_LIST)
+        )
+
+        bastian_conditions = (
+            df["spot_name"].str.contains("Bastián")
+            & (df["energy"] >= 1000)
+            & (DATE_NAME_IN_LIST)
+            & (WIND_STATUS_IN_LIST)
+        )
+        punta_conditions = (
+            df["spot_name"].str.contains("Punta de Mujeres")
+            & (df["wind_direction"].str.contains("N"))
+            & (df["wave_direction"].str.contains("E"))
+            & (df["energy"] >= 1000)
+            & (DATE_NAME_IN_LIST)
+        )
+        arrieta_conditions = (
+            df["spot_name"].str.contains("Arrieta")
+            & (df["wind_direction"].str.contains("N"))
+            & (df["wave_direction"].str.contains("E"))
+            & (df["energy"] >= 1000)
+            & (DATE_NAME_IN_LIST)
+        )
+        spots_conditions = [
+            papagayo_conditions,
+            caleta_caballo_conditions,
+            tiburon_conditions,
+            barcarola_conditions,
+            bastian_conditions,
+            punta_conditions,
+            arrieta_conditions,
+            famara_conditions,
+        ]
+        for condition in spots_conditions:
+            if condition.any():
+                result_df = df.filter(condition)
+                discort_bot = DiscordBot()
+                for row in result_df.rows(named=True):
+                    discort_bot.waves_alert(
+                        f"surf-forecast - **{row['spot_name'].upper()}**: {row['date_name']}, día {row['date']} a las {row['time']} con una energía de {row['energy']}, una direccion del viento de {row['wind_direction']} y una direccion de la ola de {row['wave_direction']} y la marea estará {row['tide']}"
+                    )
+        return
 
     def remove_night_times(self, df):
         return df.filter(pl.col("time") != "Night")

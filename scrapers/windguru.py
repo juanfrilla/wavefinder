@@ -11,6 +11,7 @@ from utils import (
 import re
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from APIS.discord_api import DiscordBot
 
 
 class Windguru(object):
@@ -147,6 +148,100 @@ class Windguru(object):
         date_datetime = datetime.strptime(f"{day}/{month}/{year}", "%d/%m/%Y")
 
         return date_datetime.strftime("%d/%m/%Y")
+
+    def handle_windguru_alerts(self, df: pl.DataFrame):
+        DATE_NAME_IN_LIST = df["date_name"].is_in(["Hoy", "Mañana", "Pasado"])
+        WIND_STATUS_IN_LIST = df["wind_status"].is_in(
+            ["Offshore", "Cross-off", "Glass"]
+        )
+        papagayo_conditions = (
+            df["spot_name"].str.contains("Famara")
+            & (df["wave_period"] >= 10)
+            & (df["wave_height"] >= 1.7)
+            & (
+                (df["wave_direction"] == "ONO")
+                | (df["wave_direction"] == "O")
+                | (df["wave_direction"].str.contains("S"))
+            )
+            & (DATE_NAME_IN_LIST)
+        )
+        caleta_caballo_conditions = (
+            (
+                (df["wind_direction"].str == "O")
+                | (df["wind_direction"].str.contains("SO"))
+            )
+            & (df["spot_name"].str.contains("Famara"))
+            & (DATE_NAME_IN_LIST)
+            & (WIND_STATUS_IN_LIST)
+        )
+        famara_conditions = (
+            (df["wind_direction"].str.contains("S"))
+            & (df["spot_name"].str.contains("Famara"))
+            & (DATE_NAME_IN_LIST)
+            & (WIND_STATUS_IN_LIST)
+        )
+        tiburon_conditions = (
+            df["spot_name"].str.contains("Playa Honda")
+            & df["wave_direction"].str.contains("E")
+            & df["wave_direction"].str.contains("S")
+            & (df["wave_period"] >= 10)
+            & (df["wave_height"] >= 1.7)
+            & (DATE_NAME_IN_LIST)
+            & (WIND_STATUS_IN_LIST)
+        )
+        barcarola_conditions = (
+            df["spot_name"].str.contains("Pocillos")
+            & df["wave_direction"].str.contains("E")
+            & df["wave_direction"].str.contains("S")
+            & (df["wave_period"] >= 10)
+            & (df["wave_height"] >= 1.7)
+            & (DATE_NAME_IN_LIST)
+            & (WIND_STATUS_IN_LIST)
+        )
+
+        bastian_conditions = (
+            df["spot_name"].str.contains("Cucharas")
+            & df["wave_direction"].str.contains("E")
+            & (df["wave_period"] >= 10)
+            & (df["wave_height"] >= 1.7)
+            & (DATE_NAME_IN_LIST)
+            & (WIND_STATUS_IN_LIST)
+        )
+        punta_conditions = (
+            df["spot_name"].str.contains("Punta de Mujeres")
+            & (df["wind_direction"].str.contains("N"))
+            & (df["wave_direction"].str.contains("E"))
+            & (df["wave_period"] >= 10)
+            & (df["wave_height"] >= 1.7)
+            & (DATE_NAME_IN_LIST)
+        )
+        arrieta_conditions = (
+            df["spot_name"].str.contains("Arrieta")
+            & (df["wind_direction"].str.contains("N"))
+            & (df["wave_direction"].str.contains("E"))
+            & (df["wave_period"] >= 10)
+            & (df["wave_height"] >= 1.7)
+            & (DATE_NAME_IN_LIST)
+        )
+        spots_conditions = [
+            papagayo_conditions,
+            caleta_caballo_conditions,
+            tiburon_conditions,
+            barcarola_conditions,
+            bastian_conditions,
+            punta_conditions,
+            arrieta_conditions,
+            famara_conditions,
+        ]
+        for condition in spots_conditions:
+            if condition.any():
+                result_df = df.filter(condition)
+                discort_bot = DiscordBot()
+                for row in result_df.rows(named=True):
+                    discort_bot.waves_alert(
+                        f"windguru - **{row['spot_name'].upper()}**: {row['date_name']}, día {row['date']} a las {row['time']}, una altura de {row['wave_height']}, un periodo de {row['wave_period']} y una direccion del viento de {row['wind_direction']} y una direccion de la ola de {row['wave_direction']} y la marea estará {row['tide']}"
+                    )
+        return
 
     def scrape(self, arguments: tuple):
         url, tides = arguments
