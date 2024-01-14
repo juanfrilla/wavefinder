@@ -45,8 +45,6 @@ class Windguru(object):
             dt.split(".")[1].replace("h", ":00") for dt in forecast["datetime"]
         ]
         forecast["datetime"] = generate_datetimes(forecast["date"], forecast["time"])
-        # del forecast["date"]
-        # del forecast["time"]
 
         forecast["wind_status"] = self.parse_windstatus(
             forecast["wave_direction"], forecast["wind_direction"]
@@ -154,22 +152,13 @@ class Windguru(object):
         WIND_STATUS_IN_LIST = df["wind_status"].is_in(
             ["Offshore", "Cross-off", "Glass"]
         )
-        papagayo_conditions = (
-            df["spot_name"].str.contains("Famara")
-            & (df["wave_period"] >= 10)
-            & (df["wave_height"] >= 1.7)
-            & (
-                (df["wave_direction"] == "ONO")
-                | (df["wave_direction"] == "O")
-                | (df["wave_direction"].str.contains("S"))
-            )
-            & (DATE_NAME_IN_LIST)
-        )
         caleta_caballo_conditions = (
             (
                 (df["wind_direction"].str == "O")
                 | (df["wind_direction"].str.contains("SO"))
             )
+            & (df["wave_period"] >= 7)
+            & (df["wave_height"] >= 1)
             & (df["spot_name"].str.contains("Famara"))
             & (DATE_NAME_IN_LIST)
             & (WIND_STATUS_IN_LIST)
@@ -177,13 +166,17 @@ class Windguru(object):
         famara_conditions = (
             (df["wind_direction"].str.contains("S"))
             & (df["spot_name"].str.contains("Famara"))
+            & (df["wave_period"] >= 7)
+            & (df["wave_height"] >= 1)
             & (DATE_NAME_IN_LIST)
             & (WIND_STATUS_IN_LIST)
         )
         tiburon_conditions = (
             df["spot_name"].str.contains("Playa Honda")
-            & df["wave_direction"].str.contains("E")
-            & df["wave_direction"].str.contains("S")
+            & (
+                df["wave_direction"].str.contains("E")
+                | df["wave_direction"].str.contains("S")
+            )
             & (df["wave_period"] >= 10)
             & (df["wave_height"] >= 1.7)
             & (DATE_NAME_IN_LIST)
@@ -191,8 +184,10 @@ class Windguru(object):
         )
         barcarola_conditions = (
             df["spot_name"].str.contains("Pocillos")
-            & df["wave_direction"].str.contains("E")
-            & df["wave_direction"].str.contains("S")
+            & (
+                df["wave_direction"].str.contains("E")
+                | df["wave_direction"].str.contains("S")
+            )
             & (df["wave_period"] >= 10)
             & (df["wave_height"] >= 1.7)
             & (DATE_NAME_IN_LIST)
@@ -201,7 +196,10 @@ class Windguru(object):
 
         bastian_conditions = (
             df["spot_name"].str.contains("Cucharas")
-            & df["wave_direction"].str.contains("E")
+            & (
+                df["wave_direction"].str.contains("E")
+                | df["wave_direction"].str.contains("S")
+            )
             & (df["wave_period"] >= 10)
             & (df["wave_height"] >= 1.7)
             & (DATE_NAME_IN_LIST)
@@ -210,7 +208,10 @@ class Windguru(object):
         punta_conditions = (
             df["spot_name"].str.contains("Punta de Mujeres")
             & (df["wind_direction"].str.contains("N"))
-            & (df["wave_direction"].str.contains("E"))
+            & (
+                df["wave_direction"].str.contains("E")
+                | df["wave_direction"].str.contains("S")
+            )
             & (df["wave_period"] >= 10)
             & (df["wave_height"] >= 1.7)
             & (DATE_NAME_IN_LIST)
@@ -218,13 +219,15 @@ class Windguru(object):
         arrieta_conditions = (
             df["spot_name"].str.contains("Arrieta")
             & (df["wind_direction"].str.contains("N"))
-            & (df["wave_direction"].str.contains("E"))
+            & (
+                df["wave_direction"].str.contains("E")
+                | df["wave_direction"].str.contains("S")
+            )
             & (df["wave_period"] >= 10)
             & (df["wave_height"] >= 1.7)
             & (DATE_NAME_IN_LIST)
         )
         spots_conditions = [
-            papagayo_conditions,
             caleta_caballo_conditions,
             tiburon_conditions,
             barcarola_conditions,

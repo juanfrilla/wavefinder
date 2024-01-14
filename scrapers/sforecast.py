@@ -177,9 +177,7 @@ class SurfForecast(object):
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
         forecast["energy"] = self.get_formated_energy(forecast)
         forecast["tide"] = generate_tides(tides, datetimes)
-        # forecast = convert_all_values_of_dict_to_min_length(forecast)
         df = pl.DataFrame(forecast)
-        # df = self.remove_night_times(df)
         return df
 
     def handle_sforecast_alerts(self, df: pl.DataFrame):
@@ -211,12 +209,20 @@ class SurfForecast(object):
         )
         tiburon_conditions = (
             df["spot_name"].str.contains("Tiburon")
+            & (
+                df["wave_direction"].str.contains("E")
+                | df["wave_direction"].str.contains("S")
+            )
             & (df["energy"] >= 1000)
             & (DATE_NAME_IN_LIST)
             & (WIND_STATUS_IN_LIST)
         )
         barcarola_conditions = (
             df["spot_name"].str.contains("Barcarola")
+            & (
+                df["wave_direction"].str.contains("E")
+                | df["wave_direction"].str.contains("S")
+            )
             & (df["energy"] >= 1000)
             & (DATE_NAME_IN_LIST)
             & (WIND_STATUS_IN_LIST)
@@ -224,6 +230,10 @@ class SurfForecast(object):
 
         bastian_conditions = (
             df["spot_name"].str.contains("Bastián")
+            & (
+                df["wave_direction"].str.contains("E")
+                | df["wave_direction"].str.contains("S")
+            )
             & (df["energy"] >= 1000)
             & (DATE_NAME_IN_LIST)
             & (WIND_STATUS_IN_LIST)
@@ -231,14 +241,20 @@ class SurfForecast(object):
         punta_conditions = (
             df["spot_name"].str.contains("Punta de Mujeres")
             & (df["wind_direction"].str.contains("N"))
-            & (df["wave_direction"].str.contains("E"))
+            & (
+                df["wave_direction"].str.contains("E")
+                | df["wave_direction"].str.contains("S")
+            )
             & (df["energy"] >= 1000)
             & (DATE_NAME_IN_LIST)
         )
         arrieta_conditions = (
             df["spot_name"].str.contains("Arrieta")
             & (df["wind_direction"].str.contains("N"))
-            & (df["wave_direction"].str.contains("E"))
+            & (
+                df["wave_direction"].str.contains("E")
+                | df["wave_direction"].str.contains("S")
+            )
             & (df["energy"] >= 1000)
             & (DATE_NAME_IN_LIST)
         )

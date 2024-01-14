@@ -53,23 +53,6 @@ def angle_to_direction(angle):
     elif 280 <= angle < 350:
         return "NorthWest"
 
-    # if 0 <= angle < 22.5 or angle >= 337.5:
-    #     return "North"
-    # elif 22.5 <= angle < 67.5:
-    #     return "NorthEast"
-    # elif 67.5 <= angle < 112.5:
-    #     return "East"
-    # elif 112.5 <= angle < 157.5:
-    #     return "SouthEast"
-    # elif 157.5 <= angle < 202.5:
-    #     return "South"
-    # elif 202.5 <= angle < 247.5:
-    #     return "SouthWest"
-    # elif 247.5 <= angle < 292.5:
-    #     return "West"
-    # elif 292.5 <= angle < 337.5:
-    #     return "NorthWest"
-
 
 def is_offshore(wind_direction, wave_direction):
     offshore_mapping = {
@@ -262,7 +245,6 @@ def get_day_name(days_to_add: float) -> str:
 def final_forecast_format(df: pl.DataFrame):
     if not df.is_empty():
         df.sort(by=["date", "time", "spot_name"], descending=[True, True, True])
-        # datetimes = df["time"].cast(pl.Time)
         df = df.with_columns(
             pl.col("time")
             .str.strptime(pl.Time, format="%H:%M", strict=False)
