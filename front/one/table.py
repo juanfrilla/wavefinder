@@ -168,7 +168,7 @@ def load_forecast(urls):
         df = multithread.scrape_multiple_requests(urls, WindFinder())
     elif "windguru" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, Windguru(), tides)
-        df = final_forecast_format(df)
+        df = final_forecast_format(df).sort("datetime", descending=False)
         windguru = Windguru()
         windguru.handle_windguru_alerts(df)
         # api_token =st.secrets["TELEGRAM_API_TOKEN"]
@@ -185,6 +185,7 @@ def load_forecast(urls):
     elif "surf-forecast" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, SurfForecast(), tides)
         df = final_forecast_format(df)
+        df = df.unique(maintain_order=True).sort("datetime", descending=False)
         sforecast = SurfForecast()
         sforecast.handle_sforecast_alerts(df)
     elif "surfline" in urls[0]:
