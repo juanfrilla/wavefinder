@@ -243,6 +243,14 @@ def create_date_name_column(df: pl.DataFrame) -> pl.DataFrame:
     return df
 
 
+def create_wind_description_column(df: pl.DataFrame) -> pl.DataFrame:
+    df = df.with_columns(
+        pl.col("wind_speed").apply(classify_wind_speed).alias("wind_description")
+    )
+
+    return df
+
+
 def get_day_name(days_to_add: float) -> str:
     today = date.today()
     day = today + timedelta(days=days_to_add)
@@ -267,6 +275,7 @@ def final_forecast_format(df: pl.DataFrame):
         df = df.filter(mask)
 
         df = create_date_name_column(df)
+        df = create_wind_description_column(df)
 
         common_columns = [
             "date_name",
@@ -275,6 +284,7 @@ def final_forecast_format(df: pl.DataFrame):
             "datetime",
             "spot_name",
             "wind_status",
+            "wind_description",
             "wind_direction",
             "wave_direction",
             "tide",
@@ -314,31 +324,31 @@ def degrees_to_direction(degrees):
 
 def classify_wind_speed(speed_knots):
     if speed_knots < 1:
-        return "Calm"
+        return "Calma"
     elif speed_knots <= 3:
-        return "Light Air"
-    elif speed_knots <= 7:
-        return "Light Breeze"
-    elif speed_knots <= 12:
-        return "Gentle Breeze"
-    elif speed_knots <= 18:
-        return "Moderate Breeze"
-    elif speed_knots <= 24:
-        return "Fresh Breeze"
-    elif speed_knots <= 31:
-        return "Strong Breeze"
-    elif speed_knots <= 38:
-        return "High Wind, Moderate Gale, Near Gale"
-    elif speed_knots <= 46:
-        return "Gale, Fresh Gale"
-    elif speed_knots <= 54:
-        return "Strong Gale"
+        return "Brisita suave"
+    elif speed_knots <= 6:
+        return "Brisa my débil"
+    elif speed_knots <= 10:
+        return "Brisa ligera"
+    elif speed_knots <= 16:
+        return "Brisa moderada"
+    elif speed_knots <= 21:
+        return "Brisa fresca"
+    elif speed_knots <= 27:
+        return "Brisa fuerte"
+    elif speed_knots <= 33:
+        return "Viento fuerte"
+    elif speed_knots <= 40:
+        return "Viento duro"
+    elif speed_knots <= 47:
+        return "Viento muy duro"
+    elif speed_knots <= 55:
+        return "Temporal"
     elif speed_knots <= 63:
-        return "Storm, Whole Gale"
-    elif speed_knots <= 72:
-        return "Violent Storm"
+        return "Borrasca"
     else:
-        return "Hurricane"
+        return "Huracán"
 
 
 def feet_to_meters(feet):
