@@ -149,9 +149,9 @@ class Windguru(object):
 
     def handle_windguru_alerts(self, df: pl.DataFrame):
         DATE_NAME_IN_LIST = df["date_name"].is_in(["Hoy", "Mañana", "Pasado"])
-        WIND_STATUS_IN_LIST = df["wind_status"].is_in(
-            ["Offshore", "Cross-off", "Glass"]
-        )
+        # WIND_STATUS_IN_LIST = df["wind_status"].is_in(
+        #     ["Offshore", "Cross-off", "Glass"]
+        # )
         caleta_caballo_conditions = (
             (
                 (df["wind_direction"].str == "O")
@@ -161,7 +161,7 @@ class Windguru(object):
             & (df["wave_height"] >= 1)
             & (df["spot_name"].str.contains("Famara"))
             & (DATE_NAME_IN_LIST)
-            & (WIND_STATUS_IN_LIST)
+            # & (WIND_STATUS_IN_LIST)
         )
         famara_conditions = (
             (df["wind_direction"].str.contains("S"))
@@ -169,7 +169,7 @@ class Windguru(object):
             & (df["wave_period"] >= 7)
             & (df["wave_height"] >= 1)
             & (DATE_NAME_IN_LIST)
-            & (WIND_STATUS_IN_LIST)
+            # & (WIND_STATUS_IN_LIST)
         )
         tiburon_conditions = (
             df["spot_name"].str.contains("Playa Honda")
@@ -180,7 +180,7 @@ class Windguru(object):
             & (df["wave_period"] >= 10)
             & (df["wave_height"] >= 1.7)
             & (DATE_NAME_IN_LIST)
-            & (WIND_STATUS_IN_LIST)
+            # & (WIND_STATUS_IN_LIST)
         )
         barcarola_conditions = (
             df["spot_name"].str.contains("Pocillos")
@@ -191,7 +191,7 @@ class Windguru(object):
             & (df["wave_period"] >= 10)
             & (df["wave_height"] >= 1.7)
             & (DATE_NAME_IN_LIST)
-            & (WIND_STATUS_IN_LIST)
+            # & (WIND_STATUS_IN_LIST)
         )
 
         bastian_conditions = (
@@ -203,7 +203,7 @@ class Windguru(object):
             & (df["wave_period"] >= 10)
             & (df["wave_height"] >= 1.7)
             & (DATE_NAME_IN_LIST)
-            & (WIND_STATUS_IN_LIST)
+            # & (WIND_STATUS_IN_LIST)
         )
         punta_conditions = (
             df["spot_name"].str.contains("Punta de Mujeres")

@@ -182,9 +182,9 @@ class SurfForecast(object):
 
     def handle_sforecast_alerts(self, df: pl.DataFrame):
         DATE_NAME_IN_LIST = df["date_name"].is_in(["Hoy", "Mañana", "Pasado"])
-        WIND_STATUS_IN_LIST = df["wind_status"].is_in(
-            ["Offshore", "Cross-off", "Glass"]
-        )
+        # WIND_STATUS_IN_LIST = df["wind_status"].is_in(
+        #     ["Offshore", "Cross-off", "Glass"]
+        # )
         papagayo_conditions = (
             df["spot_name"].str.contains("Playa de la Cera")
             & (df["energy"] >= 1500)
@@ -198,14 +198,14 @@ class SurfForecast(object):
             )
             & (df["spot_name"].str.contains("Caleta de Cabello"))
             & (DATE_NAME_IN_LIST)
-            & (WIND_STATUS_IN_LIST)
+            # & (WIND_STATUS_IN_LIST)
         )
         famara_conditions = (
             (df["wind_direction"].str.contains("S"))
             & (df["spot_name"].str.contains("Famara"))
             & (df["energy"] >= 100)
             & (DATE_NAME_IN_LIST)
-            & (WIND_STATUS_IN_LIST)
+            # & (WIND_STATUS_IN_LIST)
         )
         tiburon_conditions = (
             df["spot_name"].str.contains("Tiburon")
@@ -215,7 +215,7 @@ class SurfForecast(object):
             )
             & (df["energy"] >= 1000)
             & (DATE_NAME_IN_LIST)
-            & (WIND_STATUS_IN_LIST)
+            # & (WIND_STATUS_IN_LIST)
         )
         barcarola_conditions = (
             df["spot_name"].str.contains("Barcarola")
@@ -225,7 +225,7 @@ class SurfForecast(object):
             )
             & (df["energy"] >= 1000)
             & (DATE_NAME_IN_LIST)
-            & (WIND_STATUS_IN_LIST)
+            # & (WIND_STATUS_IN_LIST)
         )
 
         bastian_conditions = (
@@ -236,7 +236,7 @@ class SurfForecast(object):
             )
             & (df["energy"] >= 1000)
             & (DATE_NAME_IN_LIST)
-            & (WIND_STATUS_IN_LIST)
+            # & (WIND_STATUS_IN_LIST)
         )
         punta_conditions = (
             df["spot_name"].str.contains("Punta de Mujeres")
