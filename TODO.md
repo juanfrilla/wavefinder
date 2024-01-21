@@ -23,3 +23,4 @@ TODO: en la marea generar la tabla entera de 1 mes, sumandole 6h12.5
 
 TODO: Refactorizar alertas en front/table
 TODO: Captura de las distintas páginas cuando hay olas
+#TODO poner bajo risco, las conchas, montaña amarilla
