@@ -236,7 +236,7 @@ class SurfForecast(object):
                 df["wave_direction"].str.contains("E")
                 | df["wave_direction"].str.contains("S")
             )
-            & (df["energy"] >= 100)
+            & (df["energy"] >= 400)
             & (DATE_NAME_IN_LIST)
             # & (WIND_STATUS_IN_LIST)
         )
@@ -247,7 +247,7 @@ class SurfForecast(object):
                 df["wave_direction"].str.contains("E")
                 | df["wave_direction"].str.contains("S")
             )
-            & (df["energy"] >= 100)
+            & (df["energy"] >= 400)
             & (DATE_NAME_IN_LIST)
         )
         arrieta_conditions = (
@@ -257,7 +257,7 @@ class SurfForecast(object):
                 df["wave_direction"].str.contains("E")
                 | df["wave_direction"].str.contains("S")
             )
-            & (df["energy"] >= 100)
+            & (df["energy"] >= 400)
             & (DATE_NAME_IN_LIST)
         )
         spots_conditions = [
