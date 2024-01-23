@@ -334,6 +334,8 @@ def plot_forecast_as_table(urls):
             )
             grouped_data = grouped_data.sort("total_period", descending=True)
 
+        # Si la fuerza no es oeste en el dataframe, que no muestre papagayo TODO
+
         with st.container():
             for i in range(len(grouped_data)):
                 spot_name = grouped_data[i]["spot_name"].to_numpy()[0]

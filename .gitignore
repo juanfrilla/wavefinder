@@ -1,4 +1,4 @@
-*.json
+launch.json
 venv/
 __pycache__/
 *.csv

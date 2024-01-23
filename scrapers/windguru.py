@@ -7,6 +7,7 @@ from utils import (
     get_wind_status,
     render_html,
     generate_datetimes,
+    filter_spot_dataframe,
 )
 import re
 from datetime import datetime
@@ -87,7 +88,7 @@ class Windguru(object):
                 forecast[id] = []
                 for cell in cells:
                     if ("SMER" in id) | ("DIRPW" in id):
-                        value = cell.find("span")["title"].replace("W", "O")
+                        value = cell.find("span")["title"]  # .replace("W", "O")
                     else:
                         value = cell.get_text()
                     forecast[id].append(value)
@@ -148,99 +149,26 @@ class Windguru(object):
         return date_datetime.strftime("%d/%m/%Y")
 
     def handle_windguru_alerts(self, df: pl.DataFrame):
-        DATE_NAME_IN_LIST = df["date_name"].is_in(["Hoy", "Mañana", "Pasado"])
-        # WIND_STATUS_IN_LIST = df["wind_status"].is_in(
-        #     ["Offshore", "Cross-off", "Glass"]
-        # )
-        caleta_caballo_conditions = (
-            (
-                (df["wind_direction"].str == "O")
-                | (df["wind_direction"].str.contains("SO"))
-            )
-            & (df["wave_period"] >= 7)
-            & (df["wave_height"] >= 1)
-            & (df["spot_name"].str.contains("Famara"))
-            & (DATE_NAME_IN_LIST)
-            # & (WIND_STATUS_IN_LIST)
-        )
-        famara_conditions = (
-            (df["wind_direction"].str.contains("S"))
-            & (df["spot_name"].str.contains("Famara"))
-            & (df["wave_period"] >= 7)
-            & (df["wave_height"] >= 1)
-            & (DATE_NAME_IN_LIST)
-            # & (WIND_STATUS_IN_LIST)
-        )
-        tiburon_conditions = (
-            df["spot_name"].str.contains("Playa Honda")
-            & (
-                df["wave_direction"].str.contains("E")
-                | df["wave_direction"].str.contains("S")
-            )
-            & (df["wave_period"] >= 7)
-            & (df["wave_height"] >= 1)
-            & (DATE_NAME_IN_LIST)
-            # & (WIND_STATUS_IN_LIST)
-        )
-        barcarola_conditions = (
-            df["spot_name"].str.contains("Pocillos")
-            & (
-                df["wave_direction"].str.contains("E")
-                | df["wave_direction"].str.contains("S")
-            )
-            & (df["wave_period"] >= 7)
-            & (df["wave_height"] >= 1)
-            & (DATE_NAME_IN_LIST)
-            # & (WIND_STATUS_IN_LIST)
-        )
-
-        bastian_conditions = (
-            df["spot_name"].str.contains("Cucharas")
-            & (
-                df["wave_direction"].str.contains("E")
-                | df["wave_direction"].str.contains("S")
-            )
-            & (df["wave_period"] >= 7)
-            & (df["wave_height"] >= 1)
-            & (DATE_NAME_IN_LIST)
-            # & (WIND_STATUS_IN_LIST)
-        )
-        punta_conditions = (
-            df["spot_name"].str.contains("Punta de Mujeres")
-            & (df["wind_direction"].str.contains("N"))
-            & (
-                df["wave_direction"].str.contains("E")
-                | df["wave_direction"].str.contains("S")
-            )
-            & (df["wave_period"] >= 7)
-            & (df["wave_height"] >= 1)
-            & (DATE_NAME_IN_LIST)
-        )
-        arrieta_conditions = (
-            df["spot_name"].str.contains("Arrieta")
-            & (df["wind_direction"].str.contains("N"))
-            & (
-                df["wave_direction"].str.contains("E")
-                | df["wave_direction"].str.contains("S")
-            )
-            & (df["wave_period"] >= 10)
-            & (df["wave_height"] >= 1.7)
-            & (DATE_NAME_IN_LIST)
-        )
-        spots_conditions = [
-            caleta_caballo_conditions,
-            tiburon_conditions,
-            barcarola_conditions,
-            bastian_conditions,
-            punta_conditions,
-            arrieta_conditions,
-            famara_conditions,
+        famara_df = filter_spot_dataframe("famara", df, three_near_days=True)
+        tiburon_df = filter_spot_dataframe("tiburon", df, three_near_days=True)
+        barcarola_df = filter_spot_dataframe("barcarola", df, three_near_days=True)
+        bastian_df = filter_spot_dataframe("bastian", df, three_near_days=True)
+        punta_df = filter_spot_dataframe("punta_mujeres", df, three_near_days=True)
+        arrieta_df = filter_spot_dataframe("arrieta", df, three_near_days=True)
+        spots_df = [
+            # caleta_caballo_df,
+            tiburon_df,
+            barcarola_df,
+            bastian_df,
+            punta_df,
+            arrieta_df,
+            famara_df,
         ]
-        for condition in spots_conditions:
-            if condition.any():
-                result_df = df.filter(condition)
+        for df in spots_df:
+            if not df.is_empty():
+                # result_df = df.filter(df)
                 discort_bot = DiscordBot()
-                for row in result_df.rows(named=True):
+                for row in df.rows(named=True):
                     discort_bot.waves_alert(
                         f"windguru - **{row['spot_name'].upper()}**: {row['date_name']}, día {row['date']} a las {row['time']}, una altura de {row['wave_height']}, un periodo de {row['wave_period']} y una direccion del viento de {row['wind_direction']} y una direccion de la ola de {row['wave_direction']}, velocidad del viento de {row['wind_speed']} y la marea estará {row['tide']}"
                     )

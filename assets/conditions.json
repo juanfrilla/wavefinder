@@ -1,0 +1,63 @@
+{
+    "famara": {
+      "spot_name": ["Famara"],
+      "wind_direction": ["S"],
+      "wave_period": 7,
+      "wave_height": 1,
+      "energy": 100
+    },
+    "caleta_caballo": {
+        "spot_name": ["Caleta de Cabello"],
+        "wind_direction": ["W"],
+        "wave_period": 7,
+        "wave_height": 1,
+        "energy": 100
+    },
+    "barcarola": {
+      "spot_name": ["Pocillos", "Barcarola"],
+      "wave_direction": ["E", "S"],
+      "wave_period": 7,
+      "wave_height": 1,
+      "energy": 100
+    },
+    "bastian": {
+        "spot_name": ["Bastián", "Las Cucharas"],
+        "wave_direction": ["E", "S"],
+        "wind_direction": ["N"],
+        "wave_period": 7,
+        "wave_height": 1,
+        "energy": 400
+    },
+    "punta_mujeres": {
+        "spot_name": ["Punta Mujeres"],
+        "wave_direction": ["E", "S"],
+        "wind_direction": ["N"],
+        "wave_period": 7,
+        "wave_height": 1,
+        "energy": 1500
+    },
+    "arrieta": {
+        "spot_name": ["Arrieta"],
+        "wave_direction": ["E", "S"],
+        "wind_direction": ["N"],
+        "wave_period": 7,
+        "wave_height": 1,
+        "energy": 400
+        
+    },
+    "tiburon": {
+        "spot_name": ["Tiburón", "Playa Honda"],
+        "wave_direction": ["E", "S"],
+        "wind_direction": ["N"],
+        "wave_period": 7,
+        "wave_height": 1,
+        "energy": 400
+    },
+    "papagayo": {
+        "spot_name": ["Playa de la Cera"],
+        "wave_direction": ["WNW", "W"],
+        "wave_period": 7,
+        "wave_height": 1,
+        "energy": 1500
+    }
+  }

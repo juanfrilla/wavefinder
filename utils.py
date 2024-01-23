@@ -1,4 +1,4 @@
-import locale
+import locale, json
 from bs4 import BeautifulSoup
 from requests import Response
 import polars as pl
@@ -7,11 +7,6 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
-import numpy as np
-import streamlit as st
-from time import sleep
-import streamlit as st
 
 MONTH_MAPPING = {
     "Ene": "01",
@@ -30,7 +25,7 @@ MONTH_MAPPING = {
 INTERNAL_DATE_STR_FORMAT = "%d/%m/%Y"
 INTERNAL_TIME_STR_FORMAT = "%H:%M:%S"
 
-CONTRARIES = {"N": "S", "S": "N", "E": "O", "O": "E"}
+CONTRARIES = {"N": "S", "S": "N", "E": "W", "W": "E"}
 
 
 # margen de 20 grados en N,S,E,O
@@ -52,55 +47,6 @@ def angle_to_direction(angle):
         return "West"
     elif 280 <= angle < 350:
         return "NorthWest"
-
-
-def is_offshore(wind_direction, wave_direction):
-    offshore_mapping = {
-        "N": "S",
-        "E": "O",
-        "NO": "SE",
-        "SO": "NE",
-        "ONO": "ESE",
-        "ONE": "ENO",
-        "ONS": "E",
-        "OES": "",
-        "ESE": "",
-        "ESS": "",
-        "NOO": "",
-        "NOE": "",
-        "NOS": "",
-        "NEO": "",
-        "NEE": "",
-        "NES": "",
-        "SOO": "",
-        "SOE": "",
-        "SON": "",
-        "SEO": "",
-        "SEE": "",
-        "SEN": "",
-        "OON": "",
-        "OOE": "",
-        "OOS": "",
-        "OEN": "",
-        "OEE": "",
-        "OES": "",
-    }
-
-    return wind_direction == offshore_mapping.get(wave_direction, [])
-
-
-def is_crossoff(wind_direction, wave_direction):
-    cross_offshore_mapping = {
-        "N": ["SE", "SO"],
-        "S": ["NE", "NO"],
-        "E": ["NO", "SO"],
-        "O": ["NE", "SE"],
-        "NE": ["SE", "NO", "S", "O"],
-        "NO": ["SO", "NE", "S", "E"],
-        "SE": ["SO", "NE", "N", "O"],
-        "SO": ["NO", "SE", "N", "E"],
-    }
-    return wind_direction in cross_offshore_mapping.get(wave_direction, [])
 
 
 def export_to_html(filename, response: Response):
@@ -510,3 +456,80 @@ def generate_datetimes(dates, times):
         minute = int(time.split(":")[1])
         datetimes.append(datetime(year, month, day, hour, minute))
     return datetimes
+
+
+def filter_dataframe(
+    entry_df: pl.DataFrame, spot_conditions: dict, three_near_days: bool
+) -> pl.DataFrame:
+    column_names = list(entry_df.columns)
+    spot_name_list = []
+    wave_direction_list = []
+    wind_direction_list = []
+    spot_names = spot_conditions["spot_name"]
+    # TODO refactorizar esto
+    for spot in spot_names:
+        filtered_df = entry_df.filter(pl.col("spot_name").str.contains(spot))
+        spot_name_list.append(filtered_df)
+
+    result_list = [df for df in spot_name_list if not df.is_empty()]
+    if len(result_list) > 0:
+        result_df = result_list[0]
+    else:
+        return pl.DataFrame()
+
+    if "wave_direction" in spot_conditions and "wave_direction" in column_names:
+        directions = spot_conditions["wave_direction"]
+        for direction in directions:
+            filtered_df = result_df.filter(
+                pl.col("wave_direction").str.contains(direction)
+            )
+            wave_direction_list.append(filtered_df)
+
+        result_list = [df for df in wave_direction_list if not df.is_empty()]
+        if len(result_list) > 0:
+            result_df = result_list[0]
+        else:
+            return pl.DataFrame()
+
+    if "wave_period" in spot_conditions and "wave_period" in column_names:
+        result_df = result_df.filter(
+            pl.col("wave_period") >= spot_conditions["wave_period"]
+        )
+    if "wave_height" in spot_conditions and "wave_height" in column_names:
+        result_df = result_df.filter(
+            pl.col("wave_height") >= spot_conditions["wave_height"]
+        )
+    if "energy" in spot_conditions and "energy" in column_names:
+        result_df = result_df.filter(pl.col("energy") >= spot_conditions["energy"])
+
+    if "wind_direction" in spot_conditions and "wind_direction" in column_names:
+        directions = spot_conditions["wind_direction"]
+        for direction in directions:
+            filtered_df = result_df.filter(
+                pl.col("wind_direction").str.contains(direction)
+            )
+            wind_direction_list.append(filtered_df)
+
+        result_list = [df for df in wind_direction_list if not df.is_empty()]
+        if len(result_list) > 0:
+            result_df = result_list[0]
+        else:
+            return pl.DataFrame()
+
+    if three_near_days:
+        date_names = ["Hoy", "Mañana", "Pasado"]
+        result_df = result_df.filter(pl.col("date_name").is_in(date_names))
+    return result_df
+
+
+def read_json(json_name: str) -> dict:
+    with open(json_name) as f:
+        return json.load(f)
+
+
+def filter_spot_dataframe(
+    spot_name: str, df: pl.DataFrame, three_near_days: bool
+) -> pl.DataFrame:
+    file = f"./assets/conditions.json"
+    conditions_data = read_json(file)
+    return filter_dataframe(df, conditions_data[spot_name], three_near_days)
