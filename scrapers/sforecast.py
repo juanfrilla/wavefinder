@@ -188,6 +188,7 @@ class SurfForecast(object):
             "caleta_caballo", df, three_near_days=True
         )
         famara_df = filter_spot_dataframe("famara", df, three_near_days=True)
+        papelillo_df = filter_spot_dataframe("papelillo", df, three_near_days=True)
         tiburon_df = filter_spot_dataframe("tiburon", df, three_near_days=True)
         barcarola_df = filter_spot_dataframe("barcarola", df, three_near_days=True)
         bastian_df = filter_spot_dataframe("bastian", df, three_near_days=True)
@@ -202,6 +203,7 @@ class SurfForecast(object):
             punta_df,
             arrieta_df,
             famara_df,
+            papelillo_df,
         ]
         for df in spot_dfs:
             if not df.is_empty():

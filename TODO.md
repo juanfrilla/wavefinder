@@ -19,5 +19,6 @@ TODO: en la marea generar la tabla entera de 1 mes, sumandole 6h12.5
 TODO: Refactorizar alertas en front/table
 TODO: Captura de las distintas páginas cuando hay olas
 TODO poner bajo risco, las conchas, montaña amarilla
+# Crear nuevos spots que no aparecen en sforecast
 Refactorizar meet_x_conditions
 Poner algun elemento a fixed para que no se expanda tanto hacia abajo la página

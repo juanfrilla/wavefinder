@@ -6,6 +6,14 @@
       "wave_height": 1,
       "energy": 100
     },
+    "papelillo": {
+      "spot_name": ["Papelillo"],
+      "wind_direction": ["E"],
+      "wave_direction": ["N"],
+      "wave_period": 7,
+      "wave_height": 1,
+      "energy": 1500
+    },
     "caleta_caballo": {
         "spot_name": ["Caleta de Cabello"],
         "wind_direction": ["W"],

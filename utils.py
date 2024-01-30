@@ -237,6 +237,18 @@ def final_forecast_format(df: pl.DataFrame):
                 pass
 
         df = df[common_columns]
+        df = df.with_columns(
+            pl.when(
+                (pl.col("spot_name").str.contains("Famara"))
+                & (pl.col("energy") > 1000)
+                & (pl.col("wind_direction").str.contains("E"))
+                & (pl.col("wave_direction").str.contains("N"))
+            )
+            .then(pl.lit("Papelillo"))
+            .otherwise(pl.col("spot_name"))
+            .alias("spot_name")
+        )
+
     return df
 
 
