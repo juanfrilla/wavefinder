@@ -369,8 +369,10 @@ def generate_dates(times: list) -> list:
     dates = []
     date = datetime.now().date()
     for index, time in enumerate(times):
-        if index - 1 >= 0 and datestr_to_datetime(time, "%H:%M") < datestr_to_datetime(
-            times[index - 1], "%H:%M"
+        if (
+            index - 1 >= 0
+            and datestr_to_datetime(time, "%H:%M").time()
+            < datestr_to_datetime(times[index - 1], "%H:%M").time()
         ):
             date += timedelta(days=1)
         date_str = datetime.strftime(date, "%d/%m/%Y")

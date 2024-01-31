@@ -8,6 +8,7 @@ from utils import (
     generate_tides,
     generate_datetimes,
     filter_spot_dataframe,
+    convert_all_values_of_dict_to_min_length,
 )
 from datetime import datetime, timedelta
 import re
@@ -120,7 +121,7 @@ class SurfForecast(object):
     def convert_to_Hm(self, time_str):
         return parser.parse(time_str).strftime("%H:%M")
 
-    def obtain_formated_time(self, forecast):
+    def obtain_formated_time(self, forecast, scraped_week_days):
         time_list = []
         for time in forecast["time"]:
             if "\u2009" in time:
@@ -138,9 +139,17 @@ class SurfForecast(object):
                     .replace("Night", "21:00")
                 )
             time_list.append(extracted_time)
+        if scraped_week_days[0] == "":
+            time_list = time_list[1:]
         return time_list
 
     def get_dataframe_from_soup(self, soup, tides):
+        scraped_week_days = [
+            x.text.strip()
+            for x in soup.select(
+                "div.forecast-table__value.forecast-table-days__content"
+            )
+        ]
         forecast = {}
         spot_name = self.parse_spot_name(soup)
         drn_list = [
@@ -169,7 +178,7 @@ class SurfForecast(object):
         forecast["wind_direction"] = self.get_formatted_wind_direction(forecast)
         forecast["wind_speed"] = self.get_formatted_wind_speed(forecast)
         forecast["wave_period"] = self.obtain_formated_wave_period(forecast)
-        times = self.obtain_formated_time(forecast)
+        times = self.obtain_formated_time(forecast, scraped_week_days)
         dates = generate_dates(times)
         datetimes = generate_datetimes(dates, times)
         forecast["time"] = times
@@ -178,6 +187,11 @@ class SurfForecast(object):
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
         forecast["energy"] = self.get_formated_energy(forecast)
         forecast["tide"] = generate_tides(tides, datetimes)
+        if scraped_week_days[0] == "":
+            for key, value in forecast.items():
+                if key in ["time", "date", "datetime", "spot_name", "tide"]:
+                    continue
+                forecast[key] = value[1:]
         df = pl.DataFrame(forecast)
         return df
 

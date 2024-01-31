@@ -20,5 +20,6 @@ TODO: Refactorizar alertas en front/table
 TODO: Captura de las distintas páginas cuando hay olas
 TODO poner bajo risco, las conchas, montaña amarilla
 # Crear nuevos spots que no aparecen en sforecast
+# Si la fuerza no es oeste en el dataframe, que no muestre papagayo TODO
 Refactorizar meet_x_conditions
 Poner algun elemento a fixed para que no se expanda tanto hacia abajo la página
