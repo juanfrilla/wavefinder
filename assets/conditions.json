@@ -38,7 +38,7 @@
     },
     "punta_mujeres": {
         "spot_name": ["Punta Mujeres"],
-        "wave_direction": ["E", "S"],
+        "wave_direction": ["E", "S", "N"],
         "wind_direction": ["N"],
         "wave_period": 7,
         "wave_height": 1,
@@ -46,7 +46,7 @@
     },
     "arrieta": {
         "spot_name": ["Arrieta"],
-        "wave_direction": ["E", "S"],
+        "wave_direction": ["E", "S", "N"],
         "wind_direction": ["N"],
         "wave_period": 7,
         "wave_height": 1,
