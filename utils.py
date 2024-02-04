@@ -275,7 +275,7 @@ def classify_wind_speed(speed_knots):
     elif speed_knots <= 16:
         return "Brisa moderada"
     elif speed_knots <= 21:
-        return "Brisa fresca"
+        return "Brisa casi fuerte"
     elif speed_knots <= 27:
         return "Brisa fuerte"
     elif speed_knots <= 33:
