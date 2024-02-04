@@ -31,39 +31,41 @@ def get_list_of_spots_sorted_by_param(param, grouped_data):
 
 
 def plot_graph(variable):
-    try:
-        st.header(f"{variable} per day", divider="rainbow")
-        data = st.session_state.forecast_df
-        chart = (
-            alt.Chart(data)
-            .mark_line()
-            .encode(
-                x="datetime:T",
-                y=f"{variable}:Q",
-                color="spot_name:N",
-                tooltip=[
-                    alt.Tooltip("date:T", format="%d/%m/%Y", title="Date"),
-                    alt.Tooltip("time:T", format="%H:%M", title="Time"),
-                    "spot_name:N",
-                    "wave_height:Q",
-                    "wind_approval:N",
-                    "wind_status:N",
-                    "wind_direction:N",
-                    "wave_direction:N",
-                    "wave_period:Q",
-                ],
-            )
-            .properties(width=600, height=400)
-            .configure_legend(orient="right")
+    # try:
+    st.header(f"{variable} per day", divider="rainbow")
+    data = st.session_state.forecast_df
+    chart = (
+        alt.Chart(data)
+        .mark_line()
+        .encode(
+            x="datetime:T",
+            y=f"{variable}:Q",
+            color="spot_name:N",
+            tooltip=[
+                alt.Tooltip("date_dt:T", format="%d/%m/%Y", title="Date"),
+                alt.Tooltip("time_cor:N", title="Time"),
+                "spot_name:N",
+                "wave_height:Q",
+                "wind_approval:N",
+                "wind_status:N",
+                "wind_direction:N",
+                "wave_direction:N",
+                "wave_period:Q",
+            ],
         )
+        .properties(width=600, height=400)
+        .configure_legend(orient="right")
+    )
 
-        st.container()
+    st.container()
 
-        zoomed_chart = chart.interactive().properties(width=600, height=400)
+    zoomed_chart = chart.interactive().properties(width=600, height=400)
 
-        st.altair_chart(zoomed_chart, use_container_width=True)
-    except Exception:
-        pass
+    st.altair_chart(zoomed_chart, use_container_width=True)
+
+
+# except Exception:
+#     pass
 
 
 def plot_selected_wind_speed():
@@ -319,6 +321,24 @@ def plot_forecast_as_table(urls):
         )
 
         st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
+        # st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
+        #     pl.col("date").str.strptime(pl.Date, format="%d/%m/%Y").cast(pl.Date)
+        # )
+        # st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
+        #     "time", pl.col("time").str.strptime(pl.Time, format="%H:%M").cast(pl.Time)
+        # )
+        date = st.session_state.forecast_df["datetime"].dt.date().to_list()
+        time = [
+            element.replace(":", "\:")
+            for element in st.session_state.forecast_df["time"].to_list()
+        ]
+        st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
+            pl.Series(name="date_dt", values=date)
+        )
+
+        st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
+            pl.Series(name="time_cor", values=time)
+        )
         if "surf-forecast" in urls[0]:
             plot_graph("energy")
         plot_graph("wave_period")
@@ -333,7 +353,6 @@ def plot_forecast_as_table(urls):
                 pl.col("wave_period").max().alias("total_period")
             )
             grouped_data = grouped_data.sort("total_period", descending=True)
-
 
         with st.container():
             for i in range(len(grouped_data)):
