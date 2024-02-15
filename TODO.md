@@ -25,3 +25,5 @@ Refactorizar meet_x_conditions
 Poner algun elemento a fixed para que no se expanda tanto hacia abajo la página
 
 Migrar a scrapy
+escrapear temperatura, precipitaciones
+elegir qué campos quieres que se muestren en el dataframe
