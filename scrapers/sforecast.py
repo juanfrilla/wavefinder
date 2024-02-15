@@ -160,6 +160,7 @@ class SurfForecast(object):
             "wind",
             "wind-state",
             "energy",
+            "temperature-high",
         ]
         for row_name in drn_list:
             forecast[row_name] = []
@@ -171,6 +172,7 @@ class SurfForecast(object):
         forecast = rename_key(forecast, "wind-state", "wind_status")
         forecast = rename_key(forecast, "wave-height", "wave")
         forecast = rename_key(forecast, "periods", "wave_period")
+        forecast = rename_key(forecast, "temperature-high", "temperature")
         forecast["wind_status"] = self.get_formatted_wind_status(forecast)
         forecast["wave_height"] = self.get_formatted_wave_height(forecast)
         forecast["wave_direction"] = self.get_formatted_wave_direction(forecast)

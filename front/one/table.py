@@ -44,6 +44,7 @@ def plot_graph(variable):
             tooltip=[
                 alt.Tooltip("date_dt:T", format="%d/%m/%Y", title="Date"),
                 alt.Tooltip("time_cor:N", title="Time"),
+                "energy:Q",
                 "spot_name:N",
                 "wave_height:Q",
                 "wind_approval:N",

@@ -214,6 +214,7 @@ def final_forecast_format(df: pl.DataFrame):
             "spot_name",
             "wind_status",
             "wind_description",
+            "temperature",
             "wind_direction",
             "wave_direction",
             "tide",
