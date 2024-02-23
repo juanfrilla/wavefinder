@@ -249,6 +249,13 @@ def final_forecast_format(df: pl.DataFrame):
             .otherwise(pl.col("spot_name"))
             .alias("spot_name")
         )
+        # TODO mejorar esto
+        df = df.filter(
+            ~(
+                (pl.col("spot_name").str.contains("Playa de la Cera"))
+                & (~(pl.col("wave_direction").is_in(["W", "WNW", "WSW"])))
+            )
+        )
 
     return df
 

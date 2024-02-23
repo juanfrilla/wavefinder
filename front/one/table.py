@@ -48,6 +48,7 @@ def plot_graph(variable):
                 "spot_name:N",
                 "wave_height:Q",
                 "wind_approval:N",
+                "wind_speed:Q",
                 "wind_status:N",
                 "wind_direction:N",
                 "wave_direction:N",
@@ -342,7 +343,8 @@ def plot_forecast_as_table(urls):
         )
         if "surf-forecast" in urls[0]:
             plot_graph("energy")
-        plot_graph("wave_period")
+        # plot_graph("wave_period")
+        plot_graph("wind_speed")
 
         if "surf-forecast" in urls[0]:
             grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
