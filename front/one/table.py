@@ -47,7 +47,7 @@ def plot_graph(variable):
                 "energy:Q",
                 "spot_name:N",
                 "wave_height:Q",
-                "wind_approval:N",
+                "wind_description:N",
                 "wind_speed:Q",
                 "wind_status:N",
                 "wind_direction:N",
