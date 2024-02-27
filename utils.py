@@ -223,7 +223,11 @@ def final_forecast_format(df: pl.DataFrame):
             "wind_speed",
             "wind_approval",
         ]
-        columns_to_check = ["swell_height", "energy"]
+        columns_to_check = [
+            "wind_direction_degrees",
+            "wave_direction_degrees",
+            "energy",
+        ]
 
         for column in columns_to_check:
             try:
@@ -238,17 +242,20 @@ def final_forecast_format(df: pl.DataFrame):
                 pass
 
         df = df[common_columns]
-        df = df.with_columns(
-            pl.when(
-                (pl.col("spot_name").str.contains("Famara"))
-                & (pl.col("energy") > 1000)
-                & (pl.col("wind_direction").str.contains("E"))
-                & (pl.col("wave_direction").str.contains("N"))
+        try:
+            df = df.with_columns(
+                pl.when(
+                    (pl.col("spot_name").str.contains("Famara"))
+                    & (pl.col("energy") > 1000)
+                    & (pl.col("wind_direction").str.contains("E"))
+                    & (pl.col("wave_direction").str.contains("N"))
+                )
+                .then(pl.lit("Papelillo"))
+                .otherwise(pl.col("spot_name"))
+                .alias("spot_name")
             )
-            .then(pl.lit("Papelillo"))
-            .otherwise(pl.col("spot_name"))
-            .alias("spot_name")
-        )
+        except Exception:
+            pass
         # TODO mejorar esto
         df = df.filter(
             ~(
@@ -256,7 +263,23 @@ def final_forecast_format(df: pl.DataFrame):
                 & (~(pl.col("wave_direction").is_in(["W", "WNW", "WSW"])))
             )
         )
+        try:
+            df = df.with_columns(
+                pl.col("wind_direction_degrees")
+                .apply(get_predominant_direction)
+                .alias("wind_direction_predominant")
+            )
+        except Exception:
+            pass
 
+        try:
+            df = df.with_columns(
+                pl.col("wave_direction_degrees")
+                .apply(get_predominant_direction)
+                .alias("wave_direction_predominant")
+            )
+        except Exception:
+            pass
     return df
 
 
@@ -555,3 +578,24 @@ def filter_spot_dataframe(
     file = f"./assets/conditions.json"
     conditions_data = read_json(file)
     return filter_dataframe(df, conditions_data[spot_name], three_near_days)
+
+
+def get_predominant_direction(direction: float) -> str:
+    direction_dictionary = {
+        "N": 0,
+        "NE": 45,
+        "E": 90,
+        "SE": 135,
+        "S": 180,
+        "SW": 225,
+        "W": 270,
+        "NW": 315,
+    }
+    desviations = []
+    for degrees in direction_dictionary.values():
+        rest = direction - degrees
+        desviations.append(abs(rest))
+
+    min_desviation = min(desviations)
+    index = desviations.index(min_desviation)
+    return f"{list(direction_dictionary.keys())[index]}"

@@ -25,17 +25,28 @@ class Windguru(object):
 
     def format_forecast(self, forecast: Dict, tides: dict) -> Dict:
         forecast = rename_key(forecast, "tabid_0_0_dates", "datetime")
-        forecast = rename_key(forecast, "tabid_0_0_SMER", "wind_direction")
+        forecast = rename_key(forecast, "tabid_0_0_SMER", "wind_direction_raw")
         forecast = rename_key(forecast, "tabid_0_0_HTSGW", "wave_height")
-        forecast = rename_key(forecast, "tabid_0_0_DIRPW", "wave_direction")
+        forecast = rename_key(forecast, "tabid_0_0_DIRPW", "wave_direction_raw")
         forecast = rename_key(forecast, "tabid_0_0_PERPW", "wave_period")
         forecast = rename_key(forecast, "tabid_0_0_WINDSPD", "wind_speed")
+        forecast = rename_key(forecast, "tabid_0_0_TMPE", "temperature")
 
         forecast["wind_direction"] = [
-            self.parse_text_from_text(element) for element in forecast["wind_direction"]
+            self.parse_text_from_text(element)
+            for element in forecast["wind_direction_raw"]
         ]
         forecast["wave_direction"] = [
-            self.parse_text_from_text(element) for element in forecast["wave_direction"]
+            self.parse_text_from_text(element)
+            for element in forecast["wave_direction_raw"]
+        ]
+        forecast["wind_direction_degrees"] = [
+            self.parse_number_from_text(element)
+            for element in forecast["wind_direction_raw"]
+        ]
+        forecast["wave_direction_degrees"] = [
+            self.parse_number_from_text(element)
+            for element in forecast["wave_direction_raw"]
         ]
 
         forecast["date"] = [
@@ -84,6 +95,7 @@ class Windguru(object):
                 "tabid_0_0_DIRPW",
                 "tabid_0_0_PERPW",
                 "tabid_0_0_WINDSPD",
+                "tabid_0_0_TMPE",
             ]:
                 forecast[id] = []
                 for cell in cells:
@@ -99,16 +111,22 @@ class Windguru(object):
             return pl.DataFrame(forecast)
         return pl.DataFrame()
 
-    def parse_number_from_text(self, text):
-        pattern = r"(\d+)°"
+    # def parse_number_from_text(self, text):
+    #     pattern = r"(\d+)°"
 
-        match = re.search(pattern, text)
-        if match:
-            return int(match.group(1))
-        return None
+    #     match = re.search(pattern, text)
+    #     if match:
+    #         return int(match.group(1))
+    #     return None
 
     def parse_text_from_text(self, text):
         return text.split(" ")[0]
+
+    def parse_number_from_text(self, text):
+        pattern = r"(\d+)°"
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            return float(match.group(1))
 
     def parse_windstatus(self, wave_directions, wind_directions):
         return [

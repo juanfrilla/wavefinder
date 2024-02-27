@@ -27,4 +27,4 @@ Poner algun elemento a fixed para que no se expanda tanto hacia abajo la página
 Migrar a scrapy
 escrapear temperatura, precipitaciones
 elegir qué campos quieres que se muestren en el dataframe
-Poner la dirección bien, más oeste menos oeste, más este menos este ... Capturar los grados (fijar lo que es norte, sur, este y oeste puros y lo que más se acerque mejor, 0 grados norte, 360 es sur)
+Poner la dirección bien, más oeste menos oeste, más este menos este ... Capturar los grados (fijar lo que es norte, sur, este y oeste puros y lo que más se acerque mejor, 0 grados norte, 90 es Este, 180 es sur, 270 es Oeste)
