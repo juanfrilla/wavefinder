@@ -34,7 +34,7 @@
         "wind_direction": ["N"],
         "wave_period": 7,
         "wave_height": 1,
-        "energy": 400
+        "energy": 1000
     },
     "punta_mujeres": {
         "spot_name": ["Punta Mujeres"],
