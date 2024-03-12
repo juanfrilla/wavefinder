@@ -4,7 +4,7 @@ import polars as pl
 from utils import (
     rename_key,
     generate_tides,
-    get_wind_status,
+    generate_energy,
     render_html,
     generate_datetimes,
     filter_spot_dataframe,
@@ -71,6 +71,9 @@ class Windguru(object):
             forecast, "wind_speed", "float"
         )
         forecast["tide"] = generate_tides(tides, forecast["datetime"])
+        forecast["energy"] = generate_energy(
+            forecast["wave_height"], forecast["wave_period"]
+        )
         return forecast
 
     def parse_spot_name(self, soup):
@@ -129,8 +132,10 @@ class Windguru(object):
             return float(match.group(1))
 
     def parse_windstatus(self, wave_directions, wind_directions):
+        # TODO crear esta columna sin cálculos, de cabeza
         return [
-            get_wind_status(wind_dir, wave_dir)
+            # get_wind_status(wind_dir, wave_dir)
+            "Offshore"
             for wave_dir, wind_dir in zip(wave_directions, wind_directions)
         ]
 

@@ -1,4 +1,4 @@
-import locale, json
+import locale, json, math
 from bs4 import BeautifulSoup
 from requests import Response
 import polars as pl
@@ -26,6 +26,74 @@ INTERNAL_DATE_STR_FORMAT = "%d/%m/%Y"
 INTERNAL_TIME_STR_FORMAT = "%H:%M:%S"
 
 CONTRARIES = {"N": "S", "S": "N", "E": "W", "W": "E"}
+
+
+def calculate_energy(wave_height: float, wave_period: float):
+    return math.ceil(1 / 2 * 9.81 * wave_height**2 * wave_period)
+
+
+def generate_energy(wave_heights: list, wave_periods: list):
+    return [
+        calculate_energy(wave_height, wave_period)
+        for wave_height, wave_period in zip(wave_heights, wave_periods)
+    ]
+
+
+def separate_spots(df: pl.DataFrame):
+    # Punta mujeres viento noroeste, fuerza norte.
+    # Costa Teguise y Puerto del Carmen, mucho viento.
+    # Caleta Caballo fuerza norte y viento oeste o suroeste.
+    # Papagayo, fuerza oeste.
+    # Papelillo Viento este, fuerza norte.
+    # date_names = ["Hoy", "Mañana", "Pasado"]
+    # result_df = result_df.filter(pl.col("date_name").is_in(date_names))
+
+    df = df.with_columns(
+        pl.when(
+            (pl.col("wind_direction").str.contains("NE"))
+            & (pl.col("wave_direction").str.contains("N"))
+            & (pl.col("wind_speed") >= 19.0)
+        )
+        .then(pl.lit("Puerto del Carmen"))
+        .when(
+            (pl.col("wind_direction").str.contains("NE"))
+            & (pl.col("wave_direction").str.contains("N"))
+            & (pl.col("wind_speed") >= 19.0)
+        )
+        .then(pl.lit("Costa Teguise"))
+        .when(
+            ~(pl.col("wave_direction") == "WNW")
+            & (pl.col("wind_direction").str.contains("E"))
+            & ~(pl.col("wind_direction").str.contains("NNE"))
+            & (pl.col("wave_direction").str.contains("N"))
+        )
+        .then(pl.lit("Papelillo"))
+        .when(
+            ~(pl.col("wave_direction") == "WNW")
+            & (pl.col("wind_direction").str.contains("W"))
+        )
+        .then(pl.lit("Caleta Caballo"))
+        .when(
+            ~(pl.col("wave_direction") == "WNW")
+            & (pl.col("wind_direction").str.contains("S"))
+        )
+        .then(pl.lit("Famara"))
+        .when(
+            ~(pl.col("wave_direction") == "WNW")
+            & (pl.col("wind_direction").str.contains("NW"))
+            & (pl.col("wave_direction").str.contains("N"))
+        )
+        .then(pl.lit("Punta de Mujeres"))
+        .when(
+            (pl.col("wave_direction") == "WNW")
+            & (pl.col("wind_direction").str.contains("E"))
+            & ~(pl.col("wind_direction").str.contains("NNE"))
+        )
+        .then(pl.lit("Papagayo"))
+        .otherwise(pl.col("spot_name"))
+        .alias("spot_name")
+    )
+    return df
 
 
 # margen de 20 grados en N,S,E,O
@@ -212,9 +280,7 @@ def final_forecast_format(df: pl.DataFrame):
             "time",
             "datetime",
             "spot_name",
-            "wind_status",
             "wind_description",
-            "temperature",
             "wind_direction",
             "wave_direction",
             "tide",
@@ -222,6 +288,8 @@ def final_forecast_format(df: pl.DataFrame):
             "wave_period",
             "wind_speed",
             "wind_approval",
+            "temperature",
+            "wind_status",
         ]
         columns_to_check = [
             "wind_direction_degrees",

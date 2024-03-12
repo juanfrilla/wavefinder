@@ -1,6 +1,6 @@
 import streamlit as st
 import time
-from utils import final_forecast_format
+from utils import final_forecast_format, separate_spots
 from multi import multithread
 from scrapers.windfinder import WindFinder
 from scrapers.windguru import Windguru
@@ -172,6 +172,8 @@ def load_forecast(urls):
         df = multithread.scrape_multiple_requests(urls, WindFinder())
     elif "windguru" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, Windguru(), tides)
+        df = separate_spots(df)
+        df = df.filter(pl.col("spot_name") != "Spain - Famara")
         df = final_forecast_format(df).sort("datetime", descending=False)
         windguru = Windguru()
         windguru.handle_windguru_alerts(df)
@@ -258,8 +260,7 @@ def plot_forecast_as_table(urls):
         selected_wave_height = plot_selected_wave_height(DEFAULT_WAVE_HEIGHT)
         selected_swell_height = plot_selected_swell_height()
         selected_wave_period = plot_selected_wave_period()
-        if "surf-forecast" in urls[0]:
-            selected_wave_energy = plot_selected_wave_energy()
+        selected_wave_energy = plot_selected_wave_energy()
         selected_wind_speed = plot_selected_wind_speed()
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
@@ -301,12 +302,9 @@ def plot_forecast_as_table(urls):
         else:
             swell_height_condition = True
 
-        if "surf-forecast" in urls[0]:
-            wave_energy_condition = (
-                st.session_state.forecast_df["energy"] >= selected_wave_energy[0]
-            ) & (st.session_state.forecast_df["energy"] <= selected_wave_energy[1])
-        else:
-            wave_energy_condition = True
+        wave_energy_condition = (
+            st.session_state.forecast_df["energy"] >= selected_wave_energy[0]
+        ) & (st.session_state.forecast_df["energy"] <= selected_wave_energy[1])
 
         # Combine conditions using bitwise AND operator
         mask = (
@@ -341,21 +339,20 @@ def plot_forecast_as_table(urls):
         st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
             pl.Series(name="time_cor", values=time)
         )
-        if "surf-forecast" in urls[0]:
-            plot_graph("energy")
+        plot_graph("energy")
         # plot_graph("wave_period")
         plot_graph("wind_speed")
 
-        if "surf-forecast" in urls[0]:
-            grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
-                pl.col("energy").max().alias("total_energy")
-            )
-            grouped_data = grouped_data.sort("total_energy", descending=True)
-        else:
-            grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
-                pl.col("wave_period").max().alias("total_period")
-            )
-            grouped_data = grouped_data.sort("total_period", descending=True)
+        # if "surf-forecast" in urls[0]:
+        grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
+            pl.col("energy").max().alias("total_energy")
+        )
+        grouped_data = grouped_data.sort("total_energy", descending=True)
+        # else:
+        # grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
+        #     pl.col("wave_period").max().alias("total_period")
+        # )
+        # grouped_data = grouped_data.sort("total_period", descending=True)
 
         with st.container():
             for i in range(len(grouped_data)):
