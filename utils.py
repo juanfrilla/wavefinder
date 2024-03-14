@@ -54,13 +54,13 @@ def separate_spots(df: pl.DataFrame):
             & (pl.col("wave_direction").str.contains("N"))
             & (pl.col("wind_speed") >= 19.0)
         )
-        .then(pl.lit("Puerto del Carmen"))
+        .then(pl.lit("Barcarola-Bastián"))
         .when(
-            (pl.col("wind_direction").str.contains("NE"))
+            (pl.col("wind_direction").str.contains("NW"))
             & (pl.col("wave_direction").str.contains("N"))
             & (pl.col("wind_speed") >= 19.0)
         )
-        .then(pl.lit("Costa Teguise"))
+        .then(pl.lit("El Tiburón"))
         .when(
             ~(pl.col("wave_direction") == "WNW")
             & (pl.col("wind_direction").str.contains("E"))
