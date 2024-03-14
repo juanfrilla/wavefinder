@@ -17,7 +17,7 @@ from datetime import datetime
 
 DEFAULT_MIN_WAVE_PERIOD = 7
 DEFAULT_WAVE_HEIGHT = 0.9
-DEFAULT_MIN_WAVE_ENERGY = 100
+DEFAULT_MIN_WAVE_ENERGY = 0
 
 
 def get_list_of_spots_sorted_by_param(param, grouped_data):
