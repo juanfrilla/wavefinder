@@ -321,12 +321,6 @@ def plot_forecast_as_table(urls):
         )
 
         st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
-        # st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
-        #     pl.col("date").str.strptime(pl.Date, format="%d/%m/%Y").cast(pl.Date)
-        # )
-        # st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
-        #     "time", pl.col("time").str.strptime(pl.Time, format="%H:%M").cast(pl.Time)
-        # )
         date = st.session_state.forecast_df["datetime"].dt.date().to_list()
         time = [
             element.replace(":", "\:")
@@ -340,20 +334,11 @@ def plot_forecast_as_table(urls):
             pl.Series(name="time_cor", values=time)
         )
         plot_graph("energy")
-        # plot_graph("wave_period")
         plot_graph("wind_speed")
-
-        # if "surf-forecast" in urls[0]:
         grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
-            pl.col("energy").max().alias("total_energy")
+            pl.col("datetime").min().alias("datetime")
         )
-        grouped_data = grouped_data.sort("total_energy", descending=True)
-        # else:
-        # grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
-        #     pl.col("wave_period").max().alias("total_period")
-        # )
-        # grouped_data = grouped_data.sort("total_period", descending=True)
-
+        grouped_data = grouped_data.sort("datetime", descending=False)
         with st.container():
             for i in range(len(grouped_data)):
                 spot_name = grouped_data[i]["spot_name"].to_numpy()[0]
@@ -363,9 +348,6 @@ def plot_forecast_as_table(urls):
 
                 st.subheader(f"Spot: {spot_name}")
                 forecast_df_dropped = group_df.drop("spot_name")
-                forecast_df_dropped = forecast_df_dropped.sort(
-                    "datetime", descending=False
-                )
                 forecast_df_dropped = forecast_df_dropped.unique(
                     subset=["datetime"]
                 ).drop("datetime")
