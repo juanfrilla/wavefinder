@@ -172,9 +172,9 @@ def load_forecast(urls):
         df = multithread.scrape_multiple_requests(urls, WindFinder())
     elif "windguru" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, Windguru(), tides)
+        df = final_forecast_format(df).sort("datetime", descending=False)
         df = separate_spots(df)
         df = df.filter(pl.col("spot_name") != "Spain - Famara")
-        df = final_forecast_format(df).sort("datetime", descending=False)
         windguru = Windguru()
         windguru.handle_windguru_alerts(df)
         # api_token =st.secrets["TELEGRAM_API_TOKEN"]

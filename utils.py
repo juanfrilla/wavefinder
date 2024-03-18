@@ -50,21 +50,16 @@ def separate_spots(df: pl.DataFrame):
 
     df = df.with_columns(
         pl.when(
-            (pl.col("wind_direction").str.contains("NE"))
+            (pl.col("wind_direction").str.contains("N"))
             & (pl.col("wave_direction").str.contains("N"))
             & (pl.col("wind_speed") >= 19.0)
         )
-        .then(pl.lit("Barcarola-Bastián"))
-        .when(
-            (pl.col("wind_direction").str.contains("NW"))
-            & (pl.col("wave_direction").str.contains("N"))
-            & (pl.col("wind_speed") >= 19.0)
-        )
-        .then(pl.lit("El Tiburón"))
+        .then(pl.lit("Barcarola-Bastián-Tiburón"))
         .when(
             ~(pl.col("wave_direction") == "WNW")
             & (pl.col("wind_direction").str.contains("E"))
-            & ~(pl.col("wind_direction").str.contains("NNE"))
+            & ~(pl.col("wind_direction") == "NNE")
+            & ~(pl.col("wind_direction_predominant").str.contains("NE"))
             & (pl.col("wave_direction").str.contains("N"))
         )
         .then(pl.lit("Papelillo"))
@@ -72,6 +67,7 @@ def separate_spots(df: pl.DataFrame):
             ~(pl.col("wave_direction") == "WNW")
             & ~(pl.col("wind_direction") == "NNW")
             & ~(pl.col("wind_direction") == "NW")
+            & ~(pl.col("wind_direction_predominant") == "NW")
             & (pl.col("wind_direction").str.contains("W"))
         )
         .then(pl.lit("Caleta Caballo"))
@@ -84,12 +80,13 @@ def separate_spots(df: pl.DataFrame):
             ~(pl.col("wave_direction") == "WNW")
             & (pl.col("wind_direction").str.contains("NW"))
             & (pl.col("wave_direction").str.contains("N"))
+            & (pl.col("wind_direction_predominant") == "NW")
         )
         .then(pl.lit("Punta de Mujeres"))
         .when(
             (pl.col("wave_direction") == "WNW")
             & (pl.col("wind_direction").str.contains("E"))
-            & ~(pl.col("wind_direction").str.contains("NNE"))
+            & ~(pl.col("wind_direction") == "NNE")
         )
         .then(pl.lit("Papagayo"))
         .otherwise(pl.col("spot_name"))
