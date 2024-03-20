@@ -57,6 +57,7 @@ def separate_spots(df: pl.DataFrame):
         .then(pl.lit("Barcarola-Bastián-Tiburón"))
         .when(
             ~(pl.col("wave_direction") == "WNW")
+            & ~(pl.col("wave_direction") == "W")
             & (pl.col("wind_direction").str.contains("E"))
             & ~(pl.col("wind_direction") == "NNE")
             & ~(pl.col("wind_direction_predominant").str.contains("NE"))
@@ -65,6 +66,7 @@ def separate_spots(df: pl.DataFrame):
         .then(pl.lit("Papelillo"))
         .when(
             ~(pl.col("wave_direction") == "WNW")
+            & ~(pl.col("wave_direction") == "W")
             & ~(pl.col("wind_direction") == "NNW")
             & ~(pl.col("wind_direction") == "NW")
             & ~(pl.col("wind_direction_predominant") == "NW")
@@ -73,18 +75,22 @@ def separate_spots(df: pl.DataFrame):
         .then(pl.lit("Caleta Caballo"))
         .when(
             ~(pl.col("wave_direction") == "WNW")
+            & ~(pl.col("wave_direction") == "W")
             & (pl.col("wind_direction").str.contains("S"))
         )
         .then(pl.lit("Famara"))
         .when(
             ~(pl.col("wave_direction") == "WNW")
+            & ~(pl.col("wave_direction") == "W")
             & (pl.col("wind_direction").str.contains("NW"))
             & (pl.col("wave_direction").str.contains("N"))
             & (pl.col("wind_direction_predominant") == "NW")
         )
         .then(pl.lit("Punta de Mujeres"))
         .when(
-            (pl.col("wave_direction") == "WNW")
+            (pl.col("wave_direction").str.contains("W"))
+            & ~(pl.col("wave_direction") == "NW")
+            & ~(pl.col("wave_direction") == "NNW")
             & (pl.col("wind_direction").str.contains("E"))
             & ~(pl.col("wind_direction") == "NNE")
         )
