@@ -50,7 +50,7 @@ def separate_spots(df: pl.DataFrame):
 
     df = df.with_columns(
         pl.when(
-            (pl.col("wind_direction").str.contains("N"))
+            (pl.col("wind_direction").str.contains("NE"))
             & (pl.col("wave_direction").str.contains("N"))
             & (pl.col("wind_speed") >= 19.0)
         )
