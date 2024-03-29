@@ -65,10 +65,10 @@ def separate_spots(df: pl.DataFrame):
         )
         .then(pl.lit("Papelillo"))
         .when(
-            ~(pl.col("wave_direction") == "WNW")
-            & ~(pl.col("wave_direction") == "W")
+            ~(pl.col("wave_direction") == "W")
             & ~(pl.col("wind_direction") == "NNW")
             & ~(pl.col("wind_direction") == "NW")
+            & ~(pl.col("wind_direction") == "WNW")
             & ~(pl.col("wind_direction_predominant") == "NW")
             & (pl.col("wind_direction").str.contains("W"))
         )
