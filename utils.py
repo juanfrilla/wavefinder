@@ -82,13 +82,12 @@ def separate_spots(df: pl.DataFrame):
         .when(
             ~(pl.col("wave_direction") == "WNW")
             & ~(pl.col("wave_direction") == "W")
-            & (pl.col("wind_direction").str.contains("NW"))
             & (pl.col("wave_direction").str.contains("N"))
             & (pl.col("wind_direction_predominant") == "NW")
         )
         .then(pl.lit("Punta de Mujeres"))
         .when(
-            (pl.col("wave_direction").str.contains("W"))
+            (pl.col("wave_direction_predominant").str.contains("W"))
             & ~(pl.col("wave_direction") == "NW")
             & ~(pl.col("wave_direction") == "NNW")
             & (pl.col("wind_direction").str.contains("E"))
@@ -98,8 +97,8 @@ def separate_spots(df: pl.DataFrame):
             (
                 (pl.col("wave_direction").str.contains("N"))
                 & (
-                    pl.col("wind_direction").str.contains("S")
-                    | pl.col("wind_direction").str.contains("E")
+                    pl.col("wind_direction_predominant").str.contains("S")
+                    | pl.col("wind_direction_predominant").str.contains("E")
                 )
             )
             | (
