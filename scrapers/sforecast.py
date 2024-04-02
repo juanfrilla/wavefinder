@@ -6,6 +6,7 @@ from utils import (
     kmh_to_knots,
     generate_dates,
     generate_tides,
+    generate_nearest_tides,
     generate_datetimes,
     filter_spot_dataframe,
     convert_all_values_of_dict_to_min_length,
@@ -189,6 +190,7 @@ class SurfForecast(object):
         forecast["spot_name"] = self.parse_spot_names(spot_name, len(forecast["time"]))
         forecast["energy"] = self.get_formated_energy(forecast)
         forecast["tide"] = generate_tides(tides, datetimes)
+        forecast["nearest_tide"] = generate_nearest_tides(tides, datetimes)
         if scraped_week_days[0] == "":
             for key, value in forecast.items():
                 if key in ["time", "date", "datetime", "spot_name", "tide"]:

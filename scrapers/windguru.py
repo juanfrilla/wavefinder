@@ -4,6 +4,7 @@ import polars as pl
 from utils import (
     rename_key,
     generate_tides,
+    generate_nearest_tides,
     generate_energy,
     render_html,
     generate_datetimes,
@@ -71,6 +72,7 @@ class Windguru(object):
             forecast, "wind_speed", "float"
         )
         forecast["tide"] = generate_tides(tides, forecast["datetime"])
+        forecast["nearest_tide"] = generate_nearest_tides(tides, forecast["datetime"])
         forecast["energy"] = generate_energy(
             forecast["wave_height"], forecast["wave_period"]
         )

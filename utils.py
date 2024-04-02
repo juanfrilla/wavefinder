@@ -298,6 +298,7 @@ def final_forecast_format(df: pl.DataFrame):
             "time",
             "datetime",
             "spot_name",
+            "nearest_tide",
             "wind_description",
             "wind_direction",
             "wave_direction",
@@ -366,11 +367,6 @@ def final_forecast_format(df: pl.DataFrame):
             )
         except Exception:
             pass
-    return df
-
-
-def final_tides_format(df: pl.DataFrame) -> pl.DataFrame:
-    pass
     return df
 
 
@@ -575,6 +571,22 @@ def generate_tides(tide_data: dict, forecast_datetimes: dict) -> list:
         tide_status_list.append(s)
 
     return tide_status_list
+
+
+def generate_nearest_tides(tide_data: dict, forecast_datetimes: dict) -> list:
+    nearest_tides = []
+    tides_datetimes_list = tide_data.get("datetime")
+    tides_tide_list = tide_data.get("tide")
+
+    for forecast_datetime in forecast_datetimes:
+        closest_datetime = min(
+            tides_datetimes_list, key=lambda dt: abs(dt - forecast_datetime)
+        )
+        closest_datetime_index = tides_datetimes_list.index(closest_datetime)
+        tide_status = tides_tide_list[closest_datetime_index]
+        tide_status = "Llena" if tide_status == "pleamar" else "Vacía"
+        nearest_tides.append(tide_status)
+    return nearest_tides
 
 
 def generate_datetimes(dates, times):
