@@ -3,6 +3,7 @@ import os, datetime, polars as pl
 from typing import Dict
 from requests import Session
 from utils import get_day_name, datestr_to_datetime
+from datetime import datetime, timedelta
 
 
 class TidesScraper(object):
@@ -51,7 +52,7 @@ class TidesScraper(object):
                     elif ":" in cell.text:
                         format_time = "%H:%M"
                         tide_time = datestr_to_datetime(cell.text, format_time).time()
-                        tide_datetime = datetime.datetime.combine(tide_date, tide_time)
+                        tide_datetime = datetime.combine(tide_date, tide_time)
                         tides["datetime"].append(tide_datetime)
         return tides
         # return pl.DataFrame(tides)
@@ -82,3 +83,20 @@ class TidesScraper(object):
         for hora in horas:
             hours_dict[get_day_name(horas.index(hora))] = hora
         return pl.DataFrame(hours_dict)
+
+    def construct_month_tides(self, tides: dict) -> list:
+        tide_interval = timedelta(hours=6, minutes=12, seconds=30)
+
+        current_time = tides.get("datetime")[-1]
+        current_tide = tides.get("tide")[-1]
+        start_datetime = current_time
+        while current_time <= start_datetime + timedelta(days=15):
+            tides.get("datetime").append(current_time)
+            tides.get("tide").append(current_tide)
+            current_time += tide_interval
+            current_tide = "pleamar" if current_tide == "bajamar" else "bajamar"
+        return tides
+
+    def tasks(self):
+        tides = self.scrape_graph()
+        return self.construct_month_tides(tides)

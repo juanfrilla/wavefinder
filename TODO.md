@@ -15,6 +15,7 @@ TODO: arreglar surfline
 
 TODO: notificaciones telegram p.ej cuando hay 1500 en playa de la cera, cuando hay viento solo sur o oeste en caleta caballo, cuando en la santa hay 100 o menos, cuando hay viento norte y +1000 en arrieta, punta
 TODO: en la marea generar la tabla entera de 1 mes, sumandole 6h12.5
+TODO: Porcentaje de marea
 
 TODO: Refactorizar alertas en front/table
 TODO: Captura de las distintas páginas cuando hay olas

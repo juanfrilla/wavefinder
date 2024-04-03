@@ -551,13 +551,13 @@ def generate_tides(tide_data: dict, forecast_datetimes: dict) -> list:
         )
         closest_datetime_index = tides_datetimes_list.index(closest_datetime)
         tide_status = tides_tide_list[closest_datetime_index]
-        try:
-            next_tide_hour = tides_datetimes_list[closest_datetime_index + 1].time()
-        except IndexError:
-            # Entre marea alta y baja transcurren 6h y 12.5 min.
-            next_tide_hour = (
-                closest_datetime + timedelta(hours=6, minutes=12.5)
-            ).time()
+        #try:
+        next_tide_hour = tides_datetimes_list[closest_datetime_index + 1].time()
+        # except IndexError:
+        #     # Entre marea alta y baja transcurren 6h y 12.5 min.
+        #     next_tide_hour = (
+        #         closest_datetime + timedelta(hours=6, minutes=12.5)
+        #     ).time()
         tide_hour = closest_datetime.time()
 
         if forecast_datetime > closest_datetime:
@@ -697,3 +697,26 @@ def get_predominant_direction(direction: float) -> str:
     min_desviation = min(desviations)
     index = desviations.index(min_desviation)
     return f"{list(direction_dictionary.keys())[index]}"
+
+
+def tide_percentage(
+    high_tide_hour: datetime, current_hour: datetime, low_tide_hour: datetime
+):
+    # 6 h and 12.5 minutes
+    total_cycle_duration = 6 * 60 * 60 + 12.5 * 60
+
+    if current_hour > low_tide_hour:
+        desviation = (current_hour - low_tide_hour).total_seconds()
+        return (desviation / total_cycle_duration) * 100
+
+    elif current_hour > high_tide_hour:
+        desviation = (current_hour - high_tide_hour).total_seconds()
+        return (desviation / total_cycle_duration) * 100
+    elif current_hour == low_tide_hour:
+        return 0
+    elif current_hour == high_tide_hour:
+        return 100
+    else:
+        raise Exception("Current hour is not between high and low tide hours")
+
+    # TODO terminar esto, crear columna

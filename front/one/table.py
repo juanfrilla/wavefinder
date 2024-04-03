@@ -166,7 +166,7 @@ def plot_selected_wave_energy():
 @st.cache_data(ttl="6h")
 def load_forecast(urls):
     tide_scraper = TidesScraper()
-    tides = tide_scraper.scrape_graph()
+    tides = tide_scraper.tasks()
     start_time = time.time()
     if "windfinder" in urls[0]:
         df = multithread.scrape_multiple_requests(urls, WindFinder())
