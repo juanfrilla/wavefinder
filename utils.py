@@ -90,7 +90,7 @@ def separate_spots(df: pl.DataFrame):
             (pl.col("wave_direction").str.contains("W"))
             & ~(pl.col("wave_direction") == "NW")
             & ~(pl.col("wave_direction") == "NNW")
-            & (pl.col("wind_direction").str.contains("E"))
+            & (pl.col("wind_direction_predominant").str.contains("E"))
         )
         .then(pl.lit("Papagayo"))
         .when(
@@ -551,7 +551,7 @@ def generate_tides(tide_data: dict, forecast_datetimes: dict) -> list:
         )
         closest_datetime_index = tides_datetimes_list.index(closest_datetime)
         tide_status = tides_tide_list[closest_datetime_index]
-        #try:
+        # try:
         next_tide_hour = tides_datetimes_list[closest_datetime_index + 1].time()
         # except IndexError:
         #     # Entre marea alta y baja transcurren 6h y 12.5 min.
