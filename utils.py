@@ -50,7 +50,10 @@ def separate_spots(df: pl.DataFrame):
 
     df = df.with_columns(
         pl.when(
-            (pl.col("wind_direction_predominant") == "NE")
+            (
+                (pl.col("wind_direction_predominant") == "NE")
+                | (pl.col("wind_direction").str.contains("NE"))
+            )
             & (pl.col("wave_direction").str.contains("N"))
             & (pl.col("wind_speed") >= 19.0)
         )
@@ -83,14 +86,20 @@ def separate_spots(df: pl.DataFrame):
             ~(pl.col("wave_direction") == "WNW")
             & ~(pl.col("wave_direction") == "W")
             & (pl.col("wave_direction").str.contains("N"))
-            & (pl.col("wind_direction_predominant") == "NW")
+            & (
+                (pl.col("wind_direction").str.contains("NW"))
+                | (pl.col("wind_direction_predominant") == "NW")
+            )
         )
         .then(pl.lit("Punta de Mujeres"))
         .when(
             (pl.col("wave_direction").str.contains("W"))
             & ~(pl.col("wave_direction") == "NW")
             & ~(pl.col("wave_direction") == "NNW")
-            & (pl.col("wind_direction_predominant").str.contains("E"))
+            & (
+                (pl.col("wind_direction").str.contains("E"))
+                | (pl.col("wind_direction_predominant").str.contains("E"))
+            )
         )
         .then(pl.lit("Papagayo"))
         .when(
@@ -551,13 +560,13 @@ def generate_tides(tide_data: dict, forecast_datetimes: dict) -> list:
         )
         closest_datetime_index = tides_datetimes_list.index(closest_datetime)
         tide_status = tides_tide_list[closest_datetime_index]
-        # try:
-        next_tide_hour = tides_datetimes_list[closest_datetime_index + 1].time()
-        # except IndexError:
-        #     # Entre marea alta y baja transcurren 6h y 12.5 min.
-        #     next_tide_hour = (
-        #         closest_datetime + timedelta(hours=6, minutes=12.5)
-        #     ).time()
+        try:
+            next_tide_hour = tides_datetimes_list[closest_datetime_index + 1].time()
+        except IndexError:
+            # Entre marea alta y baja transcurren 6h y 12.5 min.
+            next_tide_hour = (
+                closest_datetime + timedelta(hours=6, minutes=12.5)
+            ).time()
         tide_hour = closest_datetime.time()
 
         if forecast_datetime > closest_datetime:
