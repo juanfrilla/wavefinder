@@ -15,9 +15,9 @@ import altair as alt
 import polars as pl
 from datetime import datetime
 
-DEFAULT_MIN_WAVE_PERIOD = 7
-DEFAULT_WAVE_HEIGHT = 0.9
-DEFAULT_MIN_WAVE_ENERGY = 0
+DEFAULT_MIN_WAVE_PERIOD = 0
+DEFAULT_WAVE_HEIGHT = 0.0
+DEFAULT_MIN_WAVE_ENERGY = 100
 
 
 def get_list_of_spots_sorted_by_param(param, grouped_data):
