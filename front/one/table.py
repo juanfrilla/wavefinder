@@ -39,7 +39,7 @@ def plot_graph(variable):
         .mark_line()
         .encode(
             x="datetime:T",
-            y=f"{variable}:Q",
+            y=alt.Y(f"{variable}:Q", impute=alt.ImputeParams(value=None)),
             color="spot_name:N",
             tooltip=[
                 alt.Tooltip("date_dt:T", format="%d/%m/%Y", title="Date"),
