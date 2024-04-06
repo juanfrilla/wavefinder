@@ -19,7 +19,6 @@ from scrapers.tides import TidesScraper
 import altair as alt
 import polars as pl
 from datetime import datetime, timedelta
-from streamlit_date_picker import date_range_picker, PickerType, Unit, date_picker
 
 DEFAULT_MIN_WAVE_PERIOD = 0
 DEFAULT_WAVE_HEIGHT = 0.0
@@ -221,6 +220,7 @@ def custom_sort_key(item):
 
 
 def plot_forecast_as_table(urls):
+    st.set_page_config(layout="centered")
     if "windfinder" in urls[0]:
         st.title("LANZAROTE (WINDFINDER)")
     elif "windguru" in urls[0]:
