@@ -380,7 +380,14 @@ def plot_forecast_as_table(urls):
                 forecast_df_dropped = forecast_df_dropped.unique(
                     subset=["datetime"]
                 ).drop("datetime")
+                columns = forecast_df_dropped.columns
+                columns_bold = pl.Series(
+                    name="Column_names", values=[f"{col.upper()}" for col in columns]
+                )
+                plotted_df = forecast_df_dropped.transpose().insert_at_idx(
+                    0, columns_bold
+                )
                 st.dataframe(
-                    forecast_df_dropped,
+                    plotted_df,
                     hide_index=True,
                 )
