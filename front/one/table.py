@@ -42,7 +42,7 @@ def plot_graph(variable):
     data = st.session_state.forecast_df
     chart = (
         alt.Chart(data)
-        .mark_line(strokeWidth=4)
+        .mark_line(strokeWidth=3, point=True)
         .encode(
             x="datetime:T",
             y=alt.Y(f"{variable}:Q", impute=alt.ImputeParams(value=None)),
@@ -62,7 +62,7 @@ def plot_graph(variable):
             ],
         )
         .properties(width=600, height=400)
-        .configure_legend(orient="right")
+        .configure_legend(orient="bottom")
     )
 
     st.container()
@@ -261,7 +261,7 @@ def plot_forecast_as_table(urls):
         selected_date_range_string = date_range_picker(
             picker_type=PickerType.date.string_value,
             start=0,
-            end=30,
+            end=17,
             unit=Unit.days.string_value,
             key="range_picker",
         )
