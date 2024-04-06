@@ -340,9 +340,7 @@ def final_forecast_format(df: pl.DataFrame):
             try:
                 df[column]
                 if column == "energy":
-                    common_columns.insert(
-                        common_columns.index("wind_direction"), column
-                    )
+                    common_columns.insert(common_columns.index("nearest_tide"), column)
                 else:
                     common_columns.append(column)
             except Exception:
