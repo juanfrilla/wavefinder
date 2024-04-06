@@ -220,7 +220,7 @@ def custom_sort_key(item):
 
 
 def plot_forecast_as_table(urls):
-    st.set_page_config(layout="centered")
+    st.set_page_config(layout="wide")
     if "windfinder" in urls[0]:
         st.title("LANZAROTE (WINDFINDER)")
     elif "windguru" in urls[0]:
