@@ -18,7 +18,7 @@ from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
 import altair as alt
 import polars as pl
-from datetime import datetime
+from datetime import datetime, timedelta
 from streamlit_date_picker import date_range_picker, PickerType, Unit, date_picker
 
 DEFAULT_MIN_WAVE_PERIOD = 0
@@ -243,7 +243,10 @@ def plot_forecast_as_table(urls):
     if st.session_state.forecast_df.is_empty():
         st.write("The DataFrame is empty.")
     else:
-        scraped_date_list = list(set(st.session_state.forecast_df["date"].to_list()))
+        scraped_datetime_list = list(
+            set(st.session_state.forecast_df["datetime"].to_list())
+        )
+        scraped_date_list = set([date.date() for date in scraped_datetime_list])
         date_name_list = list(set(st.session_state.forecast_df["date_name"].to_list()))
         wind_status_list = list(
             set(st.session_state.forecast_df["wind_status"].to_list())
@@ -257,26 +260,23 @@ def plot_forecast_as_table(urls):
         date_name_selection = st.multiselect(
             "Nombre del día:", date_name_list, default=date_name_list
         )
-        # Use date_range_picker to create a datetime range picker
-        selected_date_range_string = date_range_picker(
-            picker_type=PickerType.date.string_value,
-            start=0,
-            end=17,
-            unit=Unit.days.string_value,
-            key="range_picker",
+
+        today = datetime.now().date()
+        next_days = (datetime.now() + timedelta(days=17)).date()
+        selected_date_range_datetime = st.date_input(
+            "Selecciona el rango de fechas",
+            (today, next_days),
+            today,
+            next_days,
+            format="DD/MM/YYYY",
         )
         date_selection = []
-        if selected_date_range_string is not None:
-            start_datetime = datestr_to_datetime(
-                selected_date_range_string[0], "%Y-%m-%d"
-            )
-            end_datetime = datestr_to_datetime(
-                selected_date_range_string[1], "%Y-%m-%d"
-            )
-            date_range = generate_date_range(start_datetime, end_datetime)
+        if len(selected_date_range_datetime) == 2:
+            min_value = selected_date_range_datetime[0]
+            max_value = selected_date_range_datetime[1]
             for scraped_date in scraped_date_list:
-                if scraped_date in date_range:
-                    date_selection.append(scraped_date)
+                if scraped_date >= min_value and scraped_date <= max_value:
+                    date_selection.append(scraped_date.strftime("%d/%m/%Y"))
 
         wind_status_selection = st.multiselect(
             "Estado del viento:",
