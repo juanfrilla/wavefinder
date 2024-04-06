@@ -61,7 +61,7 @@ def plot_graph(variable):
             ],
         )
         .properties(width=600, height=400)
-        .configure_legend(orient="left")
+        .configure_legend(orient="right")
     )
 
     st.container()
