@@ -39,6 +39,17 @@ def generate_energy(wave_heights: list, wave_periods: list):
     ]
 
 
+def generate_date_range(start_date: datetime, end_date: datetime):
+    date_list = []
+    current_date = start_date
+
+    while current_date <= end_date:
+        date_list.append(current_date.strftime("%d/%m/%Y"))
+        current_date += timedelta(days=1)
+
+    return date_list
+
+
 def separate_spots(df: pl.DataFrame):
     # Punta mujeres viento noroeste, fuerza norte.
     # Costa Teguise y Puerto del Carmen, mucho viento.

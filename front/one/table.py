@@ -1,6 +1,11 @@
 import streamlit as st
 import time
-from utils import final_forecast_format, separate_spots
+from utils import (
+    final_forecast_format,
+    separate_spots,
+    datestr_to_datetime,
+    generate_date_range,
+)
 from multi import multithread
 from scrapers.windfinder import WindFinder
 from scrapers.windguru import Windguru
@@ -14,6 +19,7 @@ from scrapers.tides import TidesScraper
 import altair as alt
 import polars as pl
 from datetime import datetime
+from streamlit_date_picker import date_range_picker, PickerType, Unit, date_picker
 
 DEFAULT_MIN_WAVE_PERIOD = 0
 DEFAULT_WAVE_HEIGHT = 0.0
@@ -36,7 +42,7 @@ def plot_graph(variable):
     data = st.session_state.forecast_df
     chart = (
         alt.Chart(data)
-        .mark_line()
+        .mark_line(strokeWidth=4)
         .encode(
             x="datetime:T",
             y=alt.Y(f"{variable}:Q", impute=alt.ImputeParams(value=None)),
@@ -237,7 +243,7 @@ def plot_forecast_as_table(urls):
     if st.session_state.forecast_df.is_empty():
         st.write("The DataFrame is empty.")
     else:
-        date_list = list(set(st.session_state.forecast_df["date"].to_list()))
+        scraped_date_list = list(set(st.session_state.forecast_df["date"].to_list()))
         date_name_list = list(set(st.session_state.forecast_df["date_name"].to_list()))
         wind_status_list = list(
             set(st.session_state.forecast_df["wind_status"].to_list())
@@ -251,7 +257,27 @@ def plot_forecast_as_table(urls):
         date_name_selection = st.multiselect(
             "Nombre del día:", date_name_list, default=date_name_list
         )
-        date_selection = st.multiselect("Fecha:", date_list, default=date_list)
+        # Use date_range_picker to create a datetime range picker
+        selected_date_range_string = date_range_picker(
+            picker_type=PickerType.date.string_value,
+            start=0,
+            end=30,
+            unit=Unit.days.string_value,
+            key="range_picker",
+        )
+        date_selection = []
+        if selected_date_range_string is not None:
+            start_datetime = datestr_to_datetime(
+                selected_date_range_string[0], "%Y-%m-%d"
+            )
+            end_datetime = datestr_to_datetime(
+                selected_date_range_string[1], "%Y-%m-%d"
+            )
+            date_range = generate_date_range(start_datetime, end_datetime)
+            for scraped_date in scraped_date_list:
+                if scraped_date in date_range:
+                    date_selection.append(scraped_date)
+
         wind_status_selection = st.multiselect(
             "Estado del viento:",
             wind_status_list,
@@ -270,8 +296,11 @@ def plot_forecast_as_table(urls):
             all_wind_approvals,
             default=get_default_wind_approval_selection(all_wind_approvals),
         )
+        if date_selection == []:
+            date_selection = scraped_date_list
 
         date_condition = st.session_state.forecast_df["date"].is_in(date_selection)
+
         date_name_condition = st.session_state.forecast_df["date_name"].is_in(
             date_name_selection
         )
