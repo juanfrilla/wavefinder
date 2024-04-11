@@ -105,9 +105,12 @@ class Windguru(object):
                 forecast[id] = []
                 for cell in cells:
                     if ("SMER" in id) | ("DIRPW" in id):
-                        value = cell.find("span")["title"]  # .replace("W", "O")
+                        try:
+                            value = cell.select("span")[0]["title"]
+                        except Exception as e:
+                            value = "NAN (-69°)"
                     else:
-                        value = cell.get_text()
+                        value = cell.get_text().replace("-", "-69")
                     forecast[id].append(value)
         if forecast != {}:
             total_records = len(max(forecast.items(), key=lambda item: len(item[1]))[1])
