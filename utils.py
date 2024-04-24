@@ -713,12 +713,14 @@ def get_predominant_direction(direction: float) -> str:
     }
     desviations = []
     for degrees in direction_dictionary.values():
-        rest = direction - degrees
-        desviations.append(abs(rest))
+        rest = abs(direction - degrees)
+        if rest > 180:
+            rest = 360 - rest
+        desviations.append(rest)
 
     min_desviation = min(desviations)
     index = desviations.index(min_desviation)
-    return f"{list(direction_dictionary.keys())[index]}"
+    return list(direction_dictionary.keys())[index]
 
 
 def tide_percentage(
