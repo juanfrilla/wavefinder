@@ -168,7 +168,7 @@ def plot_selected_wave_energy():
     )
 
 
-@st.cache_data(ttl="6h")
+@st.cache_data(ttl="1h")
 def load_forecast(urls):
     tide_scraper = TidesScraper()
     tides = tide_scraper.tasks()
