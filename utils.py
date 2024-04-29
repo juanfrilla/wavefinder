@@ -701,26 +701,26 @@ def filter_spot_dataframe(
 
 
 def get_predominant_direction(direction: float) -> str:
-    direction_dictionary = {
-        "N": 0,
-        "NE": 45,
-        "E": 90,
-        "SE": 135,
-        "S": 180,
-        "SW": 225,
-        "W": 270,
-        "NW": 315,
-    }
-    desviations = []
-    for degrees in direction_dictionary.values():
-        rest = abs(direction - degrees)
-        if rest > 180:
-            rest = 360 - rest
-        desviations.append(rest)
-
-    min_desviation = min(desviations)
-    index = desviations.index(min_desviation)
-    return list(direction_dictionary.keys())[index]
+    dirs = [
+        "N",
+        "NNE",
+        "NE",
+        "ENE",
+        "E",
+        "ESE",
+        "SE",
+        "SSE",
+        "S",
+        "SSW",
+        "SW",
+        "WSW",
+        "W",
+        "WNW",
+        "NW",
+        "NNW",
+    ]
+    ix = round(direction / (360.0 / len(dirs)))
+    return dirs[ix % len(dirs)]
 
 
 def tide_percentage(
