@@ -171,14 +171,11 @@ def import_html(filename):
 
 
 def combine_df(df1, df2):
-    # df = pl.concat([df1, df2], axis=0, ignore_index=True)
     df = pl.concat([df1, df2])
     return df
 
 
 def convert_datestr_format(datestr):
-    # Define the mapping of month names to their numeric representations
-
     day = int(datestr.split(" ")[-1].strip())
     month_name = datestr.split(" ")[-2].strip()
     month = MONTH_MAPPING[month_name]
@@ -742,5 +739,3 @@ def tide_percentage(
         return 100
     else:
         raise Exception("Current hour is not between high and low tide hours")
-
-    # TODO terminar esto, crear columna

@@ -3,18 +3,9 @@ import time
 from utils import (
     final_forecast_format,
     separate_spots,
-    datestr_to_datetime,
-    generate_date_range,
 )
 from multi import multithread
-from scrapers.windfinder import WindFinder
 from scrapers.windguru import Windguru
-from scrapers.sforecast import SurfForecast
-from scrapers.surfline import Surfline
-from scrapers.windyapp import WindyApp
-from scrapers.wisuki import Wisuki
-from scrapers.windycom import WindyCom
-from scrapers.worldbeachguide import WorldBeachGuide
 from scrapers.tides import TidesScraper
 import altair as alt
 import polars as pl
@@ -173,42 +164,13 @@ def load_forecast(urls):
     tide_scraper = TidesScraper()
     tides = tide_scraper.tasks()
     start_time = time.time()
-    if "windfinder" in urls[0]:
-        df = multithread.scrape_multiple_requests(urls, WindFinder())
-    elif "windguru" in urls[0]:
+    if "windguru" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, Windguru(), tides)
         df = final_forecast_format(df).sort("datetime", descending=False)
         df = separate_spots(df)
         df = df.filter(pl.col("spot_name") != "Spain - Famara")
         windguru = Windguru()
         windguru.handle_windguru_alerts(df)
-        # api_token =st.secrets["TELEGRAM_API_TOKEN"]
-        # chat_id = st.secrets["TELEGRAM_CHAT_ID"]
-        # telegram_bot = TelegramBot(api_token, chat_id)
-        # #TODO si hay mayor que tal y cual envia mensaje
-        # condition = df['wave_height'] >= 1.5
-        # filtered_data = df[condition]
-        # result_strings = filtered_data.apply(lambda row: f"{row['spot_name']} - {row['datetime']}", axis=1)
-        # # Print or save the result_strings as needed
-        # for string in result_strings:
-        #     telegram_bot.send_message(string)
-
-    elif "surf-forecast" in urls[0]:
-        df = multithread.scrape_multiple_requests(urls, SurfForecast(), tides)
-        df = final_forecast_format(df)
-        df = df.unique(maintain_order=True).sort("datetime", descending=False)
-        sforecast = SurfForecast()
-        sforecast.handle_sforecast_alerts(df)
-    elif "surfline" in urls[0]:
-        df = multithread.scrape_multiple_requests(urls, Surfline())
-    elif "windy.app" in urls[0]:
-        df = multithread.scrape_multiple_browser(urls, WindyApp())
-    elif "wisuki" in urls[0]:
-        df = multithread.scrape_multiple_requests(urls, Wisuki())
-    elif "worldbeachguide" in urls[0]:
-        df = multithread.scrape_multiple_requests(urls, WorldBeachGuide())
-    elif "windy.com" in urls[0]:
-        df = multithread.scrape_multiple_requests(urls, WindyCom())
     print("--- %s seconds ---" % (time.time() - start_time))
 
     return df
