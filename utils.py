@@ -66,7 +66,7 @@ def separate_spots(df: pl.DataFrame):
                 | (pl.col("wind_direction").str.contains("N"))
             )
             & (pl.col("wave_direction").str.contains("N"))
-            & (pl.col("wind_speed") >= 19.0)
+            & (pl.col("wind_speed") >= 20.0)
         )
         .then(pl.lit("Barcarola-Bastián-Tiburón"))
         .when(
