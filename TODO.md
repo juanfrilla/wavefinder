@@ -32,4 +32,5 @@ Migrar a scrapy
 escrapear temperatura, precipitaciones
 elegir qué campos quieres que se muestren en el dataframe
 Poner la dirección bien, más oeste menos oeste, más este menos este ... Capturar los grados (fijar lo que es norte, sur, este y oeste puros y lo que más se acerque mejor, 0 grados norte, 90 es Este, 180 es sur, 270 es Oeste)
-Crear columna porcentaje de marea
+Crear columna porcentaje de marea, alomejor con hora o metros, sabiendo que cada .5 horas es un cambio de marea, por qué porcentaje va
+Añadirle tests de spots con tales condiciones a ver si me los marca
