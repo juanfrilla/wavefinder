@@ -56,26 +56,28 @@ def separate_spots(df: pl.DataFrame):
     # Caleta Caballo fuerza norte y viento oeste o suroeste.
     # Papagayo, fuerza oeste.
     # Papelillo Viento este, fuerza norte.
-    # date_names = ["Hoy", "Mañana", "Pasado"]
-    # result_df = result_df.filter(pl.col("date_name").is_in(date_names))
 
     df = df.with_columns(
         pl.when(
-            (
-                (pl.col("wind_direction_predominant").str.contains("N"))
-                | (pl.col("wind_direction").str.contains("N"))
+            (pl.col("wind_direction_predominant").str.contains("N"))
+            & (
+                # (pl.col("wind_direction_predominant").str.contains("NE"))
+                # |
+                (pl.col("wind_direction").str.contains("N"))
             )
             & (pl.col("wave_direction").str.contains("N"))
             & (pl.col("wind_speed") >= 20.0)
+            & ~(pl.col("wind_direction_predominant") == "E")
         )
         .then(pl.lit("Barcarola-Bastián-Tiburón"))
         .when(
-            ~(pl.col("wave_direction") == "WNW")
+            (pl.col("wind_direction").str.contains("E"))
+            & (pl.col("wind_direction_predominant").str.contains("E"))
+            & (pl.col("wave_direction").str.contains("N"))
+            & ~(pl.col("wave_direction") == "WNW")
             & ~(pl.col("wave_direction") == "W")
-            & (pl.col("wind_direction").str.contains("E"))
             & ~(pl.col("wind_direction") == "NNE")
             & ~(pl.col("wind_direction_predominant").str.contains("NE"))
-            & (pl.col("wave_direction").str.contains("N"))
         )
         .then(pl.lit("Papelillo"))
         .when(
@@ -320,7 +322,6 @@ def final_forecast_format(df: pl.DataFrame):
             "datetime",
             "spot_name",
             "nearest_tide",
-            "wind_description",
             "wind_direction",
             "wave_direction",
             "tide",
@@ -330,6 +331,7 @@ def final_forecast_format(df: pl.DataFrame):
             "wind_approval",
             "temperature",
             "wind_status",
+            "wind_description",
         ]
         columns_to_check = [
             "wind_direction_degrees",
@@ -697,27 +699,43 @@ def filter_spot_dataframe(
     return filter_dataframe(df, conditions_data[spot_name], three_near_days)
 
 
+# def get_predominant_direction(direction: float) -> str:
+#     dirs = [
+#         "N",
+#         "NNE",
+#         "NE",
+#         "ENE",
+#         "E",
+#         "ESE",
+#         "SE",
+#         "SSE",
+#         "S",
+#         "SSW",
+#         "SW",
+#         "WSW",
+#         "W",
+#         "WNW",
+#         "NW",
+#         "NNW",
+#     ]
+#     ix = round(direction / (360.0 / len(dirs)))
+#     return dirs[ix % len(dirs)]
+
+
 def get_predominant_direction(direction: float) -> str:
     dirs = [
         "N",
-        "NNE",
         "NE",
-        "ENE",
         "E",
-        "ESE",
         "SE",
-        "SSE",
         "S",
-        "SSW",
         "SW",
-        "WSW",
         "W",
-        "WNW",
         "NW",
-        "NNW",
     ]
-    ix = round(direction / (360.0 / len(dirs)))
-    return dirs[ix % len(dirs)]
+    direction = direction % 360
+    ix = round(direction / 45) % len(dirs)
+    return dirs[ix]
 
 
 def tide_percentage(
