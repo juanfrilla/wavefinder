@@ -60,16 +60,22 @@ def separate_spots(df: pl.DataFrame):
     df = df.with_columns(
         pl.when(
             (pl.col("wind_direction_predominant").str.contains("N"))
-            & (
-                # (pl.col("wind_direction_predominant").str.contains("NE"))
-                # |
-                (pl.col("wind_direction").str.contains("N"))
-            )
+            & ((pl.col("wind_direction").str.contains("N")))
             & (pl.col("wave_direction").str.contains("N"))
             & (pl.col("wind_speed") >= 20.0)
+            & (pl.col("tide_percentage") <= 50.0)
             & ~(pl.col("wind_direction_predominant") == "E")
         )
-        .then(pl.lit("Barcarola-Bastián-Tiburón"))
+        .then(pl.lit("Barcarola"))
+        .when(
+            (pl.col("wind_direction_predominant").str.contains("N"))
+            & ((pl.col("wind_direction").str.contains("N")))
+            & (pl.col("wave_direction").str.contains("N"))
+            & (pl.col("wind_speed") >= 20.0)
+            & (pl.col("tide_percentage") >= 50.0)
+            & ~(pl.col("wind_direction_predominant") == "E")
+        )
+        .then(pl.lit("Bastián-Tiburón"))
         .when(
             (pl.col("wind_direction").str.contains("E"))
             & (pl.col("wind_direction_predominant").str.contains("E"))
@@ -78,6 +84,8 @@ def separate_spots(df: pl.DataFrame):
             & ~(pl.col("wave_direction") == "W")
             & ~(pl.col("wind_direction") == "NNE")
             & ~(pl.col("wind_direction_predominant").str.contains("NE"))
+            & pl.col("tide_percentage")
+            <= 50.0
         )
         .then(pl.lit("Papelillo"))
         .when(
@@ -117,6 +125,8 @@ def separate_spots(df: pl.DataFrame):
             )
             & (pl.col("wave_height") >= 1.7)
             & (pl.col("wave_period") >= 10.0)
+            & pl.col("tide_percentage")
+            <= 50.0
         )
         .then(pl.lit("Papagayo"))
         .when(
@@ -322,6 +332,7 @@ def final_forecast_format(df: pl.DataFrame):
             "datetime",
             "spot_name",
             "nearest_tide",
+            "tide_percentage",
             "wind_direction",
             "wave_direction",
             "tide",
@@ -561,10 +572,10 @@ def get_wind_status(wind_direction, wave_direction):
     return "Onshore"
 
 
-def generate_tides(tide_data: dict, forecast_datetimes: dict) -> list:
+def generate_tides(tide_data: list, forecast_datetimes: list) -> list:
     tide_status_list = []
-    tides_datetimes_list = tide_data.get("datetime")
-    tides_tide_list = tide_data.get("tide")
+    tides_datetimes_list = [item["datetime"] for item in tide_data]
+    tides_tide_list = [item["tide"] for item in tide_data]
 
     for forecast_datetime in forecast_datetimes:
         closest_datetime = min(
@@ -572,23 +583,25 @@ def generate_tides(tide_data: dict, forecast_datetimes: dict) -> list:
         )
         closest_datetime_index = tides_datetimes_list.index(closest_datetime)
         tide_status = tides_tide_list[closest_datetime_index]
+
         try:
-            next_tide_hour = tides_datetimes_list[closest_datetime_index + 1].time()
+            next_tide_datetime = tides_datetimes_list[closest_datetime_index + 1]
         except IndexError:
-            # Entre marea alta y baja transcurren 6h y 12.5 min.
-            next_tide_hour = (
-                closest_datetime + timedelta(hours=6, minutes=12.5)
-            ).time()
+            # Marea alta y baja hay 6h y 12.5 min
+            next_tide_datetime = closest_datetime + timedelta(hours=6, minutes=12.5)
+
         tide_hour = closest_datetime.time()
+        next_tide_hour = next_tide_datetime.time()
 
         if forecast_datetime > closest_datetime:
             status = "Bajando" if tide_status == "pleamar" else "Subiendo"
-            s = f"{status} hasta las {next_tide_hour}"
+            s = f"{status} hasta las {next_tide_hour.strftime('%H:%M')}"
         elif forecast_datetime < closest_datetime:
             status = "Subiendo" if tide_status == "pleamar" else "Bajando"
-            s = f"{status} hasta las {tide_hour}"
+            s = f"{status} hasta las {tide_hour.strftime('%H:%M')}"
         else:
-            s = f"{tide_status} del todo a las {tide_hour}"
+            s = f"{tide_status} del todo a las {tide_hour.strftime('%H:%M')}"
+
         tide_status_list.append(s)
 
     return tide_status_list
@@ -596,8 +609,8 @@ def generate_tides(tide_data: dict, forecast_datetimes: dict) -> list:
 
 def generate_nearest_tides(tide_data: dict, forecast_datetimes: dict) -> list:
     nearest_tides = []
-    tides_datetimes_list = tide_data.get("datetime")
-    tides_tide_list = tide_data.get("tide")
+    tides_datetimes_list = [item["datetime"] for item in tide_data]
+    tides_tide_list = [item["tide"] for item in tide_data]
 
     for forecast_datetime in forecast_datetimes:
         closest_datetime = min(
@@ -608,6 +621,72 @@ def generate_nearest_tides(tide_data: dict, forecast_datetimes: dict) -> list:
         tide_status = "Llena" if tide_status == "pleamar" else "Vacía"
         nearest_tides.append(tide_status)
     return nearest_tides
+
+
+# from datetime import datetime, timedelta
+
+
+def generate_tide_percentages(tide_data: dict, forecast_datetimes: list) -> list:
+    tide_percentages = []
+    tides_datetimes_list = [item["datetime"] for item in tide_data]
+    tides_tide_list = [item["tide"] for item in tide_data]
+
+    for forecast_datetime in forecast_datetimes:
+        sorted_datetimes = sorted(
+            tides_datetimes_list, key=lambda dt: abs(dt - forecast_datetime)
+        )
+        closest_datetime_1 = sorted_datetimes[0]
+        closest_datetime_2 = sorted_datetimes[1]
+
+        closest_datetime_index_1 = tides_datetimes_list.index(closest_datetime_1)
+
+        if tides_tide_list[closest_datetime_index_1] == "pleamar":
+            high_tide_hour = closest_datetime_1
+            low_tide_hour = closest_datetime_2
+        else:
+            high_tide_hour = closest_datetime_2
+            low_tide_hour = closest_datetime_1
+
+        tide_percentage = calculate_tide_percentage(
+            high_tide_hour, forecast_datetime, low_tide_hour
+        )
+        tide_percentages.append(tide_percentage)
+
+    return tide_percentages
+
+
+def find_next_tide(tides_datetimes_list, tides_tide_list, start_index, tide_type):
+    for i in range(start_index + 1, len(tides_datetimes_list)):
+        if tides_tide_list[i].lower() == tide_type:
+            return tides_datetimes_list[i]
+    raise ValueError(f"No {tide_type} found after index {start_index}")
+
+
+from datetime import datetime, timedelta
+
+
+def calculate_tide_percentage(
+    high_tide_hour: datetime, current_hour: datetime, low_tide_hour: datetime
+) -> float:
+    if high_tide_hour > low_tide_hour:
+        total_cycle_duration = (high_tide_hour - low_tide_hour).total_seconds()
+    else:
+        total_cycle_duration = (low_tide_hour - high_tide_hour).total_seconds()
+
+    if current_hour < high_tide_hour:
+        deviation = (high_tide_hour - current_hour).total_seconds()
+        percentage = (deviation / total_cycle_duration) * 100
+    elif current_hour > low_tide_hour:
+        deviation = (current_hour - low_tide_hour).total_seconds()
+        percentage = 100 - (deviation / total_cycle_duration) * 100
+    else:
+        deviation = (current_hour - high_tide_hour).total_seconds()
+        percentage = (deviation / total_cycle_duration) * 100
+
+    percentage = max(0, min(100, percentage))
+    calculed_percentage = math.ceil(percentage)
+    returned_percentage = 100 - calculed_percentage
+    return returned_percentage
 
 
 def generate_datetimes(dates, times):
@@ -736,24 +815,3 @@ def get_predominant_direction(direction: float) -> str:
     direction = direction % 360
     ix = round(direction / 45) % len(dirs)
     return dirs[ix]
-
-
-def tide_percentage(
-    high_tide_hour: datetime, current_hour: datetime, low_tide_hour: datetime
-):
-    # 6 h and 12.5 minutes
-    total_cycle_duration = 6 * 60 * 60 + 12.5 * 60
-
-    if current_hour > low_tide_hour:
-        desviation = (current_hour - low_tide_hour).total_seconds()
-        return (desviation / total_cycle_duration) * 100
-
-    elif current_hour > high_tide_hour:
-        desviation = (current_hour - high_tide_hour).total_seconds()
-        return (desviation / total_cycle_duration) * 100
-    elif current_hour == low_tide_hour:
-        return 0
-    elif current_hour == high_tide_hour:
-        return 100
-    else:
-        raise Exception("Current hour is not between high and low tide hours")

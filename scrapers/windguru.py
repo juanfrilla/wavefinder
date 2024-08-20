@@ -5,6 +5,7 @@ from utils import (
     rename_key,
     generate_tides,
     generate_nearest_tides,
+    generate_tide_percentages,
     generate_energy,
     render_html,
     generate_datetimes,
@@ -73,6 +74,9 @@ class Windguru(object):
         )
         forecast["tide"] = generate_tides(tides, forecast["datetime"])
         forecast["nearest_tide"] = generate_nearest_tides(tides, forecast["datetime"])
+        forecast["tide_percentage"] = generate_tide_percentages(
+            tides, forecast["datetime"]
+        )
         forecast["energy"] = generate_energy(
             forecast["wave_height"], forecast["wave_period"]
         )

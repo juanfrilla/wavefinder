@@ -31,10 +31,7 @@ class TidesScraper(object):
 
     def scrape_graph(self) -> Dict:
         response = self.session.get(url=self.link, headers=self.headers)
-        tides = {
-            "datetime": [],
-            "tide": [],
-        }
+        tides = []
         s = BeautifulSoup(response.text, "html.parser")
         tables = s.select("table.table.table-bordered")
         days_string = [day_h3.text for day_h3 in s.select("h3")][2:]
@@ -44,16 +41,18 @@ class TidesScraper(object):
             tablebody = table.find("tbody")
             rows = tablebody.find_all("tr")
             for row in rows:
+                tide_data = {}
                 cells = row.find_all("td")
                 for cell in cells:
                     if cell.text == "pleamar" or cell.text == "bajamar":
                         current_sea_state = cell.text
-                        tides["tide"].append(current_sea_state)
+                        tide_data["tide"] = current_sea_state
                     elif ":" in cell.text:
                         format_time = "%H:%M"
                         tide_time = datestr_to_datetime(cell.text, format_time).time()
                         tide_datetime = datetime.combine(tide_date, tide_time)
-                        tides["datetime"].append(tide_datetime)
+                        tide_data["datetime"] = tide_datetime
+                    tides.append(tide_data)
         return tides
         # return pl.DataFrame(tides)
 
@@ -84,19 +83,30 @@ class TidesScraper(object):
             hours_dict[get_day_name(horas.index(hora))] = hora
         return pl.DataFrame(hours_dict)
 
-    def construct_month_tides(self, tides: dict) -> list:
+    def construct_month_tides(self, tides: list) -> list:
         tide_interval = timedelta(hours=6, minutes=12, seconds=30)
-
-        current_time = tides.get("datetime")[-1]
-        current_tide = tides.get("tide")[-1]
+        current_tide_data = tides[-1]
+        current_time = current_tide_data.get("datetime")
+        current_tide = current_tide_data.get("tide")
         start_datetime = current_time
         while current_time <= start_datetime + timedelta(days=15):
-            tides.get("datetime").append(current_time)
-            tides.get("tide").append(current_tide)
+            tide_to_append = {"tide": current_tide, "datetime": current_time}
+            tides.append(tide_to_append)
             current_time += tide_interval
             current_tide = "pleamar" if current_tide == "bajamar" else "bajamar"
         return tides
 
+    def remove_duplicates(self, tides: list) -> list:
+        no_duplicates = []
+        for tide in tides:
+            if tide in no_duplicates:
+                continue
+            else:
+                no_duplicates.append(tide)
+        return no_duplicates
+
     def tasks(self):
         tides = self.scrape_graph()
-        return self.construct_month_tides(tides)
+        tides = self.construct_month_tides(tides)
+        tides = self.remove_duplicates(tides)
+        return tides
