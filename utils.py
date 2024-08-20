@@ -80,12 +80,11 @@ def separate_spots(df: pl.DataFrame):
             (pl.col("wind_direction").str.contains("E"))
             & (pl.col("wind_direction_predominant").str.contains("E"))
             & (pl.col("wave_direction").str.contains("N"))
+            & (pl.col("tide_percentage") <= 50.0)
             & ~(pl.col("wave_direction") == "WNW")
             & ~(pl.col("wave_direction") == "W")
             & ~(pl.col("wind_direction") == "NNE")
             & ~(pl.col("wind_direction_predominant").str.contains("NE"))
-            & pl.col("tide_percentage")
-            <= 50.0
         )
         .then(pl.lit("Papelillo"))
         .when(
@@ -125,8 +124,7 @@ def separate_spots(df: pl.DataFrame):
             )
             & (pl.col("wave_height") >= 1.7)
             & (pl.col("wave_period") >= 10.0)
-            & pl.col("tide_percentage")
-            <= 50.0
+            & (pl.col("tide_percentage") <= 50.0)
         )
         .then(pl.lit("Papagayo"))
         .when(
