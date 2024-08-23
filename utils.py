@@ -142,7 +142,7 @@ def separate_spots(df: pl.DataFrame):
             )
         )
         .then(pl.lit("La Santa - Famara"))
-        .otherwise(pl.col("spot_name"))
+        .otherwise(pl.lit("No Clasificado"))
         .alias("spot_name")
     )
     return df
