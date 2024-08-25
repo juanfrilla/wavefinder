@@ -329,7 +329,11 @@ def plot_forecast_as_table(urls):
         grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
             pl.col("datetime").min().alias("datetime")
         )
-        grouped_data = grouped_data.sort("datetime", descending=False)
+        if "datetime" in grouped_data.columns:
+            grouped_data = grouped_data.sort("datetime", descending=False)
+        else:
+            st.warning("'datetime' column not found, skipping sort.")
+
         with st.container():
             for i in range(len(grouped_data)):
                 spot_name = grouped_data[i]["spot_name"].to_numpy()[0]
@@ -342,13 +346,6 @@ def plot_forecast_as_table(urls):
                 forecast_df_dropped = forecast_df_dropped.unique(
                     subset=["datetime"]
                 ).drop("datetime")
-                # columns = forecast_df_dropped.columns
-                # columns_bold = pl.Series(
-                #     name="Column_names", values=[f"{col.upper()}" for col in columns]
-                # )
-                # plotted_df = forecast_df_dropped.transpose().insert_at_idx(
-                #     0, columns_bold
-                # )
                 st.dataframe(
                     forecast_df_dropped,
                     hide_index=True,
