@@ -821,9 +821,7 @@ def filter_spot_dataframe(
 
 
 def get_predominant_direction(direction: float) -> str:
-
-    # Check for exact cardinal directions
-    if direction == 0:
+    if direction == 0 or direction == 360:
         return "N"
     elif direction == 90:
         return "E"
