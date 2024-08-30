@@ -34,3 +34,4 @@ elegir qué campos quieres que se muestren en el dataframe
 Poner la dirección bien, más oeste menos oeste, más este menos este ... Capturar los grados (fijar lo que es norte, sur, este y oeste puros y lo que más se acerque mejor, 0 grados norte, 90 es Este, 180 es sur, 270 es Oeste)
 Añadirle tests de spots con tales condiciones a ver si me los marca
 Meterle fecha y hora actual y donde hay
+Hacerlo con selenium para logearme hasta que dé como se hace sin él.
