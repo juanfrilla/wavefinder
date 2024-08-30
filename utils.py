@@ -837,3 +837,14 @@ def get_predominant_direction(direction: float) -> str:
         return "SW"
     elif direction > 270 and direction < 360:
         return "NW"
+
+
+def svg_to_wind_direction(svg_angle):
+    normalized_angle = svg_angle % 360
+    wind_direction = (normalized_angle - 180) % 360
+    return wind_direction if wind_direction != 0 else 360
+
+
+# print(svg_to_wind_direction(197))  # 17
+# print(svg_to_wind_direction(540))  # 360
+# print(svg_to_wind_direction(515))  # 335
