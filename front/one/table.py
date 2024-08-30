@@ -37,6 +37,7 @@ def plot_graph(variable):
             x="datetime:T",
             y=alt.Y(f"{variable}:Q", impute=alt.ImputeParams(value=None)),
             color="spot_name:N",
+            detail="date_dt:T",
             tooltip=[
                 alt.Tooltip("date_dt:T", format="%d/%m/%Y", title="Date"),
                 alt.Tooltip("time_cor:N", title="Time"),

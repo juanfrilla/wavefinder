@@ -71,7 +71,7 @@ def separate_spots(df: pl.DataFrame):
             (pl.col("wind_direction_predominant").str.contains("N"))
             & ((pl.col("wind_direction").str.contains("N")))
             & (pl.col("wave_direction").str.contains("N"))
-            & (pl.col("wind_speed") >= 20.0)
+            & (pl.col("wind_speed") >= 19.0)
             & (pl.col("tide_percentage") >= 50.0)
             & ~(pl.col("wind_direction_predominant") == "E")
         )
@@ -93,7 +93,10 @@ def separate_spots(df: pl.DataFrame):
             & ~(pl.col("wind_direction") == "NW")
             & ~(pl.col("wind_direction") == "WNW")
             & ~(pl.col("wind_direction_predominant") == "NW")
-            & (pl.col("wind_direction").str.contains("W"))
+            & (
+                (pl.col("wind_direction").str.contains("W"))
+                | (pl.col("wind_direction_predominant") == "W")
+            )
         )
         .then(pl.lit("Caleta Caballo"))
         .when(
@@ -133,6 +136,8 @@ def separate_spots(df: pl.DataFrame):
                 & (
                     pl.col("wind_direction").str.contains("S")
                     | pl.col("wind_direction").str.contains("E")
+                    | pl.col("wind_direction_predominant").str.contains("S")
+                    | pl.col("wind_direction_predominant").str.contains("E")
                 )
             )
             | (
@@ -799,17 +804,36 @@ def filter_spot_dataframe(
 #     return dirs[ix % len(dirs)]
 
 
+# def get_predominant_direction(direction: float) -> str:
+#     dirs = [
+#         "N",
+#         "NE",
+#         "E",
+#         "SE",
+#         "S",
+#         "SW",
+#         "W",
+#         "NW",
+#     ]
+#     direction = direction % 360
+#     ix = round(direction / 45) % len(dirs)
+#     return dirs[ix]
+
+
 def get_predominant_direction(direction: float) -> str:
-    dirs = [
-        "N",
-        "NE",
-        "E",
-        "SE",
-        "S",
-        "SW",
-        "W",
-        "NW",
-    ]
-    direction = direction % 360
-    ix = round(direction / 45) % len(dirs)
-    return dirs[ix]
+    if direction == 0 or direction == 360:
+        return "N"
+    elif direction == 90:
+        return "E"
+    elif direction == 180:
+        return "S"
+    elif direction == 270:
+        return "W"
+    elif direction > 0 and direction < 90:
+        return "NE"
+    elif direction > 90 and direction < 180:
+        return "SE"
+    elif direction > 180 and direction < 270:
+        return "SW"
+    elif direction > 270 and direction < 360:
+        return "NW"
