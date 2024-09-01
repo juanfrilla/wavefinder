@@ -153,6 +153,109 @@ def separate_spots(df: pl.DataFrame):
     return df
 
 
+def separate_spots_history(df: pl.DataFrame):
+    # Punta mujeres viento noroeste, fuerza norte.
+    # Costa Teguise y Puerto del Carmen, mucho viento.
+    # Caleta Caballo fuerza norte y viento oeste o suroeste.
+    # Papagayo, fuerza oeste.
+    # Papelillo Viento este, fuerza norte.
+
+    df = df.with_columns(
+        pl.when(
+            # (pl.col("wind_direction_predominant").str.contains("N"))
+            ((pl.col("wind_direction").str.contains("N")))
+            & (pl.col("wave_direction").str.contains("N"))
+            & (pl.col("wind_speed") >= 19.0)
+            # & (pl.col("tide_percentage") <= 50.0)
+            # & ~(pl.col("wind_direction_predominant") == "E")
+        )
+        .then(pl.lit("Barcarola"))
+        .when(
+            # (pl.col("wind_direction_predominant").str.contains("N"))
+            ((pl.col("wind_direction").str.contains("N")))
+            & (pl.col("wave_direction").str.contains("N"))
+            & (pl.col("wind_speed") >= 19.0)
+            # & (pl.col("tide_percentage") >= 50.0)
+            # & ~(pl.col("wind_direction_predominant") == "E")
+        )
+        .then(pl.lit("Bastián-Tiburón"))
+        .when(
+            (pl.col("wind_direction").str.contains("E"))
+            # & (pl.col("wind_direction_predominant").str.contains("E"))
+            & (pl.col("wave_direction").str.contains("N"))
+            # & (pl.col("tide_percentage") <= 50.0)
+            & ~(pl.col("wave_direction") == "WNW")
+            & ~(pl.col("wave_direction") == "W")
+            & ~(pl.col("wind_direction") == "NNE")
+            # & ~(pl.col("wind_direction_predominant").str.contains("NE"))
+        )
+        .then(pl.lit("Papelillo"))
+        .when(
+            ~(pl.col("wave_direction") == "W")
+            & ~(pl.col("wind_direction") == "NNW")
+            & ~(pl.col("wind_direction") == "NW")
+            & ~(pl.col("wind_direction") == "WNW")
+            # & ~(pl.col("wind_direction_predominant") == "NW")
+            & (
+                (pl.col("wind_direction").str.contains("W"))
+                # | (pl.col("wind_direction_predominant") == "W")
+            )
+        )
+        .then(pl.lit("Caleta Caballo"))
+        .when(
+            ~(pl.col("wave_direction") == "WNW")
+            & ~(pl.col("wave_direction") == "W")
+            & (pl.col("wind_direction").str.contains("S"))
+        )
+        .then(pl.lit("Famara"))
+        .when(
+            ~(pl.col("wave_direction") == "WNW")
+            & ~(pl.col("wave_direction") == "W")
+            & (pl.col("wave_direction").str.contains("N"))
+            & (
+                (pl.col("wind_direction").str.contains("NW"))
+                # | (pl.col("wind_direction_predominant") == "NW")
+            )
+            & (pl.col("wave_height") >= 1.5)
+            & (pl.col("wave_period") >= 10.0)
+        )
+        .then(pl.lit("Punta de Mujeres"))
+        .when(
+            (pl.col("wave_direction").str.contains("W"))
+            & ~(pl.col("wave_direction") == "NW")
+            & ~(pl.col("wave_direction") == "NNW")
+            & (
+                (pl.col("wind_direction").str.contains("E"))
+                # | (pl.col("wind_direction_predominant").str.contains("E"))
+            )
+            & (pl.col("wave_height") >= 1.7)
+            & (pl.col("wave_period") >= 10.0)
+            # & (pl.col("tide_percentage") <= 50.0)
+        )
+        .then(pl.lit("Papagayo"))
+        .when(
+            (
+                (pl.col("wave_direction").str.contains("N"))
+                & (
+                    pl.col("wind_direction").str.contains("S")
+                    | pl.col("wind_direction").str.contains("E")
+                    # | pl.col("wind_direction_predominant").str.contains("S")
+                    # | pl.col("wind_direction_predominant").str.contains("E")
+                )
+            )
+            | (
+                (pl.col("wind_speed") <= 10.0)
+                & (pl.col("wave_height") >= 1.0)
+                & (pl.col("wave_period") >= 7.0)
+            )
+        )
+        .then(pl.lit("La Santa - Famara"))
+        .otherwise(pl.lit("No Clasificado"))
+        .alias("spot_name")
+    )
+    return df
+
+
 # margen de 20 grados en N,S,E,O
 def angle_to_direction(angle):
     angle %= 360
@@ -207,6 +310,7 @@ def open_browser():
     )
 
     options = webdriver.ChromeOptions()
+    options.set_capability("goog:loggingPrefs", {"performance": "ALL"})
     options.add_argument("--lang=es")
     options.add_argument("--headless")
     options.add_argument(f"--user-agent={my_user_agent}")
@@ -781,27 +885,29 @@ def filter_spot_dataframe(
     return filter_dataframe(df, conditions_data[spot_name], three_near_days)
 
 
-# def get_predominant_direction(direction: float) -> str:
-#     dirs = [
-#         "N",
-#         "NNE",
-#         "NE",
-#         "ENE",
-#         "E",
-#         "ESE",
-#         "SE",
-#         "SSE",
-#         "S",
-#         "SSW",
-#         "SW",
-#         "WSW",
-#         "W",
-#         "WNW",
-#         "NW",
-#         "NNW",
-#     ]
-#     ix = round(direction / (360.0 / len(dirs)))
-#     return dirs[ix % len(dirs)]
+def from_direction_degrees_to_cardinal(direction: float) -> str:
+    dirs = [
+        "N",
+        "NNE",
+        "NE",
+        "ENE",
+        "E",
+        "ESE",
+        "SE",
+        "SSE",
+        "S",
+        "SSW",
+        "SW",
+        "WSW",
+        "W",
+        "WNW",
+        "NW",
+        "NNW",
+    ]
+    if direction:
+        ix = round(direction / (360.0 / len(dirs)))
+        return dirs[ix % len(dirs)]
+    return None
 
 
 # def get_predominant_direction(direction: float) -> str:

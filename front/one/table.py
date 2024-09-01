@@ -3,9 +3,11 @@ import time
 from utils import (
     final_forecast_format,
     separate_spots,
+    separate_spots_history,
 )
 from multi import multithread
 from scrapers.windguru import Windguru
+from scrapers.windguru_history import WindguruHistory
 from scrapers.tides import TidesScraper
 import altair as alt
 import polars as pl
@@ -177,9 +179,28 @@ def load_forecast(urls):
     return df
 
 
+@st.cache_data(ttl="1h")
+def load_forecast_windguru_history():
+    start_time = time.time()
+
+    windguru_history = WindguruHistory()
+
+    df = windguru_history.scrape()
+
+    # df = final_forecast_format(df).sort("datetime", descending=False)
+    df = separate_spots_history(df)
+    print("--- %s seconds ---" % (time.time() - start_time))
+
+    return df
+
+
 def custom_sort_key(item):
     custom_order = {"Hoy": 1, "Mañana": 2, "Pasado": 3, "Otro día": 4}
     return custom_order.get(item, 5)
+
+
+def plot_windguru_history():
+    initial_forecast = load_forecast_windguru_history()
 
 
 def plot_forecast_as_table(urls):

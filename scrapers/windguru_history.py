@@ -1,5 +1,7 @@
 import requests
+import json
 from bs4 import BeautifulSoup
+from functools import reduce
 from typing import Dict
 import polars as pl
 from utils import (
@@ -8,19 +10,140 @@ from utils import (
     generate_nearest_tides,
     generate_tide_percentages,
     generate_energy,
-    render_html,
+    open_browser,
     generate_datetimes,
     filter_spot_dataframe,
+    from_direction_degrees_to_cardinal,
 )
 import re
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from APIS.discord_api import DiscordBot
 
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
-class Windguru(object):
+
+class WindguruHistory(object):
     def __init__(self):
-        pass
+        self.session = requests.Session()
+        self.browser = open_browser()
+
+    def process_browser_log_entry(self, entry):
+        response = json.loads(entry["message"])["message"]
+        return response
+
+    def obtain_requests(self):
+        browser_log = self.browser.get_log("performance")
+        return [self.process_browser_log_entry(entry) for entry in browser_log]
+
+    def remove_headless(self, text: str) -> str:
+        return re.sub(r"headless", "", text, flags=re.IGNORECASE)
+
+    def process_headers(self, headers: dict) -> dict:
+        processed_headers = {}
+        for key, value in headers.items():
+            processed_value = self.remove_headless(value)
+            processed_headers[key] = processed_value
+        return processed_headers
+
+    def capture_headers_for_url(self, url: str) -> dict:
+        all_requests = self.obtain_requests()
+        headers = self.capture_headers_for_chrome(all_requests, url)
+        return self.process_headers(headers)
+
+    def capture_headers_for_chrome(self, all_requests: list, url: str) -> dict:
+        for message in all_requests:
+            message_params = message["params"]
+            if message["method"] == "Network.requestWillBeSent":
+                request = message_params["request"]
+                if request["url"] == url:
+                    headers = request["headers"]
+                    return headers
+
+    def retrieve_cookies_dict(self) -> Dict:
+        return {
+            cookie["name"]: cookie["value"] for cookie in self.browser.get_cookies()
+        }
+
+    def add_cookies_to_requests_session(self):
+        cookies_dict = self.retrieve_cookies_dict()
+        for cookie_key, cookie_value in cookies_dict.items():
+            self.session.cookies.set(cookie_key, cookie_value)
+        return
+
+    def submit_login_form(self) -> None:
+        username_css_selector = "input#inputusername"
+        # TODO meterlo en variables de entorno
+        # TODO mirar si puedo quitarle el selenium para el login
+        usnm = "bodyboard69"
+        password_name = "password"
+        pwd = "b0dyb04rd"
+        submit_button_css_selector = "button.akce.wide"
+
+        wait = WebDriverWait(self.browser, 10)
+        wait.until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, submit_button_css_selector)
+            )
+        )
+        usnm_element = self.browser.find_element(By.CSS_SELECTOR, username_css_selector)
+        usnm_element.send_keys(str(usnm))
+
+        password_input = self.browser.find_element(By.NAME, password_name)
+        password_input.send_keys(str(pwd))
+
+        submit_element = self.browser.find_element(
+            By.CSS_SELECTOR, submit_button_css_selector
+        )
+        submit_element.click()
+        element = WebDriverWait(self.browser, 10).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "table.tabulka"))
+        )
+        assert element
+
+    def history_daterange_request(self, headers, start_date, end_date):
+        FAMARA_ID = 49328
+
+        data = {
+            "date_from": start_date,  # "2024-07-01",
+            "date_to": end_date,  # "2024-08-01",
+            "step": "2",
+            "min_use_hr": "6",
+            "pwindspd": "1",
+            "psmer": "1",
+            "phtsgw": "1",
+            "pwavesmer": "1",
+            "pperpw": "1",
+            "id_spot": FAMARA_ID,
+            "id_model": "3",
+            "id_stats_type": "",
+        }
+
+        response = self.session.post(
+            "https://www.windguru.cz/ajax/ajax_archive.php", headers=headers, data=data
+        )
+        return BeautifulSoup(response.text, "html.parser")
+
+    # TODO hacer una clase y archivo solo de selenium
+    def windguru_tasks(self):
+        login_url = "https://www.windguru.cz/login.php"
+        try:
+            self.browser.get(login_url)
+            self.submit_login_form()
+            archive_url = "https://www.windguru.cz/archive.php"
+            self.browser.get(archive_url)
+            self.add_cookies_to_requests_session()
+            headers = self.capture_headers_for_url(archive_url)
+            soup = self.history_daterange_request(headers, "2022-11-01", "2022-12-01")
+            return soup
+        except Exception as e:
+            raise e
+        finally:
+            self.browser.close()
+            self.browser.quit()
 
     def beach_request(self, url):
         FAMARA_ID = 49328
@@ -61,103 +184,205 @@ class Windguru(object):
         # r_text = render_html(url=url, tag_to_wait="table.tabulka", timeout=60 * 1000)
         # return BeautifulSoup(r_text, "html.parser")
 
-    def format_forecast(self, forecast: Dict, tides: dict) -> Dict:
-        forecast = rename_key(forecast, "tabid_0_0_dates", "datetime")
-        forecast = rename_key(forecast, "tabid_0_0_SMER", "wind_direction_raw")
-        forecast = rename_key(forecast, "tabid_0_0_HTSGW", "wave_height")
-        forecast = rename_key(forecast, "tabid_0_0_DIRPW", "wave_direction_raw")
-        forecast = rename_key(forecast, "tabid_0_0_PERPW", "wave_period")
-        forecast = rename_key(forecast, "tabid_0_0_WINDSPD", "wind_speed")
-        forecast = rename_key(forecast, "tabid_0_0_TMPE", "temperature")
+    def do_date_match_regex(self, date):
+        match = re.search(r"\d{2}\.\d{2}\.\d{4}", date.text)
+        if match:
+            return True
+        return False
 
-        forecast["wind_direction"] = [
-            self.parse_text_from_text(element)
-            for element in forecast["wind_direction_raw"]
-        ]
-        forecast["wave_direction"] = [
-            self.parse_text_from_text(element)
-            for element in forecast["wave_direction_raw"]
-        ]
-        forecast["wind_direction_degrees"] = [
-            self.parse_number_from_text(element)
-            for element in forecast["wind_direction_raw"]
-        ]
-        forecast["wave_direction_degrees"] = [
-            self.parse_number_from_text(element)
-            for element in forecast["wave_direction_raw"]
-        ]
+    def format_dates(self, dates):
+        dates = list(filter(self.do_date_match_regex, dates))
+        dates = [date.text for date in dates]
+        return dates
 
-        forecast["date"] = [
-            self.datestr_to_backslashformat(dt.split(".")[0])
-            for dt in forecast["datetime"]
-        ]
-        forecast["time"] = [
-            dt.split(".")[1].replace("h", ":00") for dt in forecast["datetime"]
-        ]
-        forecast["datetime"] = generate_datetimes(forecast["date"], forecast["time"])
+    def scrape_dates(self, soup):
+        dates = soup.select("tr > td > b")
+        return self.format_dates(dates)
 
-        forecast["wind_status"] = self.parse_windstatus(
-            forecast["wave_direction"], forecast["wind_direction"]
-        )
-        forecast["wave_period"] = self.format_dict_digit_all_values(
-            forecast, "wave_period", "int"
-        )
-        forecast["wave_height"] = self.format_dict_digit_all_values(
-            forecast, "wave_height", "float"
-        )
-        forecast["wind_speed"] = self.format_dict_digit_all_values(
-            forecast, "wind_speed", "float"
-        )
-        forecast["tide"] = generate_tides(tides, forecast["datetime"])
-        forecast["nearest_tide"] = generate_nearest_tides(tides, forecast["datetime"])
-        forecast["tide_percentage"] = generate_tide_percentages(
-            tides, forecast["datetime"]
-        )
-        forecast["energy"] = generate_energy(
-            forecast["wave_height"], forecast["wave_period"]
-        )
-        return forecast
+    def extend_hours(self, hours, dates_length):
+        return hours * dates_length
 
-    def parse_spot_name(self, soup):
-        return soup.select("div.spot-name.wg-guide")[0].text.strip()
+    def extend_dates(self, hours, hours_length):
+        return [item for item in hours for _ in range(hours_length)]
 
-    def parse_spot_names(self, soup, total_records):
-        return [self.parse_spot_name(soup) for _ in range(total_records)]
+    def scrape_hours(self, soup):
+        all_rows = soup.select("tr")
+        hours_row = all_rows[0].select("tr")[1]
+        hours = list(set([i.text.strip() for i in hours_row if i.text.strip() != ""]))
+        sorted_hours = self.sort_hours(hours)
+        return sorted_hours
 
-    def get_dataframe_from_soup(self, soup: BeautifulSoup, tides: dict) -> Dict:
-        forecast = {}
-        table = soup.find("table", class_="tabulka")
-        tablebody = table.find("tbody")
-        rows = tablebody.find_all("tr")
+    def format_cell(self, cell):
+        return cell.text.strip()
+
+    def svg_to_direction(self, svg_angle):
+        normalized_angle = svg_angle % 360
+        direction = (normalized_angle - 180) % 360
+        return direction if direction != 0 else 360
+
+    def divide_list_by_group_length(self, input_list, group_length):
+        num_groups = len(input_list) // group_length + (
+            1 if len(input_list) % group_length != 0 else 0
+        )
+        groups = []
+        for i in range(num_groups):
+            start_index = i * group_length
+            end_index = start_index + group_length
+            groups.append(input_list[start_index:end_index])
+
+        return groups
+
+    def sort_hours(self, hours: list):
+        return sorted(hours, key=lambda x: datetime.strptime(x, "%Hh").time())
+
+    def parse_rotate(self, transform):
+        match = re.search(r"rotate\((\d+),", transform)
+        if match:
+            number = match.group(1)
+            return int(number)
+
+    def scrape_wind_speed(self, soup, position):
+        wind_speeds = []
+        all_rows = soup.select("tr")
+        rows = all_rows[3:]
+
+        hours_row = all_rows[0].select("tr")[1]
+        hours = list(set([i.text.strip() for i in hours_row if i.text.strip() != ""]))
+        sorted_hours = self.sort_hours(hours)
 
         for row in rows:
-            cells = row.find_all("td")
-            id = row["id"]
-            if id in [
-                "tabid_0_0_SMER",
-                "tabid_0_0_dates",
-                "tabid_0_0_HTSGW",
-                "tabid_0_0_DIRPW",
-                "tabid_0_0_PERPW",
-                "tabid_0_0_WINDSPD",
-                "tabid_0_0_TMPE",
-            ]:
-                forecast[id] = []
-                for cell in cells:
-                    if ("SMER" in id) | ("DIRPW" in id):
-                        try:
-                            value = cell.select("span")[0]["title"]
-                        except Exception as e:
-                            value = "NAN (-69°)"
-                    else:
-                        value = cell.get_text().replace("-", "-69")
-                    forecast[id].append(value)
-        if forecast != {}:
-            total_records = len(max(forecast.items(), key=lambda item: len(item[1]))[1])
-            forecast["spot_name"] = self.parse_spot_names(soup, total_records)
-            forecast = self.format_forecast(forecast, tides)
-            return pl.DataFrame(forecast)
-        return pl.DataFrame()
+            cells = row.select("td")[1:]
+            wind_speeds += cells[: len(sorted_hours)]
+        wind_speeds = [
+            int(self.format_cell(wind_speed))
+            for wind_speed in wind_speeds
+            if wind_speed != ""
+        ]
+        return wind_speeds
+
+    def scrape_wave_period(self, soup, position):
+        wave_periods = []
+        all_rows = soup.select("tr")
+        rows = all_rows[3:]
+
+        hours_row = all_rows[0].select("tr")[1]
+        hours = list(set([i.text.strip() for i in hours_row if i.text.strip() != ""]))
+        sorted_hours = self.sort_hours(hours)
+
+        for row in rows:
+            cells = row.select("td")[1:]
+            wave_periods += cells[-len(sorted_hours) :]
+        wave_periods = [
+            int(self.format_cell(wave_period))
+            for wave_period in wave_periods
+            if self.format_cell(wave_period) != ""
+            and self.format_cell(wave_period) != "-"
+        ]
+        return wave_periods
+
+    def scrape_wave_height(self, soup, position):
+        wave_heights = []
+        all_rows = soup.select("tr")
+        rows = all_rows[3:]
+
+        hours_row = all_rows[0].select("tr")[1]
+        hours = list(set([i.text.strip() for i in hours_row if i.text.strip() != ""]))
+        sorted_hours = self.sort_hours(hours)
+
+        for row in rows:
+            cells = row.select("td")[1:]
+            wave_heights += cells[
+                (position - 1) * len(sorted_hours) : (position) * len(sorted_hours)
+            ]
+        wave_heights = [
+            float(self.format_cell(wave_height))
+            for wave_height in wave_heights
+            if self.format_cell(wave_height) != ""
+            and self.format_cell(wave_height) != "-"
+        ]
+        return wave_heights
+
+    def scrape_wind_direction(self, soup, position):
+        scrapped_wind_directions = []
+        wind_directions = []
+        all_rows = soup.select("tr")
+        rows = all_rows[3:]
+
+        hours_row = all_rows[0].select("tr")[1]
+        hours = list(set([i.text.strip() for i in hours_row if i.text.strip() != ""]))
+        sorted_hours = self.sort_hours(hours)
+
+        for row in rows:
+            cells = row.select("td")[1:]
+            wind_directions += cells[len(sorted_hours) : position * len(sorted_hours)]
+        for wind_direction in wind_directions:
+            svg_g = wind_direction.select("svg > g")
+            if len(svg_g) > 0:
+                transform = svg_g[0]["transform"]
+                rotate = self.parse_rotate(transform)
+                direction = int(self.svg_to_direction(rotate))
+            else:
+                direction = None
+            scrapped_wind_directions.append(direction)
+        return scrapped_wind_directions
+
+    def scrape_wave_direction(self, soup, position):
+        # TODO refactorizar con wind_direction
+        scrapped_wave_directions = []
+        wave_directions = []
+        all_rows = soup.select("tr")
+        rows = all_rows[3:]
+
+        hours_row = all_rows[0].select("tr")[1]
+        hours = list(set([i.text.strip() for i in hours_row if i.text.strip() != ""]))
+        sorted_hours = self.sort_hours(hours)
+
+        for row in rows:
+            cells = row.select("td")[1:]
+            wave_directions += cells[
+                (position - 1) * len(sorted_hours) : position * len(sorted_hours)
+            ]
+        for wave_direction in wave_directions:
+            svg_g = wave_direction.select("svg > g")
+            if len(svg_g) > 0:
+                transform = svg_g[0]["transform"]
+                rotate = self.parse_rotate(transform)
+                direction = int(self.svg_to_direction(rotate))
+            else:
+                direction = None
+            scrapped_wave_directions.append(direction)
+        return scrapped_wave_directions
+
+    def get_dataframe_from_soup(self, soup: BeautifulSoup) -> Dict:
+        forecast = {}
+        unique_dates = self.scrape_dates(soup)
+        sorted_hours = self.scrape_hours(soup)
+        len_sorted_hours = len(sorted_hours)
+        hours = self.extend_hours(sorted_hours, len(unique_dates))
+        dates = self.extend_dates(unique_dates, len_sorted_hours)
+        wind_speed = self.scrape_wind_speed(soup, 1)
+        wind_direction_degrees = self.scrape_wind_direction(soup, 2)
+        wave_height = self.scrape_wave_height(soup, 3)
+        wave_direction_degrees = self.scrape_wave_direction(soup, 4)
+        wave_period = self.scrape_wave_period(soup, 5)
+        forecast["dates"] = dates
+        forecast["hours"] = hours
+        forecast["wind_speed"] = wind_speed
+        forecast["wind_direction"] = [
+            from_direction_degrees_to_cardinal(direction)
+            for direction in wind_direction_degrees
+        ]
+        forecast["wave_height"] = wave_height
+        forecast["wave_direction"] = [
+            from_direction_degrees_to_cardinal(direction)
+            for direction in wave_direction_degrees
+        ]
+        forecast["wave_period"] = wave_period
+        forecast["wind_direction_degrees"] = wind_direction_degrees
+        forecast["wave_direction_degrees"] = wave_direction_degrees
+        forecast["energy"] = generate_energy(wave_height, wave_period)
+
+        return pl.DataFrame(forecast)
 
     # def parse_number_from_text(self, text):
     #     pattern = r"(\d+)°"
@@ -242,7 +467,20 @@ class Windguru(object):
                     )
         return
 
-    def scrape(self, arguments: tuple):
-        url, tides = arguments
-        soup = self.beach_request(url)
-        return self.get_dataframe_from_soup(soup, tides)
+    def remove_rows_with_none(self, df: pl.DataFrame) -> pl.DataFrame:
+        masks = [df[col].is_not_null() for col in df.columns]
+
+        # Combine all the masks using logical AND to create a single mask
+        combined_mask = reduce(lambda x, y: x & y, masks)
+
+        # Filter the DataFrame using the combined mask
+        return df.filter(combined_mask)
+
+    def scrape(self):
+        soup = self.windguru_tasks()
+        df = self.get_dataframe_from_soup(soup)
+        df = self.remove_rows_with_none(df)
+        return df
+
+
+# TODO si una celda es none, quitar toda esa fila en la misma posicion para todas las listas
