@@ -62,7 +62,7 @@ def separate_spots(df: pl.DataFrame):
             (pl.col("wind_direction_predominant").str.contains("N"))
             & ((pl.col("wind_direction").str.contains("N")))
             & (pl.col("wave_direction").str.contains("N"))
-            & (pl.col("wind_speed") >= 20.0)
+            & (pl.col("wind_speed") >= 19.0)
             & (pl.col("tide_percentage") <= 50.0)
             & ~(pl.col("wind_direction_predominant") == "E")
         )
