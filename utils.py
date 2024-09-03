@@ -311,6 +311,30 @@ def get_day_name(days_to_add: float) -> str:
     return day_name_number
 
 
+def create_wave_direction_predominant_column(df: pl.DataFrame) -> pl.DataFrame:
+    try:
+        df = df.with_columns(
+            pl.col("wave_direction_degrees")
+            .apply(get_predominant_direction)
+            .alias("wave_direction_predominant")
+        )
+        return df
+    except Exception:
+        pass
+
+
+def create_wind_direction_predominant_column(df: pl.DataFrame) -> pl.DataFrame:
+    try:
+        df = df.with_columns(
+            pl.col("wind_direction_degrees")
+            .apply(get_predominant_direction)
+            .alias("wind_direction_predominant")
+        )
+        return df
+    except Exception:
+        pass
+
+
 def final_forecast_format(df: pl.DataFrame):
     if not df.is_empty():
         df.sort(by=["date", "time", "spot_name"], descending=[True, True, True])
@@ -327,41 +351,33 @@ def final_forecast_format(df: pl.DataFrame):
 
         df = create_date_name_column(df)
         df = create_wind_description_column(df)
+        df = create_wave_direction_predominant_column(df)
+        df = create_wind_direction_predominant_column(df)
 
         common_columns = [
             "date_name",
             "date",
             "time",
+            "energy",
+            "wind_speed",
+            "tide_percentage",
+            "nearest_tide",
+            "tide",
             "datetime",
             "spot_name",
-            "nearest_tide",
-            "tide_percentage",
-            "wind_direction",
-            "wave_direction",
-            "tide",
+            "wind_direction_predominant",
+            "wave_direction_predominant",
             "wave_height",
             "wave_period",
-            "wind_speed",
-            "wind_approval",
-            "temperature",
-            "wind_status",
-            "wind_description",
-        ]
-        columns_to_check = [
+            # "wind_approval",
+            # "temperature",
+            # "wind_status",
+            # "wind_description",
+            "wind_direction",
+            "wave_direction",
             "wind_direction_degrees",
             "wave_direction_degrees",
-            "energy",
         ]
-
-        for column in columns_to_check:
-            try:
-                df[column]
-                if column == "energy":
-                    common_columns.insert(common_columns.index("nearest_tide"), column)
-                else:
-                    common_columns.append(column)
-            except Exception:
-                pass
 
         df = df[common_columns]
         try:
@@ -385,23 +401,6 @@ def final_forecast_format(df: pl.DataFrame):
                 & (~(pl.col("wave_direction").is_in(["W", "WNW", "WSW"])))
             )
         )
-        try:
-            df = df.with_columns(
-                pl.col("wind_direction_degrees")
-                .apply(get_predominant_direction)
-                .alias("wind_direction_predominant")
-            )
-        except Exception:
-            pass
-
-        try:
-            df = df.with_columns(
-                pl.col("wave_direction_degrees")
-                .apply(get_predominant_direction)
-                .alias("wave_direction_predominant")
-            )
-        except Exception:
-            pass
     return df
 
 
