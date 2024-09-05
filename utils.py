@@ -61,7 +61,16 @@ def separate_spots(df: pl.DataFrame):
         pl.when(
             (pl.col("wind_direction_predominant").str.contains("N"))
             & ((pl.col("wind_direction").str.contains("N")))
-            & (pl.col("wave_direction").str.contains("N"))
+            & (
+                (
+                    pl.col("wave_direction").str.contains("N")
+                    | (
+                        pl.col("wave_direction").str.contains("E")
+                        | pl.col("wave_direction_predominant").str.contains("S")
+                        | (pl.col("wave_direction").str.count_matches("E") >= 2)
+                    )
+                )
+            )
             & (pl.col("wind_speed") >= 19.0)
             & (pl.col("tide_percentage") <= 50.0)
             & ~(pl.col("wind_direction_predominant") == "E")
@@ -70,7 +79,16 @@ def separate_spots(df: pl.DataFrame):
         .when(
             (pl.col("wind_direction_predominant").str.contains("N"))
             & ((pl.col("wind_direction").str.contains("N")))
-            & (pl.col("wave_direction").str.contains("N"))
+            & (
+                (
+                    pl.col("wave_direction").str.contains("N")
+                    | (
+                        pl.col("wave_direction").str.contains("E")
+                        | (pl.col("wave_direction").str.count_matches("E") >= 2)
+                        | pl.col("wave_direction_predominant").str.contains("S")
+                    )
+                )
+            )
             & (pl.col("wind_speed") >= 19.0)
             & (pl.col("tide_percentage") >= 50.0)
             & ~(pl.col("wind_direction_predominant") == "E")
@@ -78,7 +96,10 @@ def separate_spots(df: pl.DataFrame):
         .then(pl.lit("Bastián-Tiburón"))
         .when(
             (pl.col("wind_direction").str.contains("E"))
-            & (pl.col("wind_direction_predominant").str.contains("E"))
+            & (
+                (pl.col("wind_direction_predominant").str.contains("E"))
+                | (pl.col("wind_direction").str.count_matches("E") >= 2)
+            )
             & (pl.col("wave_direction").str.contains("N"))
             & (pl.col("tide_percentage") <= 50.0)
             & ~(pl.col("wave_direction") == "WNW")
@@ -94,8 +115,21 @@ def separate_spots(df: pl.DataFrame):
             & ~(pl.col("wind_direction") == "WNW")
             & ~(pl.col("wind_direction_predominant") == "NW")
             & (
+                (
+                    pl.col("wave_direction_predominant")
+                    == "E"
+                    | (
+                        (pl.col("wave_direction_predominant").str.contains("E"))
+                        | (pl.col("wave_direction_predominant") == "N")
+                        | (pl.col("wave_direction").str.count_matches("E") >= 2)
+                        | ((pl.col("wave_direction").str.count_matches("N") >= 2))
+                    )
+                )
+            )
+            & (
                 (pl.col("wind_direction").str.contains("W"))
                 | (pl.col("wind_direction_predominant") == "W")
+                | (pl.col("wind_direction").str.count_matches("W") >= 2)
             )
         )
         .then(pl.lit("Caleta Caballo"))
@@ -108,22 +142,40 @@ def separate_spots(df: pl.DataFrame):
         .when(
             ~(pl.col("wave_direction") == "WNW")
             & ~(pl.col("wave_direction") == "W")
-            & (pl.col("wave_direction").str.contains("N"))
+            & (
+                (
+                    pl.col("wave_direction").str.contains("N")
+                    | (
+                        pl.col("wave_direction").str.contains("E")
+                        | (pl.col("wave_direction").str.count_matches("E") >= 2)
+                        | ((pl.col("wave_direction_predominant") == "E"))
+                    )
+                )
+            )
             & (
                 (pl.col("wind_direction").str.contains("NW"))
                 | (pl.col("wind_direction_predominant") == "NW")
+                | (pl.col("wind_direction_predominant") == "N")
+                | (pl.col("wind_direction").str.count_matches("N") >= 2)
             )
-            & (pl.col("wave_height") >= 1.5)
-            & (pl.col("wave_period") >= 10.0)
+            & (
+                (pl.col("wave_height") >= 1.5) & (pl.col("wave_period") >= 10.0)
+                | (pl.col("wave_height") >= 1.6) & (pl.col("wave_period") >= 9.0)
+            )
         )
         .then(pl.lit("Punta de Mujeres"))
         .when(
-            (pl.col("wave_direction").str.contains("W"))
+            (
+                pl.col("wave_direction").str.contains("W")
+                | pl.col("wave_direction").str.count_matches("W")
+                >= 2
+            )
             & ~(pl.col("wave_direction") == "NW")
             & ~(pl.col("wave_direction") == "NNW")
             & (
                 (pl.col("wind_direction").str.contains("E"))
                 | (pl.col("wind_direction_predominant").str.contains("E"))
+                | (pl.col("wind_direction").str.count_matches("E") >= 2)
             )
             & (pl.col("wave_height") >= 1.7)
             & (pl.col("wave_period") >= 10.0)
