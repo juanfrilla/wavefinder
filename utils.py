@@ -163,7 +163,6 @@ def separate_spots(df: pl.DataFrame):
                 | (pl.col("wind_direction_predominant") == "NW")
                 | (pl.col("wind_direction_predominant") == "N")
                 | (pl.col("wind_direction") == "N")
-                | (pl.col("wind_direction").str.count_matches("N") >= 2)
             )
             & (pl.col("wave_height") >= 2)
             & (pl.col("wave_period") >= 9.0)
