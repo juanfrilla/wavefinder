@@ -27,7 +27,6 @@ def get_list_of_spots_sorted_by_param(param, grouped_data):
 
 
 def plot_graph(variable):
-    # try:
     st.header(f"{variable} per day", divider="rainbow")
     data = st.session_state.forecast_df
     chart = (
@@ -44,9 +43,7 @@ def plot_graph(variable):
                 "energy:Q",
                 "spot_name:N",
                 "wave_height:Q",
-                "wind_description:N",
                 "wind_speed:Q",
-                "wind_status:N",
                 "wind_direction:N",
                 "wave_direction:N",
                 "wave_period:Q",
@@ -61,10 +58,6 @@ def plot_graph(variable):
     zoomed_chart = chart.interactive().properties(width=600, height=400)
 
     st.altair_chart(zoomed_chart, use_container_width=True)
-
-
-# except Exception:
-#     pass
 
 
 def plot_selected_wind_speed():
@@ -167,11 +160,10 @@ def load_forecast(urls):
     start_time = time.time()
     if "windguru" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, Windguru(), tides)
+        df = separate_spots(df)
         df = final_forecast_format(df)
         if "datetime" in df.columns:
             df = df.sort("datetime", descending=False)
-        df = separate_spots(df)
-        df = df.filter(pl.col("spot_name") != "Spain - Famara")
         windguru = Windguru()
         windguru.handle_windguru_alerts(df)
     print("--- %s seconds ---" % (time.time() - start_time))
@@ -236,12 +228,6 @@ def plot_forecast_as_table(urls):
             for scraped_date in scraped_date_list:
                 if scraped_date >= min_value and scraped_date <= max_value:
                     date_selection.append(scraped_date.strftime("%d/%m/%Y"))
-
-        # wind_status_selection = st.multiselect(
-        #     "Estado del viento:",
-        #     wind_status_list,
-        #     default=wind_status_list,
-        # )
         selected_wave_height = plot_selected_wave_height(DEFAULT_WAVE_HEIGHT)
         selected_swell_height = plot_selected_swell_height()
         selected_wave_period = plot_selected_wave_period()
@@ -308,7 +294,7 @@ def plot_forecast_as_table(urls):
         )
         plot_graph("energy")
         plot_graph("wind_speed")
-        grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
+        grouped_data = st.session_state.forecast_df.group_by("spot_name").agg(
             pl.col("datetime").min().alias("datetime")
         )
         if "datetime" in grouped_data.columns:

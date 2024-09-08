@@ -313,53 +313,24 @@ def rename_key(dictionary, old_key, new_key):
     return dictionary
 
 
-def handle_wind(df: pl.DataFrame) -> pl.DataFrame:
-    if not df.is_empty():
-        wind_speed = df["wind_speed"].cast(pl.Float32)
-
-        WIND_STATUS_HIGH_10 = (df["wind_status"] == "Offshore") | (
-            df["wind_status"] == "Cross-off"
-        )
-
-        WIND_STATUS_LESS_10 = (df["wind_status"] != "Offshore") & (
-            df["wind_status"] != "Cross-off"
-        )
-        WIND_SPEED_LESS_10 = wind_speed <= 10
-
-        wind_ok = (WIND_STATUS_LESS_10 & WIND_SPEED_LESS_10) | (WIND_STATUS_HIGH_10)
-
-        default = "Viento No Favorable"
-
-        df = df.with_columns(
-            pl.when(wind_ok)
-            .then("Viento Favorable")
-            .otherwise(default)
-            .alias("wind_approval")
-        )
-    return df
-
-
-def create_date_name_column(df: pl.DataFrame) -> pl.DataFrame:
+def create_date_name_column(dates: list) -> list:
+    date_names = []
     today_dt = datetime.now().date()
-    today_str = datetime_to_str(datetime.now().date(), "%d/%m/%Y")
-    tomorrow_str = datetime_to_str(today_dt + timedelta(days=1), "%d/%m/%Y")
-    day_after_tomorrow_str = datetime_to_str(today_dt + timedelta(days=2), "%d/%m/%Y")
-    yesterday_str = datetime_to_str(today_dt - timedelta(days=1), "%d/%m/%Y")
-
-    df = df.with_columns(
-        pl.when((df["date"]) == today_str)
-        .then("Hoy")
-        .when((df["date"]) == tomorrow_str)
-        .then("Mañana")
-        .when((df["date"]) == day_after_tomorrow_str)
-        .then("Pasado")
-        .when((df["date"]) == yesterday_str)
-        .then("Ayer")
-        .otherwise("Otro día")
-        .alias("date_name")
-    )
-
-    return df
+    tomorrow_dt = today_dt + timedelta(days=1)
+    day_after_tomorrow_dt = today_dt + timedelta(days=2)
+    yesterday_dt = today_dt - timedelta(days=1)
+    for date in dates:
+        if date == today_dt:
+            date_names.append("Hoy")
+        elif date == tomorrow_dt:
+            date_names.append("Mañana")
+        elif date == day_after_tomorrow_dt:
+            date_names.append("Pasado")
+        elif date == yesterday_dt:
+            date_names.append("Ayer")
+        else:
+            date_names.append("Otro día")
+    return date_names
 
 
 def create_wind_description_column(df: pl.DataFrame) -> pl.DataFrame:
@@ -378,28 +349,8 @@ def get_day_name(days_to_add: float) -> str:
     return day_name_number
 
 
-def create_wave_direction_predominant_column(df: pl.DataFrame) -> pl.DataFrame:
-    try:
-        df = df.with_columns(
-            pl.col("wave_direction_degrees")
-            .apply(get_predominant_direction)
-            .alias("wave_direction_predominant")
-        )
-        return df
-    except Exception:
-        pass
-
-
-def create_wind_direction_predominant_column(df: pl.DataFrame) -> pl.DataFrame:
-    try:
-        df = df.with_columns(
-            pl.col("wind_direction_degrees")
-            .apply(get_predominant_direction)
-            .alias("wind_direction_predominant")
-        )
-        return df
-    except Exception:
-        pass
+def create_direction_predominant_column(directions: list) -> list:
+    return [get_predominant_direction(int(dir)) for dir in directions]
 
 
 def final_forecast_format(df: pl.DataFrame):
@@ -415,11 +366,6 @@ def final_forecast_format(df: pl.DataFrame):
         _19_PM = time(hour=19, minute=0, second=0, microsecond=0)
         mask = (datetimes >= _6_AM) & (datetimes <= _19_PM)
         df = df.filter(mask)
-
-        df = create_date_name_column(df)
-        df = create_wind_description_column(df)
-        df = create_wave_direction_predominant_column(df)
-        df = create_wind_direction_predominant_column(df)
 
         common_columns = [
             "date_name",
@@ -441,29 +387,7 @@ def final_forecast_format(df: pl.DataFrame):
             "wind_direction_degrees",
             "wave_direction_degrees",
         ]
-
         df = df[common_columns]
-        try:
-            df = df.with_columns(
-                pl.when(
-                    (pl.col("spot_name").str.contains("Famara"))
-                    & (pl.col("energy") > 1000)
-                    & (pl.col("wind_direction").str.contains("E"))
-                    & (pl.col("wave_direction").str.contains("N"))
-                )
-                .then(pl.lit("Papelillo"))
-                .otherwise(pl.col("spot_name"))
-                .alias("spot_name")
-            )
-        except Exception:
-            pass
-        # TODO mejorar esto
-        df = df.filter(
-            ~(
-                (pl.col("spot_name").str.contains("Playa de la Cera"))
-                & (~(pl.col("wave_direction").is_in(["W", "WNW", "WSW"])))
-            )
-        )
     return df
 
 
@@ -688,9 +612,6 @@ def generate_nearest_tides(tide_data: dict, forecast_datetimes: dict) -> list:
     return nearest_tides
 
 
-# from datetime import datetime, timedelta
-
-
 def generate_tide_percentages(tide_data: dict, forecast_datetimes: list) -> list:
     tide_percentages = []
     tides_datetimes_list = [item["datetime"] for item in tide_data]
@@ -841,45 +762,6 @@ def filter_spot_dataframe(
     file = f"./assets/conditions.json"
     conditions_data = read_json(file)
     return filter_dataframe(df, conditions_data[spot_name], three_near_days)
-
-
-# def get_predominant_direction(direction: float) -> str:
-#     dirs = [
-#         "N",
-#         "NNE",
-#         "NE",
-#         "ENE",
-#         "E",
-#         "ESE",
-#         "SE",
-#         "SSE",
-#         "S",
-#         "SSW",
-#         "SW",
-#         "WSW",
-#         "W",
-#         "WNW",
-#         "NW",
-#         "NNW",
-#     ]
-#     ix = round(direction / (360.0 / len(dirs)))
-#     return dirs[ix % len(dirs)]
-
-
-# def get_predominant_direction(direction: float) -> str:
-#     dirs = [
-#         "N",
-#         "NE",
-#         "E",
-#         "SE",
-#         "S",
-#         "SW",
-#         "W",
-#         "NW",
-#     ]
-#     direction = direction % 360
-#     ix = round(direction / 45) % len(dirs)
-#     return dirs[ix]
 
 
 def get_predominant_direction(direction: float) -> str:

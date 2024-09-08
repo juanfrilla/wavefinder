@@ -10,6 +10,8 @@ from utils import (
     render_html,
     generate_datetimes,
     filter_spot_dataframe,
+    create_date_name_column,
+    create_direction_predominant_column,
 )
 import re
 from datetime import datetime
@@ -60,9 +62,6 @@ class Windguru(object):
         ]
         forecast["datetime"] = generate_datetimes(forecast["date"], forecast["time"])
 
-        forecast["wind_status"] = self.parse_windstatus(
-            forecast["wave_direction"], forecast["wind_direction"]
-        )
         forecast["wave_period"] = self.format_dict_digit_all_values(
             forecast, "wave_period", "int"
         )
@@ -80,13 +79,14 @@ class Windguru(object):
         forecast["energy"] = generate_energy(
             forecast["wave_height"], forecast["wave_period"]
         )
+        forecast["date_name"] = create_date_name_column(forecast["datetime"])
+        forecast["wind_direction_predominant"] = create_direction_predominant_column(
+            forecast["wind_direction_degrees"]
+        )
+        forecast["wave_direction_predominant"] = create_direction_predominant_column(
+            forecast["wave_direction_degrees"]
+        )
         return forecast
-
-    def parse_spot_name(self, soup):
-        return soup.select("div.spot-name.wg-guide")[0].text.strip()
-
-    def parse_spot_names(self, soup, total_records):
-        return [self.parse_spot_name(soup) for _ in range(total_records)]
 
     def get_dataframe_from_soup(self, soup: BeautifulSoup, tides: dict) -> Dict:
         forecast = {}
@@ -118,18 +118,9 @@ class Windguru(object):
                     forecast[id].append(value)
         if forecast != {}:
             total_records = len(max(forecast.items(), key=lambda item: len(item[1]))[1])
-            forecast["spot_name"] = self.parse_spot_names(soup, total_records)
             forecast = self.format_forecast(forecast, tides)
             return pl.DataFrame(forecast)
         return pl.DataFrame()
-
-    # def parse_number_from_text(self, text):
-    #     pattern = r"(\d+)°"
-
-    #     match = re.search(pattern, text)
-    #     if match:
-    #         return int(match.group(1))
-    #     return None
 
     def parse_text_from_text(self, text):
         return text.split(" ")[0].replace("O", "W")
@@ -139,14 +130,6 @@ class Windguru(object):
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
             return float(match.group(1))
-
-    def parse_windstatus(self, wave_directions, wind_directions):
-        # TODO crear esta columna sin cálculos, de cabeza
-        return [
-            # get_wind_status(wind_dir, wave_dir)
-            "Offshore"
-            for wave_dir, wind_dir in zip(wave_directions, wind_directions)
-        ]
 
     def format_dict_digit_all_values(self, forecast, forecast_value, digit_type):
         if digit_type == "int":
