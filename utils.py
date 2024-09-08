@@ -156,7 +156,7 @@ def separate_spots(df: pl.DataFrame):
         .when(
             ~(pl.col("wave_direction") == "WNW")
             & ~(pl.col("wave_direction") == "W")
-            & (pl.col("wind_direction" == "S"))
+            & (pl.col("wind_direction") == "S")
         )
         .then(pl.lit("Famara"))
         .when(
