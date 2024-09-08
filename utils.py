@@ -134,10 +134,19 @@ def separate_spots(df: pl.DataFrame):
                 )
             )
             & (
-                (pl.col("wind_direction").str.contains("W"))
-                | (pl.col("wind_direction") == "W")
-                | (pl.col("wind_direction_predominant") == "W")
-                | (pl.col("wind_direction").str.count_matches("W") >= 2)
+                (
+                    (pl.col("wind_direction").str.contains("W"))
+                    | (pl.col("wind_direction") == "W")
+                    | (pl.col("wind_direction_predominant") == "W")
+                    | (pl.col("wind_direction").str.count_matches("W") >= 2)
+                )
+                | (
+                    (
+                        (pl.col("wind_direction_predominant") == "NW")
+                        | (pl.col("wind_direction") == "NW")
+                        & (pl.col("wind_speed") <= 10.0)
+                    )
+                )
             )
         )
         .then(pl.lit("Caleta Caballo"))

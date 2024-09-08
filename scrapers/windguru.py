@@ -132,7 +132,7 @@ class Windguru(object):
     #     return None
 
     def parse_text_from_text(self, text):
-        return text.split(" ")[0]
+        return text.split(" ")[0].replace("O", "W")
 
     def parse_number_from_text(self, text):
         pattern = r"(\d+)°"
