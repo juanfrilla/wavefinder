@@ -14,11 +14,9 @@ def scrape_multiple_browser(urls, _object, tides):
     ) as executor:
         results = list(executor.map(_object.scrape, arguments))
 
-    for result in results:
-        df = utils.handle_wind(result)
+    for df in results:
         if not df.is_empty():
             forecast = utils.combine_df(forecast, df)
-
     return forecast
 
 

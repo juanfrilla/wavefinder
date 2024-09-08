@@ -27,7 +27,6 @@ def get_list_of_spots_sorted_by_param(param, grouped_data):
 
 
 def plot_graph(variable):
-    # try:
     st.header(f"{variable} per day", divider="rainbow")
     data = st.session_state.forecast_df
     chart = (
@@ -44,9 +43,7 @@ def plot_graph(variable):
                 "energy:Q",
                 "spot_name:N",
                 "wave_height:Q",
-                "wind_description:N",
                 "wind_speed:Q",
-                "wind_status:N",
                 "wind_direction:N",
                 "wave_direction:N",
                 "wave_period:Q",
@@ -61,10 +58,6 @@ def plot_graph(variable):
     zoomed_chart = chart.interactive().properties(width=600, height=400)
 
     st.altair_chart(zoomed_chart, use_container_width=True)
-
-
-# except Exception:
-#     pass
 
 
 def plot_selected_wind_speed():
@@ -167,11 +160,10 @@ def load_forecast(urls):
     start_time = time.time()
     if "windguru" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, Windguru(), tides)
+        df = separate_spots(df)
         df = final_forecast_format(df)
         if "datetime" in df.columns:
             df = df.sort("datetime", descending=False)
-        df = separate_spots(df)
-        df = df.filter(pl.col("spot_name") != "Spain - Famara")
         windguru = Windguru()
         windguru.handle_windguru_alerts(df)
     print("--- %s seconds ---" % (time.time() - start_time))
@@ -213,13 +205,7 @@ def plot_forecast_as_table(urls):
         )
         scraped_date_list = set([date.date() for date in scraped_datetime_list])
         date_name_list = list(set(st.session_state.forecast_df["date_name"].to_list()))
-        # wind_status_list = list(
-        #     set(st.session_state.forecast_df["wind_status"].to_list())
-        # )
         all_beaches = list(set(st.session_state.forecast_df["spot_name"].to_list()))
-        # all_wind_approvals = list(
-        #     set(st.session_state.forecast_df["wind_approval"].to_list())
-        # )
 
         # CREATE MULTISELECT
         date_name_selection = st.multiselect(
@@ -242,12 +228,6 @@ def plot_forecast_as_table(urls):
             for scraped_date in scraped_date_list:
                 if scraped_date >= min_value and scraped_date <= max_value:
                     date_selection.append(scraped_date.strftime("%d/%m/%Y"))
-
-        # wind_status_selection = st.multiselect(
-        #     "Estado del viento:",
-        #     wind_status_list,
-        #     default=wind_status_list,
-        # )
         selected_wave_height = plot_selected_wave_height(DEFAULT_WAVE_HEIGHT)
         selected_swell_height = plot_selected_swell_height()
         selected_wave_period = plot_selected_wave_period()
@@ -255,12 +235,6 @@ def plot_forecast_as_table(urls):
         selected_wind_speed = plot_selected_wind_speed()
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
-
-        # wind_approval_selection = st.multiselect(
-        #     "Aprobación del viento:",
-        #     all_wind_approvals,
-        #     default=get_default_wind_approval_selection(all_wind_approvals),
-        # )
         if date_selection == []:
             date_selection = scraped_date_list
 
@@ -269,15 +243,9 @@ def plot_forecast_as_table(urls):
         date_name_condition = st.session_state.forecast_df["date_name"].is_in(
             date_name_selection
         )
-        # wind_status_condition = st.session_state.forecast_df["wind_status"].is_in(
-        #     wind_status_selection
-        # )
         beach_condition = st.session_state.forecast_df["spot_name"].is_in(
             beach_selection
         )
-        # wind_approval_condition = st.session_state.forecast_df["wind_approval"].is_in(
-        #     wind_approval_selection
-        # )
         wave_height_condition = (
             st.session_state.forecast_df["wave_height"] >= selected_wave_height[0]
         ) & (st.session_state.forecast_df["wave_height"] <= selected_wave_height[1])
@@ -300,13 +268,10 @@ def plot_forecast_as_table(urls):
             st.session_state.forecast_df["energy"] >= selected_wave_energy[0]
         ) & (st.session_state.forecast_df["energy"] <= selected_wave_energy[1])
 
-        # Combine conditions using bitwise AND operator
         mask = (
             date_condition
             & date_name_condition
-            # & wind_status_condition
             & beach_condition
-            # & wind_approval_condition
             & wave_height_condition
             & wave_period_condition
             & wind_speed_condition
@@ -329,7 +294,7 @@ def plot_forecast_as_table(urls):
         )
         plot_graph("energy")
         plot_graph("wind_speed")
-        grouped_data = st.session_state.forecast_df.groupby("spot_name").agg(
+        grouped_data = st.session_state.forecast_df.group_by("spot_name").agg(
             pl.col("datetime").min().alias("datetime")
         )
         if "datetime" in grouped_data.columns:
