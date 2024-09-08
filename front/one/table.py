@@ -167,7 +167,9 @@ def load_forecast(urls):
     start_time = time.time()
     if "windguru" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, Windguru(), tides)
-        df = final_forecast_format(df).sort("datetime", descending=False)
+        df = final_forecast_format(df)
+        if "datetime" in df.columns:
+            df = df.sort("datetime", descending=False)
         df = separate_spots(df)
         df = df.filter(pl.col("spot_name") != "Spain - Famara")
         windguru = Windguru()
