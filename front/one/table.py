@@ -213,13 +213,7 @@ def plot_forecast_as_table(urls):
         )
         scraped_date_list = set([date.date() for date in scraped_datetime_list])
         date_name_list = list(set(st.session_state.forecast_df["date_name"].to_list()))
-        # wind_status_list = list(
-        #     set(st.session_state.forecast_df["wind_status"].to_list())
-        # )
         all_beaches = list(set(st.session_state.forecast_df["spot_name"].to_list()))
-        # all_wind_approvals = list(
-        #     set(st.session_state.forecast_df["wind_approval"].to_list())
-        # )
 
         # CREATE MULTISELECT
         date_name_selection = st.multiselect(
@@ -255,12 +249,6 @@ def plot_forecast_as_table(urls):
         selected_wind_speed = plot_selected_wind_speed()
 
         beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
-
-        # wind_approval_selection = st.multiselect(
-        #     "Aprobación del viento:",
-        #     all_wind_approvals,
-        #     default=get_default_wind_approval_selection(all_wind_approvals),
-        # )
         if date_selection == []:
             date_selection = scraped_date_list
 
@@ -269,15 +257,9 @@ def plot_forecast_as_table(urls):
         date_name_condition = st.session_state.forecast_df["date_name"].is_in(
             date_name_selection
         )
-        # wind_status_condition = st.session_state.forecast_df["wind_status"].is_in(
-        #     wind_status_selection
-        # )
         beach_condition = st.session_state.forecast_df["spot_name"].is_in(
             beach_selection
         )
-        # wind_approval_condition = st.session_state.forecast_df["wind_approval"].is_in(
-        #     wind_approval_selection
-        # )
         wave_height_condition = (
             st.session_state.forecast_df["wave_height"] >= selected_wave_height[0]
         ) & (st.session_state.forecast_df["wave_height"] <= selected_wave_height[1])
@@ -300,13 +282,10 @@ def plot_forecast_as_table(urls):
             st.session_state.forecast_df["energy"] >= selected_wave_energy[0]
         ) & (st.session_state.forecast_df["energy"] <= selected_wave_energy[1])
 
-        # Combine conditions using bitwise AND operator
         mask = (
             date_condition
             & date_name_condition
-            # & wind_status_condition
             & beach_condition
-            # & wind_approval_condition
             & wave_height_condition
             & wave_period_condition
             & wind_speed_condition
