@@ -1,5 +1,5 @@
 import polars as pl
-from utils import separate_spots
+from utils import generate_spot_names
 
 
 # Define a test DataFrame
@@ -16,7 +16,7 @@ def test_separate_spots():
     }
     df = pl.DataFrame(test_data)
 
-    result_df = separate_spots(df)
+    result_df = generate_spot_names(df)
 
     spot_names = result_df["spot_name"].to_list()
     expected_results = [
@@ -31,7 +31,6 @@ def test_separate_spots():
     ), f"Expected {expected_results}, but got {spot_names}"
 
     print("All test cases passed!")
-
 
 
 test_separate_spots()

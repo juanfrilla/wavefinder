@@ -12,6 +12,7 @@ from utils import (
     filter_spot_dataframe,
     create_date_name_column,
     create_direction_predominant_column,
+    generate_spot_names,
 )
 import re
 from datetime import datetime
@@ -86,6 +87,7 @@ class Windguru(object):
         forecast["wave_direction_predominant"] = create_direction_predominant_column(
             forecast["wave_direction_degrees"]
         )
+        forecast["spot_name"] = generate_spot_names(forecast)
         return forecast
 
     def get_dataframe_from_soup(self, soup: BeautifulSoup, tides: dict) -> Dict:
