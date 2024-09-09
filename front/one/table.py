@@ -2,7 +2,6 @@ import streamlit as st
 import time
 from utils import (
     final_forecast_format,
-    separate_spots,
 )
 from multi import multithread
 from scrapers.windguru import Windguru
@@ -160,7 +159,6 @@ def load_forecast(urls):
     start_time = time.time()
     if "windguru" in urls[0]:
         df = multithread.scrape_multiple_browser(urls, Windguru(), tides)
-        df = separate_spots(df)
         df = final_forecast_format(df)
         if "datetime" in df.columns:
             df = df.sort("datetime", descending=False)
