@@ -292,7 +292,7 @@ def bastiantiburon_conditions(
             & (wave_direction_predominant in bastian_tiburon_wave_directions)
             | (wave_direction in bastian_tiburon_wave_directions)
         )
-        & ((wind_speed >= 19.0) or (wave_period >= 10))
+        & (wind_speed >= 19.0)
         & (tide_percentage >= 50)
     ):
         return True
@@ -321,7 +321,7 @@ def barcarola_conditions(
             & (wave_direction_predominant in barcarola_wave_directions)
             | (wave_direction in barcarola_wave_directions)
         )
-        & ((wind_speed >= 19.0) or (wave_period >= 10))
+        & (wind_speed >= 19.0)
         & (wave_height >= 1.7)
         & (tide_percentage <= 50)
     ):
