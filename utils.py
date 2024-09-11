@@ -863,13 +863,13 @@ def create_date_name_column(dates: list) -> list:
     day_after_tomorrow_dt = today_dt + timedelta(days=2)
     yesterday_dt = today_dt - timedelta(days=1)
     for date in dates:
-        if date == today_dt:
+        if date.date() == today_dt:
             date_names.append("Hoy")
-        elif date == tomorrow_dt:
+        elif date.date() == tomorrow_dt:
             date_names.append("Mañana")
-        elif date == day_after_tomorrow_dt:
+        elif date.date() == day_after_tomorrow_dt:
             date_names.append("Pasado")
-        elif date == yesterday_dt:
+        elif date.date() == yesterday_dt:
             date_names.append("Ayer")
         else:
             date_names.append("Otro día")
