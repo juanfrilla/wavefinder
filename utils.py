@@ -443,6 +443,23 @@ def famara_low_wind_conditions(
     return False
 
 
+def big_waves_conditions(
+    wave_height: float, wave_direction: str, wave_direction_predominant: str
+):
+    big_wave_directions = ["N", "NE", "E"]
+    unwanted_wave_directions = ["WNW"]
+    if (
+        (
+            (wave_direction_predominant in big_wave_directions)
+            | (wave_direction in big_wave_directions)
+        )
+        & (wave_direction not in unwanted_wave_directions)
+        & (wave_height > 2.5)  # Si en 2.5 no hay nada, revisar en 3
+    ):
+        return True
+    return False
+
+
 def generate_spot_names(forecast: Dict[str, list]) -> list:
     spot_names = []
     wind_direction_predominant = forecast["wind_direction_predominant"]
@@ -466,7 +483,13 @@ def generate_spot_names(forecast: Dict[str, list]) -> list:
         wave_height,
         energy,
     ):
-        if punta_mujeres_conditions(
+        if big_waves_conditions(
+            wave_height=wh,
+            wave_direction=wad,
+            wave_direction_predominant=wad_predominant,
+        ):
+            spot_names.append("Olas grandes > 2.5m, revisar costa de playa honda")
+        elif punta_mujeres_conditions(
             wind_direction_predominant=wid_predominant,
             wave_direction_predominant=wad_predominant,
             wind_direction=wid,
