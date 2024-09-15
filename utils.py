@@ -276,7 +276,7 @@ def caleta_caballo_low_wind_conditions(
     return False
 
 
-def bastiantiburon_conditions(
+def bastian_conditions(
     wind_direction_predominant: str,
     wave_direction_predominant: str,
     wind_direction: str,
@@ -284,17 +284,17 @@ def bastiantiburon_conditions(
     wind_speed: float,
     tide_percentage: float,
 ):
-    bastian_tiburon_wind_directions = ["NE", "N"]
-    bastian_tiburon_wave_directions = ["N", "NW", "NE", "E", "S"]
+    bastian_wind_directions = ["NE", "N"]
+    bastian_wave_directions = ["N", "NW", "NE", "E", "S"]
 
     if (
         (
             (
-                (wind_direction_predominant in bastian_tiburon_wind_directions)
-                | (wind_direction in bastian_tiburon_wind_directions)
+                (wind_direction_predominant in bastian_wind_directions)
+                | (wind_direction in bastian_wind_directions)
             )
-            & (wave_direction_predominant in bastian_tiburon_wave_directions)
-            | (wave_direction in bastian_tiburon_wave_directions)
+            & (wave_direction_predominant in bastian_wave_directions)
+            | (wave_direction in bastian_wave_directions)
         )
         & (wind_speed >= 19.0)
         & (tide_percentage >= 50)
@@ -495,7 +495,7 @@ def generate_spot_names(forecast: Dict[str, list]) -> list:
             tide_percentage=tp,
             wave_energy=e,
         ):
-            spot_names.append("Papagayo")
+            spot_names.append("Papagayo-Tiburón")
         elif papelillo_conditions(
             wind_direction_predominant=wid_predominant,
             wave_direction_predominant=wad_predominant,
@@ -538,7 +538,7 @@ def generate_spot_names(forecast: Dict[str, list]) -> list:
             tide_percentage=tp,
         ):
             spot_names.append("Barcarola")
-        elif bastiantiburon_conditions(
+        elif bastian_conditions(
             wind_direction_predominant=wid_predominant,
             wave_direction_predominant=wad_predominant,
             wind_direction=wid,
@@ -546,7 +546,7 @@ def generate_spot_names(forecast: Dict[str, list]) -> list:
             wind_speed=ws,
             tide_percentage=tp,
         ):
-            spot_names.append("Bastian-Tiburón")
+            spot_names.append("Bastián")
         elif famara_conditions(
             wind_direction_predominant=wid_predominant,
             wave_direction_predominant=wad_predominant,
