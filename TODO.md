@@ -35,3 +35,4 @@ Poner la dirección bien, más oeste menos oeste, más este menos este ... Captu
 Añadirle tests de spots con tales condiciones a ver si me los marca
 Meterle fecha y hora actual y donde hay
 Arreglar el fallo donde se borra el caché
+Eliminar codigo muerto
