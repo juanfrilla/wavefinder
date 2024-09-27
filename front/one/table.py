@@ -280,7 +280,7 @@ def plot_forecast_as_table(urls):
         st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
         date = st.session_state.forecast_df["datetime"].dt.date().to_list()
         time = [
-            element.replace(":", "\:")
+            element.replace(":", r"\:")
             for element in st.session_state.forecast_df["time"].to_list()
         ]
         st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
@@ -291,7 +291,6 @@ def plot_forecast_as_table(urls):
             pl.Series(name="time_cor", values=time)
         )
         plot_graph("energy")
-        plot_graph("wind_speed")
         grouped_data = st.session_state.forecast_df.group_by("spot_name").agg(
             pl.col("datetime").min().alias("datetime")
         )

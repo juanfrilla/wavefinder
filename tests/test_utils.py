@@ -1,5 +1,5 @@
 import polars as pl
-from utils import generate_spot_names
+from utils import generate_spot_names, generate_energy
 
 
 def test_separate_spots():
@@ -35,14 +35,17 @@ def test_separate_spots():
         "wave_period": [8.0, 9.0, 10.0, 10.0, 10.0, 10.0, 10.0, 12.0, 10.0, 10.0],
         "tide_percentage": [60, 60, 90, 10, 10, 80, 0, 60, 60, 10],
     }
+    test_data["energy"] = generate_energy(
+        test_data["wave_height"], test_data["wave_period"]
+    )
 
     spot_names = generate_spot_names(test_data)
 
     assert spot_names[0] == "Caleta Caballo"
     assert spot_names[1] == "Famara"
     assert spot_names[2] == "Punta Mujeres"
-    assert spot_names[3] == "Papagayo"
-    assert spot_names[4] == "Papagayo"
+    assert spot_names[3] == "Papagayo-Tiburón"
+    assert spot_names[4] == "Papagayo-Tiburón"
     assert spot_names[5] == "Punta Mujeres"
     assert spot_names[6] == "Papelillo"
     assert spot_names[7] == "Caleta Caballo"
