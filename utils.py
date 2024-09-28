@@ -1,8 +1,9 @@
-import locale, json, math
+import re, json, math
 from bs4 import BeautifulSoup
 from requests import Response
 import polars as pl
 from datetime import datetime, date, time, timedelta
+from dateutil.relativedelta import relativedelta
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -25,6 +26,7 @@ MONTH_MAPPING = {
 }
 INTERNAL_DATE_STR_FORMAT = "%d/%m/%Y"
 INTERNAL_TIME_STR_FORMAT = "%H:%M:%S"
+FRONT_END_DATE_FORMAT = "%A, %d de %B de %Y"
 
 CONTRARIES = {"N": "S", "S": "N", "E": "W", "W": "E"}
 
@@ -802,6 +804,20 @@ def feet_to_meters(feet):
     return meters
 
 
+def datetime_to_frontend_str(dt: datetime) -> str:
+    return dt.strftime(FRONT_END_DATE_FORMAT).capitalize()
+
+
+def construct_date_selection_list(
+    min_value: datetime, max_value: datetime, scraped_datetime_list: list
+) -> list:
+    date_selection = []
+    for scraped_datetime in scraped_datetime_list:
+        if scraped_datetime >= min_value and scraped_datetime <= max_value:
+            date_selection.append(datetime_to_frontend_str(scraped_datetime))
+    return date_selection
+
+
 def datetime_to_str(dt: datetime, dt_format: str) -> str:
     return dt.strftime(dt_format)
 
@@ -826,7 +842,6 @@ def timestamp_to_datetimestr(timestamp_date: int, utc_offset: int) -> str:
 
 
 def datestr_to_datetime(dtstr, format) -> datetime:
-    locale.setlocale(locale.LC_TIME, "es_ES.UTF-8")
     return datetime.strptime(dtstr, format)
 
 
@@ -1049,13 +1064,34 @@ def calculate_tide_percentage(
 def generate_datetimes(dates, times):
     datetimes = []
     for date, time in zip(dates, times):
-        year = datetime.strptime(date, "%d/%m/%Y").year
-        month = datetime.strptime(date, "%d/%m/%Y").month
-        day = datetime.strptime(date, "%d/%m/%Y").day
+        year = datetime.strptime(date, FRONT_END_DATE_FORMAT).year
+        month = datetime.strptime(date, FRONT_END_DATE_FORMAT).month
+        day = datetime.strptime(date, FRONT_END_DATE_FORMAT).day
         hour = int(time.split(":")[0])
         minute = int(time.split(":")[1])
         datetimes.append(datetime(year, month, day, hour, minute))
     return datetimes
+
+
+def datestr_to_frontend_format(input_text):
+    # si es menor es del próximo mes, si es mayor o igual es de este mes
+    day = re.search(r"\d+", input_text).group()
+
+    current_date = datetime.now()
+
+    if int(day) < current_date.day:
+        new_date = current_date + relativedelta(months=1)
+        month = new_date.month
+    elif int(day) >= current_date.day:
+        month = current_date.month
+    if int(month) < current_date.month:
+        new_date = current_date + relativedelta(years=1)
+        year = new_date.year
+    elif int(month) >= current_date.month:
+        year = current_date.year
+    date_datetime = datetime.strptime(f"{day}/{month}/{year}", "%d/%m/%Y")
+
+    return datetime_to_frontend_str(date_datetime)
 
 
 def filter_dataframe(

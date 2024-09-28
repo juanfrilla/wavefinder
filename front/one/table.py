@@ -1,8 +1,6 @@
 import streamlit as st
 import time
-from utils import (
-    final_forecast_format,
-)
+from utils import final_forecast_format, construct_date_selection_list
 from multi import multithread
 from scrapers.windguru import Windguru
 from scrapers.tides import TidesScraper
@@ -221,9 +219,9 @@ def plot_forecast_as_table(urls):
         if len(selected_date_range_datetime) == 2:
             min_value = selected_date_range_datetime[0]
             max_value = selected_date_range_datetime[1]
-            for scraped_date in scraped_date_list:
-                if scraped_date >= min_value and scraped_date <= max_value:
-                    date_selection.append(scraped_date.strftime("%d/%m/%Y"))
+            date_selection = construct_date_selection_list(
+                min_value, max_value, scraped_date_list
+            )
         selected_wave_height = plot_selected_wave_height(DEFAULT_WAVE_HEIGHT)
         selected_swell_height = plot_selected_swell_height()
         selected_wave_period = plot_selected_wave_period()

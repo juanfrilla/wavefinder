@@ -13,11 +13,13 @@ from utils import (
     create_date_name_column,
     create_direction_predominant_column,
     generate_spot_names,
+    datestr_to_frontend_format,
 )
 import re
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
 from APIS.discord_api import DiscordBot
+import locale
+
+locale.setlocale(locale.LC_TIME, "es_ES.UTF-8")
 
 
 class Windguru(object):
@@ -55,8 +57,7 @@ class Windguru(object):
         ]
 
         forecast["date"] = [
-            self.datestr_to_backslashformat(dt.split(".")[0])
-            for dt in forecast["datetime"]
+            datestr_to_frontend_format(dt.split(".")[0]) for dt in forecast["datetime"]
         ]
         forecast["time"] = [
             dt.split(".")[1].replace("h", ":00") for dt in forecast["datetime"]
@@ -144,26 +145,6 @@ class Windguru(object):
                 float(forecast[forecast_value][i])
                 for i in range(len(forecast[forecast_value]))
             ]
-
-    def datestr_to_backslashformat(self, input_text):
-        # si es menor es del próximo mes, si es mayor o igual es de este mes
-        day = re.search(r"\d+", input_text).group()
-
-        current_date = datetime.now()
-
-        if int(day) < current_date.day:
-            new_date = current_date + relativedelta(months=1)
-            month = new_date.month
-        elif int(day) >= current_date.day:
-            month = current_date.month
-        if int(month) < current_date.month:
-            new_date = current_date + relativedelta(years=1)
-            year = new_date.year
-        elif int(month) >= current_date.month:
-            year = current_date.year
-        date_datetime = datetime.strptime(f"{day}/{month}/{year}", "%d/%m/%Y")
-
-        return date_datetime.strftime("%d/%m/%Y")
 
     def handle_windguru_alerts(self, df: pl.DataFrame):
         famara_df = filter_spot_dataframe("famara", df, three_near_days=True)
