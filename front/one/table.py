@@ -162,8 +162,6 @@ def load_forecast(urls):
         df = final_forecast_format(df)
         if "datetime" in df.columns:
             df = df.sort("datetime", descending=False)
-        windguru = Windguru()
-        windguru.handle_windguru_alerts(df)
     print("--- %s seconds ---" % (time.time() - start_time))
 
     return df
