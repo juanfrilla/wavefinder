@@ -150,7 +150,7 @@ def plot_selected_wave_energy():
     )
 
 
-@st.cache_data(ttl="1h")
+@st.cache_data(ttl="3600")
 def load_forecast(urls):
     tide_scraper = TidesScraper()
     tides = tide_scraper.tasks()
@@ -173,28 +173,11 @@ def custom_sort_key(item):
 
 def plot_forecast_as_table(urls):
     st.set_page_config(layout="wide")
-    if "windfinder" in urls[0]:
-        st.title("LANZAROTE (WINDFINDER)")
-    elif "windguru" in urls[0]:
+    if "windguru" in urls[0]:
         st.title("LANZAROTE (WINDGURU)")
-    elif "surf-forecast" in urls[0]:
-        st.title("LANZAROTE (SURF-FORECAST)")
-    elif "surfline" in urls[0]:
-        st.title("LANZAROTE (SURFLINE)")
-    elif "windy.app" in urls[0]:
-        st.title("LANZAROTE (WINDY.APP)")
-    elif "wisuki" in urls[0]:
-        st.title("LANZAROTE (WISUKI)")
-    elif "worldbeachguide" in urls[0]:
-        st.title("LANZAROTE (WORLDBEACHGUIDE)")
-    elif "windy.com" in urls[0]:
-        st.title("LANZAROTE (WINDY.COM)")
 
     initial_forecast = load_forecast(urls)
     st.session_state.forecast_df = initial_forecast
-    # if st.session_state.forecast_df.is_empty():
-    #     st.write("The DataFrame is empty.")
-    # else:
     scraped_datetime_list = list(
         set(st.session_state.forecast_df["datetime"].to_list())
     )
