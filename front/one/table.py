@@ -156,7 +156,8 @@ def load_forecast(urls):
     tides = tide_scraper.tasks()
     start_time = time.time()
     if "windguru" in urls[0]:
-        df = multithread.scrape_multiple_browser(urls, Windguru(), tides)
+        windguru = Windguru()
+        df = windguru.scrape((urls[0], tides))
         df = final_forecast_format(df)
         if "datetime" in df.columns:
             df = df.sort("datetime", descending=False)
@@ -191,123 +192,119 @@ def plot_forecast_as_table(urls):
 
     initial_forecast = load_forecast(urls)
     st.session_state.forecast_df = initial_forecast
-    if st.session_state.forecast_df.is_empty():
-        st.write("The DataFrame is empty.")
+    # if st.session_state.forecast_df.is_empty():
+    #     st.write("The DataFrame is empty.")
+    # else:
+    scraped_datetime_list = list(
+        set(st.session_state.forecast_df["datetime"].to_list())
+    )
+    scraped_date_list = set([date.date() for date in scraped_datetime_list])
+    date_name_list = list(set(st.session_state.forecast_df["date_name"].to_list()))
+    all_beaches = list(set(st.session_state.forecast_df["spot_name"].to_list()))
+
+    # CREATE MULTISELECT
+    date_name_selection = st.multiselect(
+        "Nombre del día:", date_name_list, default=date_name_list
+    )
+
+    today = datetime.now().date()
+    next_days = (datetime.now() + timedelta(days=17)).date()
+    selected_date_range_datetime = st.date_input(
+        "Selecciona el rango de fechas",
+        (today, next_days),
+        today,
+        next_days,
+        format="DD/MM/YYYY",
+    )
+    date_selection = []
+    if len(selected_date_range_datetime) == 2:
+        min_value = selected_date_range_datetime[0]
+        max_value = selected_date_range_datetime[1]
+        date_selection = construct_date_selection_list(
+            min_value, max_value, scraped_date_list
+        )
+    selected_wave_height = plot_selected_wave_height(DEFAULT_WAVE_HEIGHT)
+    selected_swell_height = plot_selected_swell_height()
+    selected_wave_period = plot_selected_wave_period()
+    selected_wave_energy = plot_selected_wave_energy()
+    selected_wind_speed = plot_selected_wind_speed()
+
+    beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
+    if date_selection == []:
+        date_selection = scraped_date_list
+
+    date_condition = st.session_state.forecast_df["date"].is_in(date_selection)
+
+    date_name_condition = st.session_state.forecast_df["date_name"].is_in(
+        date_name_selection
+    )
+    beach_condition = st.session_state.forecast_df["spot_name"].is_in(beach_selection)
+    wave_height_condition = (
+        st.session_state.forecast_df["wave_height"] >= selected_wave_height[0]
+    ) & (st.session_state.forecast_df["wave_height"] <= selected_wave_height[1])
+    wave_period_condition = (
+        st.session_state.forecast_df["wave_period"] >= selected_wave_period[0]
+    ) & (st.session_state.forecast_df["wave_period"] <= selected_wave_period[1])
+    wind_speed_condition = (
+        st.session_state.forecast_df["wind_speed"] >= selected_wind_speed[0]
+    ) & (st.session_state.forecast_df["wind_speed"] <= selected_wind_speed[1])
+    if selected_swell_height:
+        swell_height_condition = (
+            st.session_state.forecast_df["swell_height"] >= selected_swell_height[0]
+        ) & (st.session_state.forecast_df["swell_height"] <= selected_swell_height[1])
     else:
-        scraped_datetime_list = list(
-            set(st.session_state.forecast_df["datetime"].to_list())
-        )
-        scraped_date_list = set([date.date() for date in scraped_datetime_list])
-        date_name_list = list(set(st.session_state.forecast_df["date_name"].to_list()))
-        all_beaches = list(set(st.session_state.forecast_df["spot_name"].to_list()))
+        swell_height_condition = True
 
-        # CREATE MULTISELECT
-        date_name_selection = st.multiselect(
-            "Nombre del día:", date_name_list, default=date_name_list
-        )
+    wave_energy_condition = (
+        st.session_state.forecast_df["energy"] >= selected_wave_energy[0]
+    ) & (st.session_state.forecast_df["energy"] <= selected_wave_energy[1])
 
-        today = datetime.now().date()
-        next_days = (datetime.now() + timedelta(days=17)).date()
-        selected_date_range_datetime = st.date_input(
-            "Selecciona el rango de fechas",
-            (today, next_days),
-            today,
-            next_days,
-            format="DD/MM/YYYY",
-        )
-        date_selection = []
-        if len(selected_date_range_datetime) == 2:
-            min_value = selected_date_range_datetime[0]
-            max_value = selected_date_range_datetime[1]
-            date_selection = construct_date_selection_list(
-                min_value, max_value, scraped_date_list
+    mask = (
+        date_condition
+        & date_name_condition
+        & beach_condition
+        & wave_height_condition
+        & wave_period_condition
+        & wind_speed_condition
+        & swell_height_condition
+        & wave_energy_condition
+    )
+
+    st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
+    date = st.session_state.forecast_df["datetime"].dt.date().to_list()
+    time = [
+        element.replace(":", r"\:")
+        for element in st.session_state.forecast_df["time"].to_list()
+    ]
+    st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
+        pl.Series(name="date_dt", values=date)
+    )
+
+    st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
+        pl.Series(name="time_cor", values=time)
+    )
+    plot_graph("energy")
+    grouped_data = st.session_state.forecast_df.group_by("spot_name").agg(
+        pl.col("datetime").min().alias("datetime")
+    )
+    if "datetime" in grouped_data.columns:
+        grouped_data = grouped_data.sort("datetime", descending=False)
+    else:
+        st.warning("'datetime' column not found, skipping sort.")
+
+    with st.container():
+        for i in range(len(grouped_data)):
+            spot_name = grouped_data[i]["spot_name"].to_numpy()[0]
+            group_df = st.session_state.forecast_df.filter(
+                pl.col("spot_name") == spot_name
             )
-        selected_wave_height = plot_selected_wave_height(DEFAULT_WAVE_HEIGHT)
-        selected_swell_height = plot_selected_swell_height()
-        selected_wave_period = plot_selected_wave_period()
-        selected_wave_energy = plot_selected_wave_energy()
-        selected_wind_speed = plot_selected_wind_speed()
 
-        beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
-        if date_selection == []:
-            date_selection = scraped_date_list
-
-        date_condition = st.session_state.forecast_df["date"].is_in(date_selection)
-
-        date_name_condition = st.session_state.forecast_df["date_name"].is_in(
-            date_name_selection
-        )
-        beach_condition = st.session_state.forecast_df["spot_name"].is_in(
-            beach_selection
-        )
-        wave_height_condition = (
-            st.session_state.forecast_df["wave_height"] >= selected_wave_height[0]
-        ) & (st.session_state.forecast_df["wave_height"] <= selected_wave_height[1])
-        wave_period_condition = (
-            st.session_state.forecast_df["wave_period"] >= selected_wave_period[0]
-        ) & (st.session_state.forecast_df["wave_period"] <= selected_wave_period[1])
-        wind_speed_condition = (
-            st.session_state.forecast_df["wind_speed"] >= selected_wind_speed[0]
-        ) & (st.session_state.forecast_df["wind_speed"] <= selected_wind_speed[1])
-        if selected_swell_height:
-            swell_height_condition = (
-                st.session_state.forecast_df["swell_height"] >= selected_swell_height[0]
-            ) & (
-                st.session_state.forecast_df["swell_height"] <= selected_swell_height[1]
+            st.subheader(f"Spot: {spot_name}")
+            forecast_df_dropped = group_df.drop("spot_name")
+            forecast_df_dropped = forecast_df_dropped.unique(subset=["datetime"]).drop(
+                "datetime"
             )
-        else:
-            swell_height_condition = True
-
-        wave_energy_condition = (
-            st.session_state.forecast_df["energy"] >= selected_wave_energy[0]
-        ) & (st.session_state.forecast_df["energy"] <= selected_wave_energy[1])
-
-        mask = (
-            date_condition
-            & date_name_condition
-            & beach_condition
-            & wave_height_condition
-            & wave_period_condition
-            & wind_speed_condition
-            & swell_height_condition
-            & wave_energy_condition
-        )
-
-        st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
-        date = st.session_state.forecast_df["datetime"].dt.date().to_list()
-        time = [
-            element.replace(":", r"\:")
-            for element in st.session_state.forecast_df["time"].to_list()
-        ]
-        st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
-            pl.Series(name="date_dt", values=date)
-        )
-
-        st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
-            pl.Series(name="time_cor", values=time)
-        )
-        plot_graph("energy")
-        grouped_data = st.session_state.forecast_df.group_by("spot_name").agg(
-            pl.col("datetime").min().alias("datetime")
-        )
-        if "datetime" in grouped_data.columns:
-            grouped_data = grouped_data.sort("datetime", descending=False)
-        else:
-            st.warning("'datetime' column not found, skipping sort.")
-
-        with st.container():
-            for i in range(len(grouped_data)):
-                spot_name = grouped_data[i]["spot_name"].to_numpy()[0]
-                group_df = st.session_state.forecast_df.filter(
-                    pl.col("spot_name") == spot_name
-                )
-
-                st.subheader(f"Spot: {spot_name}")
-                forecast_df_dropped = group_df.drop("spot_name")
-                forecast_df_dropped = forecast_df_dropped.unique(
-                    subset=["datetime"]
-                ).drop("datetime")
-                st.dataframe(
-                    forecast_df_dropped,
-                    hide_index=True,
-                )
+            st.dataframe(
+                forecast_df_dropped,
+                hide_index=True,
+            )
