@@ -7,6 +7,7 @@ from scrapers.tides import TidesScraper
 import altair as alt
 import polars as pl
 from datetime import datetime, timedelta
+from urls.windguru import WINDGURU_URLS
 
 DEFAULT_MIN_WAVE_PERIOD = 0
 DEFAULT_WAVE_HEIGHT = 0.0
@@ -151,16 +152,16 @@ def plot_selected_wave_energy():
 
 
 @st.cache_data(ttl="3600")
-def load_forecast(urls):
+def load_windguru_forecast():
+    url = "https://www.windguru.cz/49328"
     tide_scraper = TidesScraper()
     tides = tide_scraper.tasks()
     start_time = time.time()
-    if "windguru" in urls[0]:
-        windguru = Windguru()
-        df = windguru.scrape((urls[0], tides))
-        df = final_forecast_format(df)
-        if "datetime" in df.columns:
-            df = df.sort("datetime", descending=False)
+    windguru = Windguru()
+    df = windguru.scrape(url, tides)
+    df = final_forecast_format(df)
+    if "datetime" in df.columns:
+        df = df.sort("datetime", descending=False)
     print("--- %s seconds ---" % (time.time() - start_time))
 
     return df
@@ -171,12 +172,12 @@ def custom_sort_key(item):
     return custom_order.get(item, 5)
 
 
-def plot_forecast_as_table(urls):
+def plot_forecast_as_table():
     st.set_page_config(layout="wide")
-    if "windguru" in urls[0]:
-        st.title("LANZAROTE (WINDGURU)")
 
-    initial_forecast = load_forecast(urls)
+    st.title("LANZAROTE (WINDGURU)")
+
+    initial_forecast = load_windguru_forecast()
     st.session_state.forecast_df = initial_forecast
     scraped_datetime_list = list(
         set(st.session_state.forecast_df["datetime"].to_list())

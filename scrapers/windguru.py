@@ -172,7 +172,6 @@ class Windguru(object):
                     )
         return
 
-    def scrape(self, arguments: tuple):
-        url, tides = arguments
+    def scrape(self, url, tides):
         soup = self.beach_request(url)
         return self.get_dataframe_from_soup(soup, tides)
