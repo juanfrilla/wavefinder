@@ -167,6 +167,61 @@ def papagayo_low_wind_conditions(
     return False
 
 
+def west_swell_high_tide_conditions(
+    wind_direction_predominant: str,
+    wave_direction_predominant: str,
+    wind_direction: str,
+    wave_direction: str,
+    wave_energy: int,
+    tide_percentage: float,
+):
+    papagayo_wind_directions = ["E", "NE", "SE"]
+    papagayo_wave_directions = [
+        "W",
+        "WNW",
+    ]
+
+    if (
+        (
+            (
+                (wind_direction_predominant in papagayo_wind_directions)
+                | (wind_direction in papagayo_wind_directions)
+            )
+            & (wave_direction_predominant in papagayo_wave_directions)
+            | (wave_direction in papagayo_wave_directions)
+        )
+        & (wave_energy >= 138)
+        & (tide_percentage > 50)
+    ):
+        return True
+    return False
+
+
+def west_swell_high_tide_low_wind_conditions(
+    wave_direction_predominant: str,
+    wave_direction: str,
+    wind_speed: float,
+    wave_energy: int,
+    tide_percentage: float,
+):
+    papagayo_wave_directions = [
+        "W",
+        "WNW",
+    ]
+
+    if (
+        (
+            (wave_direction_predominant in papagayo_wave_directions)
+            | (wave_direction in papagayo_wave_directions)
+        )
+        & (wind_speed < 10.0)
+        & (wave_energy >= 138)
+        & (tide_percentage > 50)
+    ):
+        return True
+    return False
+
+
 def papelillo_conditions(
     wind_direction_predominant: str,
     wave_direction_predominant: str,
@@ -511,7 +566,22 @@ def generate_spot_names(forecast: Dict[str, list]) -> list:
             tide_percentage=tp,
             wave_energy=e,
         ):
-            spot_names.append("Papagayo-Tiburón")
+            spot_names.append("Papagayo-Tiburón (Fuerza oeste - vacía)")
+        elif west_swell_high_tide_conditions(
+            wind_direction_predominant=wid_predominant,
+            wave_direction_predominant=wad_predominant,
+            wind_direction=wid,
+            wave_direction=wad,
+            wave_energy=e,
+            tide_percentage=tp,
+        ) | west_swell_high_tide_low_wind_conditions(
+            wave_direction_predominant=wad_predominant,
+            wave_direction=wad,
+            wind_speed=ws,
+            tide_percentage=tp,
+            wave_energy=e,
+        ):
+            spot_names.append("Fuerza oeste - llena")
         elif papelillo_conditions(
             wind_direction_predominant=wid_predominant,
             wave_direction_predominant=wad_predominant,
