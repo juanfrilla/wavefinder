@@ -160,8 +160,7 @@ def load_windguru_forecast():
     windguru = Windguru()
     df = windguru.scrape(url, tides)
     df = final_forecast_format(df)
-    if "datetime" in df.columns:
-        df = df.sort("datetime", descending=False)
+    df = df.sort("datetime", descending=False)
     print("--- %s seconds ---" % (time.time() - start_time))
 
     return df
@@ -176,8 +175,12 @@ def plot_forecast_as_table():
     st.set_page_config(layout="wide")
 
     st.title("LANZAROTE (WINDGURU)")
-
-    initial_forecast = load_windguru_forecast()
+    while True:
+        initial_forecast = load_windguru_forecast()
+        if not initial_forecast.is_empty():
+            break
+        else:
+            print("El forecast está vacío")
     st.session_state.forecast_df = initial_forecast
     scraped_datetime_list = list(
         set(st.session_state.forecast_df["datetime"].to_list())
