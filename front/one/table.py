@@ -160,7 +160,6 @@ def load_windguru_forecast():
     windguru = Windguru()
     df = windguru.scrape(url, tides)
     df = final_forecast_format(df)
-    df = df.sort("datetime", descending=False)
     print("--- %s seconds ---" % (time.time() - start_time))
 
     return df
