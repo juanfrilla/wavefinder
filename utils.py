@@ -476,7 +476,10 @@ def papagayo_favorable_wind(wind_direction_predominant, wind_direction):
 
 
 def papelillo_favorable_wind(wind_direction_predominant, wind_direction):
-    return east_favorable_wind(wind_direction_predominant, wind_direction)
+    east_wind_directions = ["E", "SE"]
+    return is_favorable_wind(
+        wind_direction_predominant, wind_direction, east_wind_directions
+    )
 
 
 def punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction):
