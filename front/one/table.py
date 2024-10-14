@@ -84,57 +84,6 @@ def get_default_wind_approval_selection(wind_approval_list):
     return []
 
 
-def plot_selected_wave_height(default_wave_height):
-    min_wave_height = float(st.session_state.forecast_df["wave_height"].min())
-    max_wave_height = float(st.session_state.forecast_df["wave_height"].max())
-    if max_wave_height < default_wave_height:
-        default_wave_height_selection = (1.0, default_wave_height)
-    else:
-        default_wave_height_selection = (default_wave_height, max_wave_height)
-    return st.slider(
-        "Altura de las olas (m)",
-        min_wave_height,
-        max_wave_height,
-        default_wave_height_selection,
-        0.1,
-    )
-
-
-def plot_selected_swell_height(default_swell_height=2.0):
-    try:
-        min_swell_height = float(st.session_state.forecast_df["swell_height"].min())
-        max_swell_height = float(st.session_state.forecast_df["swell_height"].max())
-        if max_swell_height < default_swell_height:
-            default_swell_height_selection = (1.0, default_swell_height)
-        else:
-            default_swell_height_selection = (default_swell_height, max_swell_height)
-        return st.slider(
-            "Altura del mar de fondo - swell (m)",
-            min_swell_height,
-            max_swell_height,
-            default_swell_height_selection,
-            0.1,
-        )
-    except Exception as e:
-        return None
-
-
-def plot_selected_wave_period():
-    min_wave_period = int(st.session_state.forecast_df["wave_period"].min())
-    max_wave_period = int(st.session_state.forecast_df["wave_period"].max())
-    if max_wave_period < DEFAULT_MIN_WAVE_PERIOD:
-        default_wave_period_selection = (5, DEFAULT_MIN_WAVE_PERIOD)
-    else:
-        default_wave_period_selection = (DEFAULT_MIN_WAVE_PERIOD, max_wave_period)
-    return st.slider(
-        "Periodo de las olas (s)",
-        min_wave_period,
-        max_wave_period,
-        default_wave_period_selection,
-        1,
-    )
-
-
 def plot_selected_wave_energy():
     min_wave_energy = int(st.session_state.forecast_df["energy"].min())
     max_wave_energy = int(st.session_state.forecast_df["energy"].max())
@@ -211,9 +160,6 @@ def plot_forecast_as_table():
         date_selection = construct_date_selection_list(
             min_value, max_value, scraped_date_list
         )
-    selected_wave_height = plot_selected_wave_height(DEFAULT_WAVE_HEIGHT)
-    selected_swell_height = plot_selected_swell_height()
-    selected_wave_period = plot_selected_wave_period()
     selected_wave_energy = plot_selected_wave_energy()
     selected_wind_speed = plot_selected_wind_speed()
 
@@ -227,21 +173,9 @@ def plot_forecast_as_table():
         date_name_selection
     )
     beach_condition = st.session_state.forecast_df["spot_name"].is_in(beach_selection)
-    wave_height_condition = (
-        st.session_state.forecast_df["wave_height"] >= selected_wave_height[0]
-    ) & (st.session_state.forecast_df["wave_height"] <= selected_wave_height[1])
-    wave_period_condition = (
-        st.session_state.forecast_df["wave_period"] >= selected_wave_period[0]
-    ) & (st.session_state.forecast_df["wave_period"] <= selected_wave_period[1])
     wind_speed_condition = (
         st.session_state.forecast_df["wind_speed"] >= selected_wind_speed[0]
     ) & (st.session_state.forecast_df["wind_speed"] <= selected_wind_speed[1])
-    if selected_swell_height:
-        swell_height_condition = (
-            st.session_state.forecast_df["swell_height"] >= selected_swell_height[0]
-        ) & (st.session_state.forecast_df["swell_height"] <= selected_swell_height[1])
-    else:
-        swell_height_condition = True
 
     wave_energy_condition = (
         st.session_state.forecast_df["energy"] >= selected_wave_energy[0]
@@ -251,10 +185,7 @@ def plot_forecast_as_table():
         date_condition
         & date_name_condition
         & beach_condition
-        & wave_height_condition
-        & wave_period_condition
         & wind_speed_condition
-        & swell_height_condition
         & wave_energy_condition
     )
 
