@@ -641,6 +641,25 @@ def generate_spot_names(forecast: Dict[str, list]) -> list:
         #     wave_direction_predominant=wad_predominant,
         # ):
         #     spot_names.append("Olas grandes > 2.5m, revisar costa de playa honda")
+        elif barcarola_conditions(
+            wind_direction_predominant=wid_predominant,
+            wave_direction_predominant=wad_predominant,
+            wind_direction=wid,
+            wave_direction=wad,
+            wind_speed=ws,
+            wave_height=wh,
+            tide_percentage=tp,
+        ):
+            spot_names.append("Barcarola")
+        elif bastian_conditions(
+            wind_direction_predominant=wid_predominant,
+            wave_direction_predominant=wad_predominant,
+            wind_direction=wid,
+            wave_direction=wad,
+            wind_speed=ws,
+            tide_percentage=tp,
+        ):
+            spot_names.append("Bastián")
         elif punta_mujeres_conditions(
             wind_direction_predominant=wid_predominant,
             wave_direction_predominant=wad_predominant,
@@ -682,25 +701,6 @@ def generate_spot_names(forecast: Dict[str, list]) -> list:
             wave_direction=wad,
         ):
             spot_names.append("Caleta Caballo")
-        elif barcarola_conditions(
-            wind_direction_predominant=wid_predominant,
-            wave_direction_predominant=wad_predominant,
-            wind_direction=wid,
-            wave_direction=wad,
-            wind_speed=ws,
-            wave_height=wh,
-            tide_percentage=tp,
-        ):
-            spot_names.append("Barcarola")
-        elif bastian_conditions(
-            wind_direction_predominant=wid_predominant,
-            wave_direction_predominant=wad_predominant,
-            wind_direction=wid,
-            wave_direction=wad,
-            wind_speed=ws,
-            tide_percentage=tp,
-        ):
-            spot_names.append("Bastián")
         elif famara_conditions(
             wind_direction_predominant=wid_predominant,
             wave_direction_predominant=wad_predominant,
