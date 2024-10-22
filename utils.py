@@ -635,12 +635,12 @@ def generate_spot_names(forecast: Dict[str, list]) -> list:
                 tide_percentage=tp,
             )
             spot_names.append(spot)
-        elif big_waves_conditions(
-            wave_height=wh,
-            wave_direction=wad,
-            wave_direction_predominant=wad_predominant,
-        ):
-            spot_names.append("Olas grandes > 2.5m, revisar costa de playa honda")
+        # elif big_waves_conditions(
+        #     wave_height=wh,
+        #     wave_direction=wad,
+        #     wave_direction_predominant=wad_predominant,
+        # ):
+        #     spot_names.append("Olas grandes > 2.5m, revisar costa de playa honda")
         elif punta_mujeres_conditions(
             wind_direction_predominant=wid_predominant,
             wave_direction_predominant=wad_predominant,
