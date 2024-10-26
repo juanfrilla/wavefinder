@@ -35,9 +35,19 @@ def calculate_energy(wave_height: float, wave_period: float):
     return math.ceil(1 / 2 * 9.81 * wave_height**2 * wave_period)
 
 
+def calculate_energy(wave_height, wave_period, width=1.0, water_density=1025):
+    g = 9.81
+    wavelength = (g * wave_period**2) / (2 * 3.14159)
+    energy_density = (1 / 8) * water_density * g * wave_height**2
+    energy_joules = energy_density * wavelength * width
+    energy_kj = energy_joules / 1000
+
+    return math.ceil(energy_kj)
+
+
 def generate_energy(wave_heights: list, wave_periods: list):
     return [
-        calculate_energy(wave_height, wave_period)
+        calculate_energy(wave_height=wave_height, wave_period=wave_period)
         for wave_height, wave_period in zip(wave_heights, wave_periods)
     ]
 
@@ -72,7 +82,7 @@ def punta_mujeres_conditions(
             (wave_direction_predominant in punta_mujeres_wave_directions)
             | (wave_direction in punta_mujeres_wave_directions)
         )
-        & (wave_energy >= 195)
+        & (wave_energy >= 400)
         & (wave_direction not in unwanted_wave_directions)
         & (wave_direction_predominant not in unwanted_wave_directions)
     ):
@@ -92,7 +102,7 @@ def punta_mujeres_low_wind_conditions(
             (wave_direction_predominant in punta_mujeres_wave_directions)
             | (wave_direction in punta_mujeres_wave_directions)
         )
-        & (wave_energy >= 195)
+        & (wave_energy >= 400)
         & (wave_direction not in unwanted_wave_directions)
         & (wave_direction_predominant not in unwanted_wave_directions)
     ):
@@ -119,7 +129,7 @@ def papagayo_conditions(
             & (wave_direction_predominant in papagayo_wave_directions)
             | (wave_direction in papagayo_wave_directions)
         )
-        & (wave_energy >= 138)
+        & (wave_energy >= 1000)
         & (tide_percentage <= 50)
     ):
         return True
@@ -142,7 +152,7 @@ def papagayo_low_wind_conditions(
             (wave_direction_predominant in papagayo_wave_directions)
             | (wave_direction in papagayo_wave_directions)
         )
-        & (wave_energy >= 138)
+        & (wave_energy >= 1000)
         & (tide_percentage <= 50)
     ):
         return True
@@ -168,7 +178,7 @@ def west_swell_high_tide_conditions(
             & (wave_direction_predominant in papagayo_wave_directions)
             | (wave_direction in papagayo_wave_directions)
         )
-        & (wave_energy >= 138)
+        & (wave_energy >= 1000)
         & (tide_percentage > 50)
     ):
         return True
@@ -191,7 +201,7 @@ def west_swell_high_tide_low_wind_conditions(
             (wave_direction_predominant in papagayo_wave_directions)
             | (wave_direction in papagayo_wave_directions)
         )
-        & (wave_energy >= 138)
+        & (wave_energy >= 1000)
         & (tide_percentage > 50)
     ):
         return True
