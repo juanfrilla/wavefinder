@@ -318,9 +318,10 @@ def barcarola_conditions(
     wind_direction: str,
     wave_direction: str,
     wind_speed: float,
-    wave_height: float,
+    wave_period: int,
     tide_percentage: float,
 ):
+
     barcarola_wind_directions = ["NE", "N"]
     barcarola_wave_directions = ["N", "NW", "NE", "E", "S"]
 
@@ -334,7 +335,7 @@ def barcarola_conditions(
             | (wave_direction in barcarola_wave_directions)
         )
         & (wind_speed >= 19.0)
-        & (wave_height >= 1.7)  # TODO Jugar con esto
+        & (wave_period >= 10)
         & (tide_percentage <= 50)
     ):
         return True
@@ -647,8 +648,8 @@ def generate_spot_names(forecast: Dict[str, list]) -> list:
             wind_direction=wid,
             wave_direction=wad,
             wind_speed=ws,
-            wave_height=wh,
             tide_percentage=tp,
+            wave_period=wp,
         ):
             spot_names.append("Barcarola")
         elif bastian_conditions(
