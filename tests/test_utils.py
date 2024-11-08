@@ -14,10 +14,11 @@ def test_separate_spots():
             "E",
             "SW",
             "NW",
-            "N",
+            "E",
             "NW",
+            "SE",
         ],
-        "wind_direction": ["W", "S", "NW", "E", "N", "S", "E", "W", "NW", "NE", "NW"],
+        "wind_direction": ["W", "S", "NW", "E", "N", "S", "E", "W", "NW", "E", "NW", "SE"],
         "wave_direction": [
             "N",
             "N",
@@ -29,6 +30,7 @@ def test_separate_spots():
             "NW",
             "NW",
             "N",
+            "NW",
             "NW",
         ],
         "wave_direction_predominant": [
@@ -43,11 +45,12 @@ def test_separate_spots():
             "NW",
             "N",
             "NW",
+            "NW",
         ],
-        "wind_speed": [5, 11, 12, 10, 7, 7, 11, 17, 1, 1, 1],
-        "wave_height": [1.5, 2.0, 2.5, 2.0, 2.0, 2.5, 2.0, 3, 1.5, 1.7, 2.2],
-        "wave_period": [8.0, 9.0, 10.0, 10.0, 10.0, 10.0, 10.0, 12.0, 10.0, 10.0, 13.0],
-        "tide_percentage": [60, 60, 90, 10, 10, 80, 0, 60, 60, 10, 50],
+        "wind_speed": [5, 11, 12, 10, 7, 7, 11, 17, 1, 1, 1, 20],
+        "wave_height": [1.5, 2.0, 2.5, 2.5, 2.5, 2.5, 2.0, 3, 1.5, 1.7, 2.2, 2.2],
+        "wave_period": [8.0, 9.0, 10.0, 12.0, 13.0, 10.0, 10.0, 12.0, 9.0, 10.0, 13.0, 12.0],
+        "tide_percentage": [60, 60, 90, 10, 10, 80, 0, 60, 60, 10, 50, 10],
     }
     test_data["energy"] = generate_energy(
         test_data["wave_height"], test_data["wave_period"]
@@ -66,6 +69,7 @@ def test_separate_spots():
     assert spot_names[8] == "Caleta Caballo"
     assert spot_names[9] == "Papelillo"
     assert spot_names[10] == "Punta Mujeres"
+    assert spot_names[11] == "Papelillo"
 
     print("All test cases passed!")
 

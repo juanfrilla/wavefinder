@@ -126,8 +126,10 @@ def papagayo_conditions(
     if (
         (
             papagayo_favorable_wind(wind_direction_predominant, wind_direction)
-            & (wave_direction_predominant in papagayo_wave_directions)
-            | (wave_direction in papagayo_wave_directions)
+            & (
+                (wave_direction_predominant in papagayo_wave_directions)
+                | (wave_direction in papagayo_wave_directions)
+            )
         )
         & (wave_energy >= 1000)
         & (tide_percentage <= 50)
@@ -312,8 +314,10 @@ def bastian_conditions(
                 (wind_direction_predominant in bastian_wind_directions)
                 | (wind_direction in bastian_wind_directions)
             )
-            & (wave_direction_predominant in bastian_wave_directions)
-            | (wave_direction in bastian_wave_directions)
+            & (
+                (wave_direction_predominant in bastian_wave_directions)
+                | (wave_direction in bastian_wave_directions)
+            )
         )
         & (wind_speed >= 19.0)
         & (tide_percentage >= 50)
@@ -341,8 +345,10 @@ def barcarola_conditions(
                 (wind_direction_predominant in barcarola_wind_directions)
                 | (wind_direction in barcarola_wind_directions)
             )
-            & (wave_direction_predominant in barcarola_wave_directions)
-            | (wave_direction in barcarola_wave_directions)
+            & (
+                (wave_direction_predominant in barcarola_wave_directions)
+                | (wave_direction in barcarola_wave_directions)
+            )
         )
         & (wind_speed >= 19.0)
         & (wave_period >= 10)
