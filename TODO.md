@@ -36,3 +36,6 @@ Añadirle tests de spots con tales condiciones a ver si me los marca
 Meterle fecha y hora actual y donde hay
 Arreglar el fallo donde se borra el caché
 Eliminar codigo muerto
+POner para clasificar en vacia o llena
+Poner columna con dias que faltan 
+Mover columna de viento mas a la derecha

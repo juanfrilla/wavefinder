@@ -222,17 +222,15 @@ def papelillo_conditions(
         "NW",
         "NE",
     ]
-    unwanted_wave_directions = ["WNW"]
 
     if (
         (
-            papelillo_favorable_wind(wind_direction_predominant, wind_direction)
+            papelillo_favorable_high_wind(wind_direction_predominant, wind_direction)
             & (
                 (wave_direction_predominant in papelillo_wave_directions)
                 | (wave_direction in papelillo_wave_directions)
             )
         )
-        & (wave_direction not in unwanted_wave_directions)
         & (tide_percentage <= 50)
     ):
         return True
@@ -249,13 +247,11 @@ def papelillo_low_wind_conditions(
         "NW",
         "NE",
     ]
-    unwanted_wave_directions = ["WNW"]
     if (
         (
             (wave_direction_predominant in papelillo_wave_directions)
             | (wave_direction in papelillo_wave_directions)
         )
-        & (wave_direction not in unwanted_wave_directions)
         & (tide_percentage <= 50)
     ):
         return True
@@ -492,8 +488,14 @@ def papagayo_favorable_wind(wind_direction_predominant, wind_direction):
     return east_favorable_wind(wind_direction_predominant, wind_direction)
 
 
-def papelillo_favorable_wind(wind_direction_predominant, wind_direction):
+def papelillo_favorable_high_wind(wind_direction_predominant, wind_direction):
     east_wind_directions = ["E", "SE"]
+    return is_favorable_wind(
+        wind_direction_predominant, wind_direction, east_wind_directions
+    )
+    
+def papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
+    east_wind_directions = ["NE","E", "SE"]
     return is_favorable_wind(
         wind_direction_predominant, wind_direction, east_wind_directions
     )
@@ -544,7 +546,7 @@ def get_low_wind_spot(
         wave_direction_predominant,
         wave_direction,
         tide_percentage,
-    ) and papelillo_favorable_wind(wind_direction_predominant, wind_direction):
+    ) and papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
         return "Papelillo"
     elif lasanta_low_wind_conditions(
         wave_direction_predominant,
