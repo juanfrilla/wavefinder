@@ -542,6 +542,13 @@ def get_low_wind_spot(
         wave_period,
     ) and famara_favorable_wind(wind_direction_predominant, wind_direction):
         return "Famara"
+    elif papagayo_low_wind_conditions(
+        wave_direction_predominant,
+        wave_direction,
+        wave_energy,
+        tide_percentage,
+    ) and papagayo_favorable_wind(wind_direction_predominant, wind_direction):
+        return "Papagayo-Tiburón (Fuerza oeste - vacía)"
     elif papelillo_low_wind_conditions(
         wave_direction_predominant,
         wave_direction,
@@ -564,13 +571,6 @@ def get_low_wind_spot(
         wave_direction,
     ) and caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction):
         return "Caleta Caballo"
-    elif papagayo_low_wind_conditions(
-        wave_direction_predominant,
-        wave_direction,
-        wave_energy,
-        tide_percentage,
-    ) and papagayo_favorable_wind(wind_direction_predominant, wind_direction):
-        return "Papagayo-Tiburón (Fuerza oeste - vacía)"
     elif west_swell_high_tide_low_wind_conditions(
         wave_direction_predominant,
         wave_direction,
@@ -578,11 +578,6 @@ def get_low_wind_spot(
         tide_percentage,
     ):
         return "Fuerza oeste - llena"
-    elif caleta_caballo_low_wind_conditions(
-        wave_direction_predominant,
-        wave_direction,
-    ):
-        return "Caleta Caballo"
     elif papagayo_low_wind_conditions(
         wave_direction_predominant,
         wave_direction,
@@ -596,6 +591,11 @@ def get_low_wind_spot(
         wave_energy,
     ):
         return "Punta Mujeres"
+    elif caleta_caballo_low_wind_conditions(
+        wave_direction_predominant,
+        wave_direction,
+    ):
+        return "Caleta Caballo"
     elif lasanta_low_wind_conditions(
         wave_direction_predominant,
         wave_direction,

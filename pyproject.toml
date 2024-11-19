@@ -74,6 +74,7 @@ validators = "0.28.0"
 watchdog = "4.0.0"
 wsproto = "1.2.0"
 zipp = "3.18.1"
+pytest = "^8.3.3"
 
 
 [build-system]
