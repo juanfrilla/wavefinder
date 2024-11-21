@@ -1,0 +1,1 @@
+Para la costa norte, cuando hay periodos altos (>10), la mejor altura es 1 metro, de lo contrario se desfasa
