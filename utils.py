@@ -224,15 +224,12 @@ def papelillo_conditions(
     ]
 
     if (
-        (
-            papelillo_favorable_high_wind(wind_direction_predominant, wind_direction)
-            & (
-                (wave_direction_predominant in papelillo_wave_directions)
-                | (wave_direction in papelillo_wave_directions)
-            )
+        papelillo_favorable_high_wind(wind_direction_predominant, wind_direction)
+        & (
+            (wave_direction_predominant in papelillo_wave_directions)
+            | (wave_direction in papelillo_wave_directions)
         )
-        & (tide_percentage <= 50)
-    ):
+    ) & (tide_percentage <= 50):
         return True
     return False
 
@@ -248,12 +245,9 @@ def papelillo_low_wind_conditions(
         "NE",
     ]
     if (
-        (
-            (wave_direction_predominant in papelillo_wave_directions)
-            | (wave_direction in papelillo_wave_directions)
-        )
-        & (tide_percentage <= 50)
-    ):
+        (wave_direction_predominant in papelillo_wave_directions)
+        | (wave_direction in papelillo_wave_directions)
+    ) & (tide_percentage <= 50):
         return True
     return False
 
@@ -493,9 +487,10 @@ def papelillo_favorable_high_wind(wind_direction_predominant, wind_direction):
     return is_favorable_wind(
         wind_direction_predominant, wind_direction, east_wind_directions
     )
-    
+
+
 def papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
-    east_wind_directions = ["NE","E", "SE"]
+    east_wind_directions = ["NE", "E", "SE"]
     return is_favorable_wind(
         wind_direction_predominant, wind_direction, east_wind_directions
     )
@@ -896,6 +891,8 @@ def final_forecast_format(df: pl.DataFrame):
             "date",
             "time",
             "energy",
+            "wave_period",
+            "wind_direction",
             "wind_speed",
             "tide_percentage",
             "nearest_tide",
@@ -905,8 +902,6 @@ def final_forecast_format(df: pl.DataFrame):
             "wind_direction_predominant",
             "wave_direction_predominant",
             "wave_height",
-            "wave_period",
-            "wind_direction",
             "wave_direction",
             "wind_direction_degrees",
             "wave_direction_degrees",
