@@ -1,5 +1,5 @@
 import polars as pl
-from utils import generate_spot_names, generate_energy
+from utils import generate_spot_name, calculate_energy
 
 
 def test_separate_spots():
@@ -17,9 +17,23 @@ def test_separate_spots():
             "E",
             "NW",
             "SE",
-            "NE"
+            "NE",
         ],
-        "wind_direction": ["W", "S", "NW", "E", "N", "S", "E", "W", "NW", "E", "NW", "SE", "NNE"],
+        "wind_direction": [
+            "W",
+            "S",
+            "NW",
+            "E",
+            "N",
+            "S",
+            "E",
+            "W",
+            "NW",
+            "E",
+            "NW",
+            "SE",
+            "NNE",
+        ],
         "wave_direction": [
             "N",
             "N",
@@ -33,7 +47,7 @@ def test_separate_spots():
             "N",
             "NW",
             "NW",
-            "WNW"
+            "WNW",
         ],
         "wave_direction_predominant": [
             "N",
@@ -48,38 +62,127 @@ def test_separate_spots():
             "N",
             "NW",
             "NW",
-            "NW"
+            "NW",
         ],
         "wind_speed": [5, 11, 12, 10, 7, 7, 11, 17, 1, 1, 1, 20, 3],
         "wave_height": [1.5, 2.0, 2.5, 2.5, 2.5, 2.5, 2.0, 3, 1.5, 1.7, 2.2, 2.2, 2.1],
-        "wave_period": [8.0, 9.0, 10.0, 12.0, 13.0, 10.0, 10.0, 12.0, 9.0, 10.0, 13.0, 12.0, 11.0],
+        "wave_period": [
+            8.0,
+            9.0,
+            10.0,
+            12.0,
+            13.0,
+            10.0,
+            10.0,
+            12.0,
+            9.0,
+            10.0,
+            13.0,
+            12.0,
+            11.0,
+        ],
         "tide_percentage": [60, 60, 90, 10, 10, 80, 0, 60, 60, 10, 50, 10, 28],
     }
-    test_data["energy"] = generate_energy(
-        test_data["wave_height"], test_data["wave_period"]
+
+    assert (
+        generate_spot_name(
+            wind_direction_predominant="W",
+            wind_direction="W",
+            wave_direction_predominant="N",
+            wave_direction="N",
+            wind_speed=5,
+            wave_period=8,
+            wave_energy=calculate_energy(wave_height=1.5, wave_period=8),
+            tide_percentage=60,
+        )
+        == "Caleta Caballo"
     )
-    
-    print(test_data['energy'])
+    assert (
+        generate_spot_name(
+            wind_direction_predominant="S",
+            wind_direction="S",
+            wave_direction_predominant="N",
+            wave_direction="N",
+            wind_speed=11,
+            wave_period=9,
+            wave_energy=calculate_energy(wave_height=2.0, wave_period=9),
+            tide_percentage=60,
+        )
+    ) == "Famara"
 
-    spot_names = generate_spot_names(test_data)
+    assert (
+        generate_spot_name(
+            wind_direction_predominant="NW",
+            wind_direction="NW",
+            wave_direction_predominant="NW",
+            wave_direction="NW",
+            wind_speed=12,
+            wave_period=10,
+            wave_energy=calculate_energy(wave_height=2.5, wave_period=10),
+            tide_percentage=90,
+        )
+    ) == "Punta Mujeres"
 
-    assert spot_names[0] == "Caleta Caballo"
-    assert spot_names[1] == "Famara"
-    assert spot_names[2] == "Punta Mujeres"
-    assert spot_names[3] == "Papagayo-Tiburón (Fuerza oeste - vacía)"
-    assert spot_names[4] == "Papagayo-Tiburón (Fuerza oeste - vacía)"
-    assert spot_names[5] == "Famara"
-    assert spot_names[6] == "Papelillo"
-    assert spot_names[7] == "Caleta Caballo"
-    assert spot_names[8] == "Caleta Caballo"
-    assert spot_names[9] == "Papelillo"
-    assert spot_names[10] == "Punta Mujeres"
-    assert spot_names[11] == "Papelillo"
-    assert spot_names[12] == "Papagayo-Tiburón (Fuerza oeste - vacía)"
+    assert (
+        generate_spot_name(
+            wind_direction_predominant="E",
+            wind_direction="E",
+            wave_direction_predominant="WNW",
+            wave_direction="NW",
+            wind_speed=10,
+            wave_period=12,
+            wave_energy=calculate_energy(wave_height=2.5, wave_period=12),
+            tide_percentage=10,
+        )
+    ) == "Papagayo-Tiburón (Fuerza oeste - vacía)"
 
-    print("All test cases passed!")
+    assert (
+        generate_spot_name(
+            wind_direction_predominant="S",
+            wind_direction="S",
+            wave_direction_predominant="N",
+            wave_direction="N",
+            wind_speed=7,
+            wave_period=10,
+            wave_energy=calculate_energy(wave_height=2.5, wave_period=10),
+            tide_percentage=80,
+        )
+    ) == "San Juan - Cagao - El Muelle"
+    assert (
+        generate_spot_name(
+            wind_direction_predominant="E",
+            wind_direction="E",
+            wave_direction_predominant="NW",
+            wave_direction="NW",
+            wind_speed=17,
+            wave_period=12,
+            wave_energy=calculate_energy(wave_height=1, wave_period=12),
+            tide_percentage=10,
+        )
+        == "Papelillo"
+    )
 
-    # TODO hacer para empate
+    assert generate_spot_name(
+        wind_direction_predominant="NE",
+        wind_direction="NE",
+        wave_direction_predominant="N",
+        wave_direction="N",
+        wind_speed=20,
+        wave_period=13,
+        wave_energy=calculate_energy(wave_height=2.2, wave_period=13),
+        tide_percentage=10,
+        ) == "Barcarola"
+
+    assert generate_spot_name(
+        wind_direction_predominant="NE",
+        wind_direction="NE",
+        wave_direction_predominant="N",
+        wave_direction="N",
+        wind_speed=20,
+        wave_period=13,
+        wave_energy=calculate_energy(wave_height=2.2, wave_period=13),
+        tide_percentage=60,
+        ) == "Bastián"
 
 
 test_separate_spots()
