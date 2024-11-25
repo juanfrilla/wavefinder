@@ -38,6 +38,5 @@ Arreglar el fallo donde se borra el caché
 Eliminar codigo muerto
 POner para clasificar en vacia o llena
 Poner columna con dias que faltan 
-Desplegar los spots con st.expander
 poner tabla con el dia de hoy
 switchear tabla a tabla a surf forecast

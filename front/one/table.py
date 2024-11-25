@@ -218,12 +218,16 @@ def plot_forecast_as_table():
                 pl.col("spot_name") == spot_name
             )
 
-            st.subheader(f"Spot: {spot_name}")
-            forecast_df_dropped = group_df.drop("spot_name")
-            forecast_df_dropped = forecast_df_dropped.unique(subset=["datetime"]).drop(
-                "datetime"
-            )
-            st.dataframe(
-                forecast_df_dropped,
-                hide_index=True,
-            )
+            with st.expander(f"Spot: {spot_name}"):
+                forecast_df_dropped = group_df.drop("spot_name")
+                forecast_df_dropped = forecast_df_dropped.unique(
+                    subset=["datetime"]
+                ).drop("datetime")
+                
+                forecast_columns = forecast_df_dropped.columns
+                rotated_df = forecast_df_dropped.transpose(include_header=False)
+                s = pl.Series("column names", forecast_columns)
+                rotated_df.insert_column(0, s)
+                pl.Config.set_tbl_hide_column_names(True)
+
+                st.dataframe(rotated_df, use_container_width=True, hide_index=True)
