@@ -99,19 +99,26 @@ def plot_selected_wave_energy():
         1,
     )
 
-
-@st.cache_data(ttl="3600")
+@st.cache_data(persist=True)
 def load_windguru_forecast():
+    if 'last_scrape_time' in st.session_state and 'scraped_data' in st.session_state:
+        elapsed_time = time.time() - st.session_state.last_scrape_time
+        if elapsed_time < 3600:
+            return st.session_state.scraped_data
+    
     url = "https://www.windguru.cz/49328"
     tide_scraper = TidesScraper()
     tides = tide_scraper.tasks()
-    start_time = time.time()
+    
     windguru = Windguru()
     df = windguru.scrape(url, tides)
     df = final_forecast_format(df)
+    
     if "datetime" in df.columns:
         df = df.sort(by="datetime", descending=False)
-    print("--- %s seconds ---" % (time.time() - start_time))
+    
+    st.session_state.scraped_data = df
+    st.session_state.last_scrape_time = time.time()
 
     return df
 
