@@ -99,26 +99,16 @@ def plot_selected_wave_energy():
         1,
     )
 
-@st.cache_data(persist=True)
+
+@st.cache_data(ttl=3600)
 def load_windguru_forecast():
-    if 'last_scrape_time' in st.session_state and 'scraped_data' in st.session_state:
-        elapsed_time = time.time() - st.session_state.last_scrape_time
-        if elapsed_time < 3600:
-            return st.session_state.scraped_data
-    
     url = "https://www.windguru.cz/49328"
     tide_scraper = TidesScraper()
     tides = tide_scraper.tasks()
-    
+
     windguru = Windguru()
     df = windguru.scrape(url, tides)
     df = final_forecast_format(df)
-    
-    if "datetime" in df.columns:
-        df = df.sort(by="datetime", descending=False)
-    
-    st.session_state.scraped_data = df
-    st.session_state.last_scrape_time = time.time()
 
     return df
 
@@ -227,14 +217,15 @@ def plot_forecast_as_table():
 
             with st.expander(f"Spot: {spot_name}"):
                 forecast_df_dropped = group_df.drop("spot_name")
-                forecast_df_dropped = forecast_df_dropped.unique(
-                    subset=["datetime"]
-                ).drop("datetime")
-                
-                forecast_columns = forecast_df_dropped.columns
-                rotated_df = forecast_df_dropped.transpose(include_header=False)
+                forecast_df_dropped.sort("datetime", descending=False)
+
+                forecast_to_plot = forecast_df_dropped.drop("datetime")
+
+                forecast_columns = [
+                    column.upper() for column in forecast_to_plot.columns
+                ]
+                rotated_df = forecast_to_plot.transpose(include_header=False)
                 s = pl.Series("column names", forecast_columns)
                 rotated_df.insert_column(0, s)
-                pl.Config.set_tbl_hide_column_names(True)
 
                 st.dataframe(rotated_df, use_container_width=True, hide_index=True)
