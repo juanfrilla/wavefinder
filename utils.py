@@ -132,7 +132,7 @@ def papagayo_low_wind_conditions(
             (wave_direction_predominant in papagayo_wave_directions)
             | (wave_direction in papagayo_wave_directions)
         )
-        & (wave_energy >= 1000)
+        & (wave_energy >= 900)
         & (tide_percentage <= 50)
     ):
         return True
