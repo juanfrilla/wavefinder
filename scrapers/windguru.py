@@ -97,6 +97,10 @@ class Windguru(object):
         tablebody = table.find("tbody")
         rows = tablebody.find_all("tr")
 
+        if len(rows) == 0:
+            print(soup)
+            raise Exception("No se encontro la tabla")
+
         for row in rows:
             cells = row.find_all("td")
             id = row["id"]
