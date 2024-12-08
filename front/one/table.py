@@ -12,6 +12,7 @@ from urls.windguru import WINDGURU_URLS
 DEFAULT_MIN_WAVE_PERIOD = 0
 DEFAULT_WAVE_HEIGHT = 0.0
 DEFAULT_MIN_WAVE_ENERGY = 100
+RETRIES = 100
 
 
 def get_list_of_spots_sorted_by_param(param, grouped_data):
@@ -119,15 +120,20 @@ def custom_sort_key(item):
 
 
 def plot_forecast_as_table():
+    retries = 0
     st.set_page_config(layout="wide")
 
     st.title("LANZAROTE (WINDGURU)")
-    while True:
+    while retries <= RETRIES:
         initial_forecast = load_windguru_forecast()
         if not initial_forecast.is_empty():
             break
         else:
+            retries += 1
             print("El forecast está vacío")
+    if retries > RETRIES:
+        st.error("No se pudo obtener el forecast")
+
     st.session_state.forecast_df = initial_forecast
     scraped_datetime_list = list(
         set(st.session_state.forecast_df["datetime"].to_list())
@@ -222,7 +228,7 @@ def plot_forecast_as_table():
                 forecast_to_plot = forecast_df_dropped.drop("datetime")
 
                 forecast_columns = [
-                    column.upper() for column in forecast_to_plot.columns
+                    f"**{column.upper()}**" for column in forecast_to_plot.columns
                 ]
                 rotated_df = forecast_to_plot.transpose(include_header=False)
                 s = pl.Series("column names", forecast_columns)
