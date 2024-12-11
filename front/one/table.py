@@ -130,6 +130,11 @@ def plot_forecast_as_table():
             break
         else:
             retries += 1
+            windguru_scraper = Windguru()
+            response = windguru_scraper.windguru_request()
+            if response.status_code != 200:
+                print(response.status_code)
+                print(response.text)
             print("El forecast está vacío")
     if retries > RETRIES:
         st.error("No se pudo obtener el forecast")
