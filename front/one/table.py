@@ -1,13 +1,11 @@
 import streamlit as st
-import time
 from utils import final_forecast_format, construct_date_selection_list
-from multi import multithread
 from scrapers.windguru import Windguru
 from scrapers.tides import TidesScraper
 import altair as alt
 import polars as pl
 from datetime import datetime, timedelta
-from urls.windguru import WINDGURU_URLS
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 DEFAULT_MIN_WAVE_PERIOD = 0
 DEFAULT_WAVE_HEIGHT = 0.0
@@ -29,16 +27,16 @@ def plot_graph(variable):
     st.header(f"{variable} per day", divider="rainbow")
     data = st.session_state.forecast_df
     chart = (
-        alt.Chart(data)
+        alt.Chart(data.to_pandas())
         .mark_line(strokeWidth=3, point=True)
         .encode(
             x="datetime:T",
             y=alt.Y(f"{variable}:Q", impute=alt.ImputeParams(value=None)),
             color="spot_name:N",
-            detail="date_dt:T",
+            detail="date:T",
             tooltip=[
-                alt.Tooltip("date_dt:T", format="%d/%m/%Y", title="Date"),
-                alt.Tooltip("time_cor:N", title="Time"),
+                alt.Tooltip("date:T", format="%d/%m/%Y", title="Date"),
+                alt.Tooltip("time_graph:N", title="Time"),
                 "energy:Q",
                 "spot_name:N",
                 "wave_height:Q",
@@ -103,12 +101,11 @@ def plot_selected_wave_energy():
 
 @st.cache_data(ttl=3600)
 def load_windguru_forecast():
-    url = "https://www.windguru.cz/49328"
     tide_scraper = TidesScraper()
     tides = tide_scraper.tasks()
-
+    id_spot = "49328"
     windguru = Windguru()
-    df = windguru.scrape(url, tides)
+    df = windguru.scrape_with_request(id_spot, tides)
     df = final_forecast_format(df)
 
     return df
@@ -198,26 +195,11 @@ def plot_forecast_as_table():
     )
 
     st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
-    date = st.session_state.forecast_df["datetime"].dt.date().to_list()
-    time = [
-        element.replace(":", r"\:")
-        for element in st.session_state.forecast_df["time"].to_list()
-    ]
-    st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
-        pl.Series(name="date_dt", values=date)
-    )
-
-    st.session_state.forecast_df = st.session_state.forecast_df.with_columns(
-        pl.Series(name="time_cor", values=time)
-    )
     plot_graph("energy")
     grouped_data = st.session_state.forecast_df.group_by("spot_name").agg(
         pl.col("datetime").min().alias("datetime")
     )
-    if "datetime" in grouped_data.columns:
-        grouped_data = grouped_data.sort("datetime", descending=False)
-    else:
-        st.warning("'datetime' column not found, skipping sort.")
+    grouped_data = grouped_data.sort("datetime", descending=False)
 
     with st.container():
         for i in range(len(grouped_data)):
@@ -227,16 +209,47 @@ def plot_forecast_as_table():
             )
 
             with st.expander(f"Spot: {spot_name}"):
-                forecast_df_dropped = group_df.drop("spot_name")
+                forecast_df_dropped = (
+                    group_df.drop("spot_name")
+                    .drop("date")
+                    .drop("time")
+                    .drop("time_graph")
+                )
                 forecast_df_dropped.sort("datetime", descending=False)
 
                 forecast_to_plot = forecast_df_dropped.drop("datetime")
 
                 forecast_columns = [
-                    f"**{column.upper()}**" for column in forecast_to_plot.columns
+                    column.upper() for column in forecast_to_plot.columns
                 ]
                 rotated_df = forecast_to_plot.transpose(include_header=False)
                 s = pl.Series("column names", forecast_columns)
                 rotated_df.insert_column(0, s)
 
-                st.dataframe(rotated_df, use_container_width=True, hide_index=True)
+                rotated_df_pd = rotated_df.to_pandas()
+
+                gb = GridOptionsBuilder.from_dataframe(rotated_df_pd)
+                gb.configure_default_column(
+                    wrapText=True, autoHeight=True, editable=False
+                )
+                gb.configure_grid_options(
+                    domLayout="normal",
+                )
+                gb.configure_column(
+                    "column names", pinned="left", cellStyle={"fontWeight": "bold"}
+                )
+
+                grid_options = gb.build()
+
+                column_defs = grid_options["columnDefs"]
+
+                for col in column_defs:
+                    col["headerName"] = ""
+
+                AgGrid(
+                    rotated_df_pd,
+                    gridOptions=grid_options,
+                    fit_columns_on_grid_load=True,
+                    theme="alpine",
+                    enable_enterprise_modules=False,
+                )

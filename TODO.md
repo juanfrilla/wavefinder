@@ -40,3 +40,5 @@ POner para clasificar en vacia o llena
 Poner columna con dias que faltan 
 poner tabla con el dia de hoy
 switchear tabla a tabla a surf forecast
+Refactorizar, tipar
+# TODO posiblemente hacer una clase para calcular los spot_names
