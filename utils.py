@@ -777,10 +777,13 @@ def create_direction_predominant_column(directions: list) -> list:
 def final_forecast_format(df: pl.DataFrame):
     if not df.is_empty():
         df.sort(by=["date", "time", "spot_name"], descending=[True, True, True])
-        datetimes = df["time"]
+        times = df["time"]
+        df = df.with_columns(pl.col("datetime").dt.convert_time_zone("UTC"))
+        datetimes = df["datetime"]
         _6_AM = time(hour=6, minute=0, second=0, microsecond=0)
         _19_PM = time(hour=19, minute=0, second=0, microsecond=0)
-        mask = (datetimes >= _6_AM) & (datetimes <= _19_PM)
+        now = datetime.now(timezone.utc)
+        mask = (times >= _6_AM) & (times <= _19_PM) & (datetimes >= now)
         df = df.filter(mask)
 
         common_columns = [
@@ -832,6 +835,7 @@ def construct_date_selection_list(
 
 def datestr_to_datetime(dtstr, format) -> datetime:
     return datetime.strptime(dtstr, format)
+
 
 def generate_tides(tide_data: list, forecast_datetimes: list) -> list:
     tide_status_list = []
