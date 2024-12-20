@@ -71,7 +71,7 @@ def punta_mujeres_low_wind_conditions(
             (wave_direction_predominant in punta_mujeres_wave_directions)
             | (wave_direction in punta_mujeres_wave_directions)
         )
-        & (wave_energy >= 400)
+        & (wave_energy >= 1000)
         & (wave_direction not in unwanted_wave_directions)
         & (wave_direction_predominant not in unwanted_wave_directions)
     ):
@@ -194,7 +194,7 @@ def papelillo_low_wind_conditions(
             | (wave_direction in papelillo_wave_directions)
         )
         & (tide_percentage <= 50)
-        & (wave_energy >= 100 and wave_energy <= 1000)
+        & (wave_energy >= 100)
     ):
         return True
     return False
