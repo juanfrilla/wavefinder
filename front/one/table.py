@@ -215,10 +215,11 @@ def plot_forecast_as_table():
                     .drop("time")
                     .drop("time_graph")
                 )
+                forecast_df_dropped.sort("datetime", descending=False)
+                
                 date_friendly = forecast_df_dropped["date_friendly"].to_list()
                 time_friendly = forecast_df_dropped["time_friendly"].to_list()
-                forecast_df_dropped.sort("datetime", descending=False)
-
+                
                 forecast_to_plot = forecast_df_dropped.drop("datetime")
 
                 forecast_columns = [
