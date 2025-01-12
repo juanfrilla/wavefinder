@@ -81,3 +81,9 @@ streamlit-aggrid = "^1.0.5"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.include]
+packages = [
+    { include = "wavefinder" }
+]
