@@ -216,7 +216,10 @@ def plot_forecast_as_table():
                     .drop("time_graph")
                 )
                 forecast_df_dropped.sort("datetime", descending=False)
-
+                
+                date_friendly = forecast_df_dropped["date_friendly"].to_list()
+                time_friendly = forecast_df_dropped["time_friendly"].to_list()
+                
                 forecast_to_plot = forecast_df_dropped.drop("datetime")
 
                 forecast_columns = [
@@ -243,8 +246,10 @@ def plot_forecast_as_table():
 
                 column_defs = grid_options["columnDefs"]
 
-                for col in column_defs:
-                    col["headerName"] = ""
+                for col, date, time in zip(
+                    column_defs[1:], date_friendly, time_friendly
+                ):
+                    col["headerName"] = f"{time} {date}"
 
                 AgGrid(
                     rotated_df_pd,
