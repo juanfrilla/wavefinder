@@ -1,9 +1,7 @@
-import json, math
-from bs4 import BeautifulSoup
-from requests import Response
+import math
 import polars as pl
 from datetime import datetime, date, time, timedelta, timezone
-from typing import Dict, List
+from typing import Dict
 
 MONTH_MAPPING = {
     "Ene": "01",
@@ -119,7 +117,46 @@ def papagayo_low_wind_conditions(
     return False
 
 
-def west_swell_high_tide_conditions(
+def tiburon_conditions(
+    wind_direction_predominant: str,
+    wave_direction_predominant: str,
+    wind_direction: str,
+    wave_direction: str,
+    wave_energy: int,
+    tide_percentage: float,
+):
+    if tiburon_favorable_wind(wind_direction_predominant, wind_direction) & (
+        tiburon_low_wind_conditions(
+            wave_direction_predominant, wave_direction, wave_energy, tide_percentage
+        )
+    ):
+        return True
+    return False
+
+
+def tiburon_low_wind_conditions(
+    wave_direction_predominant: str,
+    wave_direction: str,
+    wave_energy: int,
+    tide_percentage: float,
+):
+    papagayo_wave_directions = [
+        "W",
+        "WNW",
+    ]
+
+    if (
+        (
+            (wave_direction_predominant in papagayo_wave_directions)
+            | (wave_direction in papagayo_wave_directions)
+        )
+        & (wave_energy >= 1500)
+        & (tide_percentage >= 50)
+    ):
+        return True
+    return False
+
+def bajorisco_conditions(
     wind_direction_predominant: str,
     wave_direction_predominant: str,
     wind_direction: str,
@@ -128,7 +165,7 @@ def west_swell_high_tide_conditions(
     tide_percentage: float,
 ):
 
-    if papagayo_favorable_wind(
+    if bajorisco_favorable_wind(
         wind_direction_predominant, wind_direction
     ) & west_swell_high_tide_low_wind_conditions(
         wave_direction_predominant, wave_direction, wave_energy, tide_percentage
@@ -155,6 +192,29 @@ def west_swell_high_tide_low_wind_conditions(
         )
         & (wave_energy >= 900)
         & (tide_percentage > 50)
+    ):
+        return True
+    return False
+
+
+def west_swell_low_tide_low_wind_conditions(
+    wave_direction_predominant: str,
+    wave_direction: str,
+    wave_energy: int,
+    tide_percentage: float,
+):
+    papagayo_wave_directions = [
+        "W",
+        "WNW",
+    ]
+
+    if (
+        (
+            (wave_direction_predominant in papagayo_wave_directions)
+            | (wave_direction in papagayo_wave_directions)
+        )
+        & (wave_energy >= 900)
+        & (tide_percentage < 50)
     ):
         return True
     return False
@@ -441,6 +501,20 @@ def papagayo_favorable_wind(wind_direction_predominant, wind_direction):
     return east_favorable_wind(wind_direction_predominant, wind_direction)
 
 
+def tiburon_favorable_wind(wind_direction_predominant, wind_direction):
+    tiburon_wind_directions = ["W", "NW"]
+    return is_favorable_wind(
+        wind_direction_predominant, wind_direction, tiburon_wind_directions
+    )
+
+
+def bajorisco_favorable_wind(wind_direction_predominant, wind_direction):
+    risco_wind_directions = ["S", "SE", "E"]
+    return is_favorable_wind(
+        wind_direction_predominant, wind_direction, risco_wind_directions
+    )
+
+
 def papelillo_favorable_high_wind(wind_direction_predominant, wind_direction):
     east_wind_directions = ["E", "SE"]
     return is_favorable_wind(
@@ -506,7 +580,23 @@ def get_low_wind_spot(
         wave_energy,
         tide_percentage,
     ) and papagayo_favorable_wind(wind_direction_predominant, wind_direction):
-        return "Papagayo-Tiburón (Fuerza oeste - vacía)"
+        return "Papagayo - Montaña Amarilla"
+    elif tiburon_low_wind_conditions(
+        wave_direction_predominant,
+        wave_direction,
+        wave_energy,
+        tide_percentage,
+    ) and tiburon_favorable_wind(wind_direction_predominant, wind_direction):
+        return "Tiburón"
+
+    elif west_swell_high_tide_low_wind_conditions(
+        wave_direction_predominant,
+        wave_direction,
+        wave_energy,
+        tide_percentage,
+    ) and bajorisco_favorable_wind(wind_direction_predominant, wind_direction):
+        return "Bajo el Risco"
+
     elif papelillo_low_wind_conditions(
         wave_direction_predominant, wave_direction, tide_percentage, wave_energy
     ) and papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
@@ -529,20 +619,20 @@ def get_low_wind_spot(
         wave_direction_predominant, wave_direction, wave_energy
     ) and caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction):
         return "Caleta Caballo"
+    elif west_swell_low_tide_low_wind_conditions(
+        wave_direction_predominant,
+        wave_direction,
+        wave_energy,
+        tide_percentage,
+    ):
+        return "Papagayo, Montaña Amarilla"
     elif west_swell_high_tide_low_wind_conditions(
         wave_direction_predominant,
         wave_direction,
         wave_energy,
         tide_percentage,
     ):
-        return "Fuerza oeste - llena"
-    elif papagayo_low_wind_conditions(
-        wave_direction_predominant,
-        wave_direction,
-        wave_energy,
-        tide_percentage,
-    ):
-        return "Papagayo-Tiburón (Fuerza oeste - vacía)"
+        return "Bajo el Risco"
     elif punta_mujeres_low_wind_conditions(
         wave_direction_predominant,
         wave_direction,
@@ -643,8 +733,9 @@ def generate_spot_name(
         wave_energy=wave_energy,
         tide_percentage=tide_percentage,
     ):
-        return "Papagayo-Tiburón (Fuerza oeste - vacía)"
-    elif west_swell_high_tide_conditions(
+        return "Papagayo - Montaña Amarilla"
+
+    elif tiburon_conditions(
         wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,
         wind_direction=wind_direction,
@@ -652,7 +743,17 @@ def generate_spot_name(
         wave_energy=wave_energy,
         tide_percentage=tide_percentage,
     ):
-        return "Fuerza oeste - llena"
+        return "Tiburón"
+
+    elif bajorisco_conditions(
+        wind_direction_predominant=wind_direction_predominant,
+        wave_direction_predominant=wave_direction_predominant,
+        wind_direction=wind_direction,
+        wave_direction=wave_direction,
+        wave_energy=wave_energy,
+        tide_percentage=tide_percentage,
+    ):
+        return "Bajo el Risco"
     elif papelillo_conditions(
         wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,
