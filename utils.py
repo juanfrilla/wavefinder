@@ -625,7 +625,7 @@ def get_low_wind_spot(
         wave_energy,
         tide_percentage,
     ):
-        return "Papagayo, Montaña Amarilla"
+        return "Papagayo - Montaña Amarilla"
     elif west_swell_high_tide_low_wind_conditions(
         wave_direction_predominant,
         wave_direction,
