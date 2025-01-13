@@ -573,13 +573,6 @@ def get_low_wind_spot(
         wave_energy,
     ) and famara_favorable_wind(wind_direction_predominant, wind_direction):
         return "Famara"
-    elif papagayo_low_wind_conditions(
-        wave_direction_predominant,
-        wave_direction,
-        wave_energy,
-        tide_percentage,
-    ) and papagayo_favorable_wind(wind_direction_predominant, wind_direction):
-        return "Papagayo - Montaña Amarilla"
     elif tiburon_low_wind_conditions(
         wave_direction_predominant,
         wave_direction,
@@ -587,7 +580,13 @@ def get_low_wind_spot(
         tide_percentage,
     ) and tiburon_favorable_wind(wind_direction_predominant, wind_direction):
         return "Tiburón"
-
+    elif papagayo_low_wind_conditions(
+        wave_direction_predominant,
+        wave_direction,
+        wave_energy,
+        tide_percentage,
+    ) and papagayo_favorable_wind(wind_direction_predominant, wind_direction):
+        return "Papagayo - Montaña Amarilla"
     elif west_swell_high_tide_low_wind_conditions(
         wave_direction_predominant,
         wave_direction,
@@ -595,7 +594,6 @@ def get_low_wind_spot(
         tide_percentage,
     ) and bajorisco_favorable_wind(wind_direction_predominant, wind_direction):
         return "Bajo el Risco"
-
     elif papelillo_low_wind_conditions(
         wave_direction_predominant, wave_direction, tide_percentage, wave_energy
     ) and papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
