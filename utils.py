@@ -146,14 +146,12 @@ def tiburon_low_wind_conditions(
     ]
 
     if (
-        (
-            (wave_direction_predominant in papagayo_wave_directions)
-            | (wave_direction in papagayo_wave_directions)
-        )
-        & (wave_energy >= 1500)
-    ):
+        (wave_direction_predominant in papagayo_wave_directions)
+        | (wave_direction in papagayo_wave_directions)
+    ) & (wave_energy >= 1500):
         return True
     return False
+
 
 def bajorisco_conditions(
     wind_direction_predominant: str,
@@ -501,7 +499,7 @@ def papagayo_favorable_wind(wind_direction_predominant, wind_direction):
 
 
 def tiburon_favorable_wind(wind_direction_predominant, wind_direction):
-    tiburon_wind_directions = ["W", "NW"]
+    tiburon_wind_directions = ["W", "NW", "SW"]
     return is_favorable_wind(
         wind_direction_predominant, wind_direction, tiburon_wind_directions
     )
@@ -722,16 +720,6 @@ def generate_spot_name(
         wave_energy=wave_energy,
     ):
         return "Punta Mujeres"
-    elif papagayo_conditions(
-        wind_direction_predominant=wind_direction_predominant,
-        wave_direction_predominant=wave_direction_predominant,
-        wind_direction=wind_direction,
-        wave_direction=wave_direction,
-        wave_energy=wave_energy,
-        tide_percentage=tide_percentage,
-    ):
-        return "Papagayo - Montaña Amarilla"
-
     elif tiburon_conditions(
         wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,
@@ -741,6 +729,15 @@ def generate_spot_name(
         tide_percentage=tide_percentage,
     ):
         return "Tiburón"
+    elif papagayo_conditions(
+        wind_direction_predominant=wind_direction_predominant,
+        wave_direction_predominant=wave_direction_predominant,
+        wind_direction=wind_direction,
+        wave_direction=wave_direction,
+        wave_energy=wave_energy,
+        tide_percentage=tide_percentage,
+    ):
+        return "Papagayo - Montaña Amarilla"
 
     elif bajorisco_conditions(
         wind_direction_predominant=wind_direction_predominant,
