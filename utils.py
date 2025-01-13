@@ -151,7 +151,6 @@ def tiburon_low_wind_conditions(
             | (wave_direction in papagayo_wave_directions)
         )
         & (wave_energy >= 1500)
-        & (tide_percentage >= 50)
     ):
         return True
     return False
