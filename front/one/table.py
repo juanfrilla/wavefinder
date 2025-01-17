@@ -26,13 +26,19 @@ def get_list_of_spots_sorted_by_param(param, grouped_data):
 def plot_graph(variable):
     st.header(f"{variable} per day", divider="rainbow")
     data = st.session_state.forecast_df
+    num_categories = data["spot_name"].n_unique()
     chart = (
         alt.Chart(data.to_pandas())
         .mark_line(strokeWidth=3, point=True)
         .encode(
             x="datetime:T",
             y=alt.Y(f"{variable}:Q", impute=alt.ImputeParams(value=None)),
-            color="spot_name:N",
+            color=alt.Color(
+                "spot_name:N",
+                scale=alt.Scale(
+                    scheme="category20" if num_categories <= 20 else "tableau10"
+                ),
+            ),
             detail="date:T",
             tooltip=[
                 alt.Tooltip("date:T", format="%d/%m/%Y", title="Date"),
@@ -44,6 +50,7 @@ def plot_graph(variable):
                 "wind_direction:N",
                 "wave_direction:N",
                 "wave_period:Q",
+                "tide_percentage:Q",
             ],
         )
         .properties(width=600, height=400)
@@ -216,10 +223,10 @@ def plot_forecast_as_table():
                     .drop("time_graph")
                 )
                 forecast_df_dropped.sort("datetime", descending=False)
-                
+
                 date_friendly = forecast_df_dropped["date_friendly"].to_list()
                 time_friendly = forecast_df_dropped["time_friendly"].to_list()
-                
+
                 forecast_to_plot = forecast_df_dropped.drop("datetime")
 
                 forecast_columns = [

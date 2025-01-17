@@ -48,13 +48,11 @@ def punta_mujeres_conditions(
     wave_direction: str,
     wave_energy: int,
 ):
-    if punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction) & (
+    return punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction) & (
         punta_mujeres_low_wind_conditions(
             wave_direction_predominant, wave_direction, wave_energy
         )
-    ):
-        return True
-    return False
+    )
 
 
 def punta_mujeres_low_wind_conditions(
@@ -64,7 +62,7 @@ def punta_mujeres_low_wind_conditions(
 ):
     punta_mujeres_wave_directions = ["N", "NE", "E", "NNW", "NNE", "NW"]
     unwanted_wave_directions = ["WNW"]
-    if (
+    return (
         (
             (wave_direction_predominant in punta_mujeres_wave_directions)
             | (wave_direction in punta_mujeres_wave_directions)
@@ -72,9 +70,7 @@ def punta_mujeres_low_wind_conditions(
         & (wave_energy >= 1000)
         & (wave_direction not in unwanted_wave_directions)
         & (wave_direction_predominant not in unwanted_wave_directions)
-    ):
-        return True
-    return False
+    )
 
 
 def papagayo_conditions(
@@ -85,13 +81,11 @@ def papagayo_conditions(
     wave_energy: int,
     tide_percentage: float,
 ):
-    if papagayo_favorable_wind(wind_direction_predominant, wind_direction) & (
+    return papagayo_favorable_wind(wind_direction_predominant, wind_direction) & (
         papagayo_low_wind_conditions(
             wave_direction_predominant, wave_direction, wave_energy, tide_percentage
         )
-    ):
-        return True
-    return False
+    )
 
 
 def papagayo_low_wind_conditions(
@@ -105,16 +99,14 @@ def papagayo_low_wind_conditions(
         "WNW",
     ]
 
-    if (
+    return (
         (
             (wave_direction_predominant in papagayo_wave_directions)
             | (wave_direction in papagayo_wave_directions)
         )
         & (wave_energy >= 1200)
         & (tide_percentage <= 50)
-    ):
-        return True
-    return False
+    )
 
 
 def tiburon_conditions(
@@ -123,34 +115,28 @@ def tiburon_conditions(
     wind_direction: str,
     wave_direction: str,
     wave_energy: int,
-    tide_percentage: float,
 ):
-    if tiburon_favorable_wind(wind_direction_predominant, wind_direction) & (
+    return tiburon_favorable_wind(wind_direction_predominant, wind_direction) & (
         tiburon_low_wind_conditions(
-            wave_direction_predominant, wave_direction, wave_energy, tide_percentage
+            wave_direction_predominant, wave_direction, wave_energy
         )
-    ):
-        return True
-    return False
+    )
 
 
 def tiburon_low_wind_conditions(
     wave_direction_predominant: str,
     wave_direction: str,
     wave_energy: int,
-    tide_percentage: float,
 ):
     papagayo_wave_directions = [
         "W",
         "WNW",
     ]
 
-    if (
+    return (
         (wave_direction_predominant in papagayo_wave_directions)
         | (wave_direction in papagayo_wave_directions)
-    ) & (wave_energy >= 1500):
-        return True
-    return False
+    ) & (wave_energy >= 1500)
 
 
 def bajorisco_conditions(
@@ -162,13 +148,11 @@ def bajorisco_conditions(
     tide_percentage: float,
 ):
 
-    if bajorisco_favorable_wind(
+    return bajorisco_favorable_wind(
         wind_direction_predominant, wind_direction
     ) & west_swell_high_tide_low_wind_conditions(
         wave_direction_predominant, wave_direction, wave_energy, tide_percentage
-    ):
-        return True
-    return False
+    )
 
 
 def west_swell_high_tide_low_wind_conditions(
@@ -182,16 +166,14 @@ def west_swell_high_tide_low_wind_conditions(
         "WNW",
     ]
 
-    if (
+    return (
         (
             (wave_direction_predominant in papagayo_wave_directions)
             | (wave_direction in papagayo_wave_directions)
         )
         & (wave_energy >= 900)
         & (tide_percentage > 50)
-    ):
-        return True
-    return False
+    )
 
 
 def west_swell_low_tide_low_wind_conditions(
@@ -205,39 +187,34 @@ def west_swell_low_tide_low_wind_conditions(
         "WNW",
     ]
 
-    if (
+    return (
         (
             (wave_direction_predominant in papagayo_wave_directions)
             | (wave_direction in papagayo_wave_directions)
         )
         & (wave_energy >= 900)
         & (tide_percentage < 50)
-    ):
-        return True
-    return False
+    )
 
 
 def papelillo_conditions(
-    wind_direction_predominant: str,
     wave_direction_predominant: str,
-    wind_direction: str,
     wave_direction: str,
-    tide_percentage: float,
     wave_energy: int,
+    wind_direction_predominant: str,
+    wind_direction: str,
 ):
-    if papelillo_favorable_high_wind(
-        wind_direction_predominant, wind_direction
-    ) & papelillo_low_wind_conditions(
-        wave_direction_predominant, wave_direction, tide_percentage, wave_energy
-    ):
-        return True
-    return False
+    return papelillo_low_wind_conditions(
+        wave_direction_predominant, wave_direction, wave_energy
+    ) and papelillo_favorable_low_wind(
+        wind_direction_predominant=wind_direction_predominant,
+        wind_direction=wind_direction,
+    )
 
 
 def papelillo_low_wind_conditions(
     wave_direction_predominant: str,
     wave_direction: str,
-    tide_percentage: float,
     wave_energy: int,
 ):
     papelillo_wave_directions = [
@@ -245,16 +222,10 @@ def papelillo_low_wind_conditions(
         "NW",
         "NE",
     ]
-    if (
-        (
-            (wave_direction_predominant in papelillo_wave_directions)
-            | (wave_direction in papelillo_wave_directions)
-        )
-        & (tide_percentage <= 50)
-        & (wave_energy >= 100)
-    ):
-        return True
-    return False
+    return (
+        (wave_direction_predominant in papelillo_wave_directions)
+        | (wave_direction in papelillo_wave_directions)
+    ) & (wave_energy >= 100)
 
 
 def caleta_caballo_low_wind_conditions(
@@ -264,16 +235,14 @@ def caleta_caballo_low_wind_conditions(
 ):
     caleta_caballo_wave_directions = ["N", "NW", "NE"]
     unwanted_wave_directions = ["WNW"]
-    if (
+    return (
         (
             (wave_direction_predominant in caleta_caballo_wave_directions)
             | (wave_direction in caleta_caballo_wave_directions)
         )
         & (wave_direction not in unwanted_wave_directions)
         & (wave_energy >= 100 and wave_energy <= 1000)
-    ):
-        return True
-    return False
+    )
 
 
 def caleta_caballo_conditions(
@@ -284,13 +253,11 @@ def caleta_caballo_conditions(
     wave_energy: int,
 ):
 
-    if caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction) & (
+    return caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction) & (
         caleta_caballo_low_wind_conditions(
             wave_direction_predominant, wave_direction, wave_energy
         )
-    ):
-        return True
-    return False
+    )
 
 
 def san_juan_low_wind_conditions(
@@ -300,16 +267,14 @@ def san_juan_low_wind_conditions(
 ):
     san_juan_wave_directions = ["N", "NW", "NE"]
     unwanted_wave_directions = ["WNW"]
-    if (
+    return (
         (
             (wave_direction_predominant in san_juan_wave_directions)
             | (wave_direction in san_juan_wave_directions)
         )
         & (wave_direction not in unwanted_wave_directions)
         & (wave_energy > 1000)
-    ):
-        return True
-    return False
+    )
 
 
 def san_juan_conditions(
@@ -320,13 +285,11 @@ def san_juan_conditions(
     wave_energy: int,
 ):
 
-    if san_juan_favorable_wind(wind_direction_predominant, wind_direction) & (
+    return san_juan_favorable_wind(wind_direction_predominant, wind_direction) & (
         san_juan_low_wind_conditions(
             wave_direction_predominant, wave_direction, wave_energy
         )
-    ):
-        return True
-    return False
+    )
 
 
 def bastian_conditions(
@@ -340,7 +303,7 @@ def bastian_conditions(
     bastian_wind_directions = ["NE", "N"]
     bastian_wave_directions = ["N", "NW", "NE", "E", "S"]
 
-    if (
+    return (
         (
             (
                 (wind_direction_predominant in bastian_wind_directions)
@@ -353,9 +316,7 @@ def bastian_conditions(
         )
         & (wind_speed >= 19.0)
         & (tide_percentage >= 50)
-    ):
-        return True
-    return False
+    )
 
 
 def barcarola_conditions(
@@ -371,7 +332,7 @@ def barcarola_conditions(
     barcarola_wind_directions = ["NE", "N"]
     barcarola_wave_directions = ["N", "NW", "NE", "E", "S"]
 
-    if (
+    return (
         (
             (
                 (wind_direction_predominant in barcarola_wind_directions)
@@ -385,9 +346,7 @@ def barcarola_conditions(
         & (wind_speed >= 19.0)
         & (wave_period >= 10)
         & (tide_percentage <= 50)
-    ):
-        return True
-    return False
+    )
 
 
 def lasanta_conditions(
@@ -398,13 +357,11 @@ def lasanta_conditions(
     wave_energy: int,
 ):
 
-    if lasanta_favorable_wind(
+    return lasanta_favorable_wind(
         wind_direction_predominant, wind_direction
     ) & lasanta_low_wind_conditions(
         wave_direction_predominant, wave_direction, wave_energy
-    ):
-        return True
-    return False
+    )
 
 
 def lasanta_low_wind_conditions(
@@ -414,15 +371,13 @@ def lasanta_low_wind_conditions(
 ):
     lasanta_wave_directions = ["N", "NW", "NE"]
     unwanted_wave_directions = ["WNW"]
-    if (
+    return (
         (
             (wave_direction_predominant in lasanta_wave_directions)
             | (wave_direction in lasanta_wave_directions)
         )
         & (wave_direction not in unwanted_wave_directions)
-    ) & (wave_energy >= 100 and wave_energy <= 1000):
-        return True
-    return False
+    ) & (wave_energy >= 100 and wave_energy <= 1000)
 
 
 def famara_conditions(
@@ -432,13 +387,11 @@ def famara_conditions(
     wave_direction: str,
     wave_energy: int,
 ):
-    if famara_favorable_wind(wind_direction_predominant, wind_direction) & (
+    return famara_favorable_wind(wind_direction_predominant, wind_direction) & (
         famara_low_wind_conditions(
             wave_direction_predominant, wave_direction, wave_energy
         )
-    ):
-        return True
-    return False
+    )
 
 
 def famara_low_wind_conditions(
@@ -448,15 +401,13 @@ def famara_low_wind_conditions(
 ):
     famara_wave_directions = ["N", "NW", "NE"]
     unwanted_wave_directions = ["WNW"]
-    if (
+    return (
         (
             (wave_direction_predominant in famara_wave_directions)
             | (wave_direction in famara_wave_directions)
         )
         & (wave_direction not in unwanted_wave_directions)
-    ) & (wave_energy >= 100 and wave_energy <= 1000):
-        return True
-    return False
+    ) & (wave_energy >= 100 and wave_energy <= 1000)
 
 
 def big_waves_conditions(
@@ -464,16 +415,14 @@ def big_waves_conditions(
 ):
     big_wave_directions = ["N", "NE", "E"]
     unwanted_wave_directions = ["WNW"]
-    if (
+    return (
         (
             (wave_direction_predominant in big_wave_directions)
             | (wave_direction in big_wave_directions)
         )
         & (wave_direction not in unwanted_wave_directions)
         & (wave_height > 2.5)  # Si en 2.5 no hay nada, revisar en 3
-    ):
-        return True
-    return False
+    )
 
 
 def famara_favorable_wind(wind_direction_predominant, wind_direction):
@@ -495,7 +444,10 @@ def lasanta_favorable_wind(wind_direction_predominant, wind_direction):
 
 
 def papagayo_favorable_wind(wind_direction_predominant, wind_direction):
-    return east_favorable_wind(wind_direction_predominant, wind_direction)
+    east_wind_directions = ["E", "NE"]
+    return is_favorable_wind(
+        wind_direction_predominant, wind_direction, east_wind_directions
+    )
 
 
 def tiburon_favorable_wind(wind_direction_predominant, wind_direction):
@@ -512,15 +464,8 @@ def bajorisco_favorable_wind(wind_direction_predominant, wind_direction):
     )
 
 
-def papelillo_favorable_high_wind(wind_direction_predominant, wind_direction):
-    east_wind_directions = ["E", "SE"]
-    return is_favorable_wind(
-        wind_direction_predominant, wind_direction, east_wind_directions
-    )
-
-
 def papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
-    east_wind_directions = ["NE", "E", "SE"]
+    east_wind_directions = ["E", "SE"]
     return is_favorable_wind(
         wind_direction_predominant, wind_direction, east_wind_directions
     )
@@ -550,11 +495,9 @@ def caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction):
 def is_favorable_wind(
     wind_direction_predominant: str, wind_direction: str, target_wind_directions: str
 ):
-    if (wind_direction_predominant in target_wind_directions) | (
+    return (wind_direction_predominant in target_wind_directions) | (
         wind_direction in target_wind_directions
-    ):
-        return True
-    return False
+    )
 
 
 def get_low_wind_spot(
@@ -575,7 +518,6 @@ def get_low_wind_spot(
         wave_direction_predominant,
         wave_direction,
         wave_energy,
-        tide_percentage,
     ) and tiburon_favorable_wind(wind_direction_predominant, wind_direction):
         return "Tiburón"
     elif papagayo_low_wind_conditions(
@@ -593,7 +535,7 @@ def get_low_wind_spot(
     ) and bajorisco_favorable_wind(wind_direction_predominant, wind_direction):
         return "Bajo el Risco"
     elif papelillo_low_wind_conditions(
-        wave_direction_predominant, wave_direction, tide_percentage, wave_energy
+        wave_direction_predominant, wave_direction, wave_energy
     ) and papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
         return "Papelillo"
     elif lasanta_low_wind_conditions(
@@ -687,12 +629,6 @@ def generate_spot_name(
             tide_percentage=tide_percentage,
         )
         return spot
-    # elif big_waves_conditions(
-    #     wave_height=wh,
-    #     wave_direction=wave_direction,
-    #     wave_direction_predominant=wad_predominant,
-    # ):
-    #     return "Olas grandes > 2.5m, revisar costa de playa honda"
     elif barcarola_conditions(
         wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,
@@ -726,7 +662,6 @@ def generate_spot_name(
         wind_direction=wind_direction,
         wave_direction=wave_direction,
         wave_energy=wave_energy,
-        tide_percentage=tide_percentage,
     ):
         return "Tiburón"
     elif papagayo_conditions(
@@ -749,11 +684,10 @@ def generate_spot_name(
     ):
         return "Bajo el Risco"
     elif papelillo_conditions(
-        wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,
-        wind_direction=wind_direction,
+        wind_direction_predominant=wind_direction_predominant,
         wave_direction=wave_direction,
-        tide_percentage=tide_percentage,
+        wind_direction=wind_direction,
         wave_energy=wave_energy,
     ):
         return "Papelillo"
