@@ -506,6 +506,7 @@ def get_low_wind_spot(
     wave_direction_predominant,
     wave_direction,
     wave_energy,
+    tide_percentage,
 ):
     if famara_low_wind_conditions(
         wave_direction_predominant,
@@ -513,10 +514,48 @@ def get_low_wind_spot(
         wave_energy,
     ) and famara_favorable_wind(wind_direction_predominant, wind_direction):
         return "Famara"
+    elif tiburon_low_wind_conditions(
+        wave_direction_predominant,
+        wave_direction,
+        wave_energy,
+    ) and tiburon_favorable_wind(wind_direction_predominant, wind_direction):
+        return "Tiburón"
+    elif papagayo_low_wind_conditions(
+        wave_direction_predominant,
+        wave_direction,
+        wave_energy,
+        tide_percentage,
+    ) and papagayo_favorable_wind(wind_direction_predominant, wind_direction):
+        return "Papagayo - Montaña Amarilla"
+    elif west_swell_high_tide_low_wind_conditions(
+        wave_direction_predominant,
+        wave_direction,
+        wave_energy,
+        tide_percentage,
+    ) and bajorisco_favorable_wind(wind_direction_predominant, wind_direction):
+        return "Bajo el Risco"
+    elif papelillo_low_wind_conditions(
+        wave_direction_predominant, wave_direction, wave_energy
+    ) and papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
+        return "Papelillo"
+    elif lasanta_low_wind_conditions(
+        wave_direction_predominant,
+        wave_direction,
+        wave_energy,
+    ) and lasanta_favorable_wind(wind_direction_predominant, wind_direction):
+        return "La Santa"
     elif san_juan_low_wind_conditions(
         wave_direction_predominant, wave_direction, wave_energy
     ) and san_juan_favorable_wind(wind_direction_predominant, wind_direction):
         return "San Juan - Cagao - El Muelle"
+    elif punta_mujeres_low_wind_conditions(
+        wave_direction_predominant, wave_direction, wave_energy
+    ) and punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction):
+        return "Punta Mujeres"
+    elif caleta_caballo_low_wind_conditions(
+        wave_direction_predominant, wave_direction, wave_energy
+    ) and caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction):
+        return "Caleta Caballo"
     elif famara_low_wind_conditions(
         wave_direction_predominant,
         wave_direction,
@@ -554,6 +593,7 @@ def generate_spot_name(
             wave_direction_predominant=wave_direction_predominant,
             wave_direction=wave_direction,
             wave_energy=wave_energy,
+            tide_percentage=tide_percentage,
         )
         return spot
     elif barcarola_conditions(
