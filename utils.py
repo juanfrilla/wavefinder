@@ -302,6 +302,7 @@ def bastian_conditions(
 ):
     bastian_wind_directions = ["NE", "N"]
     bastian_wave_directions = ["N", "NW", "NE", "E", "S"]
+    unwanted_wave_directions = ["WNW"]
 
     return (
         (
@@ -313,6 +314,7 @@ def bastian_conditions(
                 (wave_direction_predominant in bastian_wave_directions)
                 | (wave_direction in bastian_wave_directions)
             )
+            & ((wave_direction not in unwanted_wave_directions))
         )
         & (wind_speed >= 19.0)
         & (tide_percentage >= 50)
@@ -331,6 +333,7 @@ def barcarola_conditions(
 
     barcarola_wind_directions = ["NE", "N"]
     barcarola_wave_directions = ["N", "NW", "NE", "E", "S"]
+    unwanted_wave_directions = ["WNW"]
 
     return (
         (
@@ -342,6 +345,7 @@ def barcarola_conditions(
                 (wave_direction_predominant in barcarola_wave_directions)
                 | (wave_direction in barcarola_wave_directions)
             )
+            & ((wave_direction not in unwanted_wave_directions))
         )
         & (wind_speed >= 19.0)
         & (wave_period >= 10)
@@ -575,7 +579,8 @@ def get_low_wind_spot(
 def is_low_wind(wind_speed: float) -> bool:
     return wind_speed < 10.0
 
-#304 es ONO, 305 es NO, considerar fuerza oeste hasta 310
+
+# 304 es ONO, 305 es NO, considerar fuerza oeste hasta 310
 def generate_spot_name(
     wind_direction_predominant: str,
     wind_direction: str,

@@ -23,9 +23,8 @@ def get_list_of_spots_sorted_by_param(param, grouped_data):
     ].to_list()
 
 
-def plot_graph(variable):
-    st.header(f"{variable} per day", divider="rainbow")
-    data = st.session_state.forecast_df
+def plot_graph(variable, add_data: str, data: pl.DataFrame):
+    st.header(f"{variable} {add_data} per day", divider="rainbow")
     num_categories = data["spot_name"].n_unique()
     chart = (
         alt.Chart(data.to_pandas())
@@ -202,7 +201,13 @@ def plot_forecast_as_table():
     )
 
     st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
-    plot_graph("energy")
+    data = st.session_state.forecast_df
+    data_other = data.filter(~pl.col("wave_direction").is_in(["W", "WNW"]))
+    plot_graph("energy", "north swell", data_other)
+    data_west_wave = data.filter(pl.col("wave_direction").is_in(["W", "WNW"]))
+    if not data_west_wave.is_empty():
+        plot_graph("energy", "west swell", data_west_wave)
+
     grouped_data = st.session_state.forecast_df.group_by("spot_name").agg(
         pl.col("datetime").min().alias("datetime")
     )
