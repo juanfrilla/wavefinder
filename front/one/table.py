@@ -220,7 +220,7 @@ def plot_forecast_as_table():
                 pl.col("spot_name") == spot_name
             )
             num_rows = group_df.height
-            with st.expander(f"Spot: {spot_name} - {num_rows} times"):
+            with st.expander(f"Spot: {spot_name} ({num_rows} times)"):
                 forecast_df_dropped = (
                     group_df.drop("spot_name")
                     .drop("date")
