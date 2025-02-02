@@ -136,7 +136,7 @@ def tiburon_low_wind_conditions(
     return (
         (wave_direction_predominant in papagayo_wave_directions)
         | (wave_direction in papagayo_wave_directions)
-    ) & (wave_energy >= 1500)
+    ) & (wave_energy >= 5000)
 
 
 def bajorisco_conditions(
