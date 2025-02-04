@@ -794,6 +794,8 @@ def final_forecast_format(df: pl.DataFrame):
             "energy",
             "wave_period",
             "wind_direction",
+            "wind_direction_predominant",
+            "wave_direction",
             "wind_speed",
             "tide_percentage",
             "nearest_tide",
@@ -803,10 +805,8 @@ def final_forecast_format(df: pl.DataFrame):
             "time",
             "time_graph",
             "spot_name",
-            "wind_direction_predominant",
             "wave_direction_predominant",
             "wave_height",
-            "wave_direction",
             "wind_direction_degrees",
             "wave_direction_degrees",
         ]
@@ -923,9 +923,6 @@ def find_next_tide(tides_datetimes_list, tides_tide_list, start_index, tide_type
         if tides_tide_list[i].lower() == tide_type:
             return tides_datetimes_list[i]
     raise ValueError(f"No {tide_type} found after index {start_index}")
-
-
-from datetime import datetime, timedelta
 
 
 def calculate_tide_percentage(
