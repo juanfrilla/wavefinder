@@ -213,6 +213,8 @@ def plot_forecast_as_table():
     )
     grouped_data = grouped_data.sort("datetime", descending=False)
 
+    st.dataframe(st.session_state.forecast_df.head(1))
+
     with st.container():
         for i in range(len(grouped_data)):
             spot_name = grouped_data[i]["spot_name"].to_numpy()[0]
