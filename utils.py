@@ -788,6 +788,7 @@ def final_forecast_format(df: pl.DataFrame):
         df = df.filter(mask)
 
         common_columns = [
+            "spot_name",
             "date_name",
             "date_friendly",
             "time_friendly",
@@ -804,7 +805,6 @@ def final_forecast_format(df: pl.DataFrame):
             "date",
             "time",
             "time_graph",
-            "spot_name",
             "wave_direction_predominant",
             "wave_height",
             "wind_direction_degrees",
