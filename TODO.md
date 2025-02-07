@@ -43,3 +43,4 @@ switchear tabla a tabla a surf forecast
 Refactorizar, tipar
 TODO posiblemente hacer una clase para calcular los spot_names
 Grafica con fuerza norte y otra con fuerza oeste
+mirar si puedo meterle requests HTML y escrapear el primer modelo que es más efectivo.
