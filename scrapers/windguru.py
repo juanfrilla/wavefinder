@@ -11,6 +11,7 @@ from utils import (
     datetime_to_frontend_str,
     degrees_to_direction,
     generate_forecast_moments,
+    ammend_wave_directions
 )
 import locale
 import requests
@@ -131,9 +132,10 @@ class Windguru(object):
         forecast["wave_direction_predominant"] = create_direction_predominant_column(
             wave_direction_degrees
         )
-        forecast["wave_direction"] = [
+        wave_directions = [
             degrees_to_direction(element) for element in wave_direction_degrees
         ]
+        forecast["wave_direction"] = ammend_wave_directions(wave_directions, wave_direction_degrees)
         forecast["energy"] = generate_energy(wave_height, wave_period)
 
         forecast["tide"] = generate_tides(tides, forecast["datetime"])
