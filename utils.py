@@ -1001,3 +1001,10 @@ def generate_forecast_moments(initstamp, hours):
     moments = [init_datetime + timedelta(hours=hour) for hour in hours]
 
     return moments
+
+def ammend_wave_directions(wave_directions, wave_direction_degrees):
+    #TODO check if its 310 degrees the maximum
+    for i, degree in enumerate(wave_direction_degrees):
+        if 300 <= degree <= 310:
+            wave_directions[i] = "WNW"
+    return wave_directions
