@@ -786,6 +786,13 @@ def final_forecast_format(df: pl.DataFrame):
         now = datetime.now(timezone.utc)
         mask = (times >= _6_AM) & (times <= _19_PM) & (datetimes >= now)
         df = df.filter(mask)
+        #TODO maybe the maximum its not 310, but check it
+        df = df.with_columns(
+                pl.when((pl.col("wave_direction_degrees") >= 300) & (pl.col("wave_direction_degrees") <= 310))
+                .then(pl.lit("WNW"))
+                .otherwise(pl.col("wave_direction"))
+                .alias("wave_direction")
+        )
 
         common_columns = [
             "spot_name",
