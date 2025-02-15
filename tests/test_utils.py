@@ -41,7 +41,19 @@ def test_separate_spots():
             wave_energy=calculate_energy(wave_height=2.5, wave_period=10),
             tide_percentage=90,
         )
-    ) == "Punta Mujeres"
+    ) == "El Espino"
+    assert (
+        generate_spot_name(
+            wind_direction_predominant="NW",
+            wind_direction="NW",
+            wave_direction_predominant="NW",
+            wave_direction="NW",
+            wind_speed=12,
+            wave_period=10,
+            wave_energy=calculate_energy(wave_height=2.5, wave_period=10),
+            tide_percentage=20,
+        )
+    ) == "El Cartel"
 
     assert (
         generate_spot_name(
@@ -117,7 +129,7 @@ def test_separate_spots():
             wave_direction="NW",
             wind_speed=20,
             wave_period=13,
-            wave_energy=calculate_energy(wave_height=2.2, wave_period=13),
+            wave_energy=calculate_energy(wave_height=4, wave_period=15),
             tide_percentage=60,
         )
         == "Tiburón"
@@ -133,7 +145,7 @@ def test_separate_spots():
             wave_energy=calculate_energy(wave_height=2.2, wave_period=13),
             tide_percentage=60,
         )
-        == "Tiburón"
+        == "San Juan - Cagao - El Muelle"
     )
 
     assert (

@@ -41,16 +41,40 @@ def generate_energy(wave_heights: list, wave_periods: list):
     ]
 
 
-def punta_mujeres_conditions(
+def el_espino_conditions(
     wind_direction_predominant: str,
     wave_direction_predominant: str,
     wind_direction: str,
     wave_direction: str,
     wave_energy: int,
+    tide_percentage: int,
 ):
-    return punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction) & (
-        punta_mujeres_low_wind_conditions(
-            wave_direction_predominant, wave_direction, wave_energy
+    return (
+        (tide_percentage > 80)
+        & punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction)
+        & (
+            punta_mujeres_low_wind_conditions(
+                wave_direction_predominant, wave_direction, wave_energy
+            )
+        )
+    )
+
+
+def el_cartel_conditions(
+    wind_direction_predominant: str,
+    wave_direction_predominant: str,
+    wind_direction: str,
+    wave_direction: str,
+    wave_energy: int,
+    tide_percentage: int,
+):
+    return (
+        (tide_percentage <= 80)
+        & punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction)
+        & (
+            punta_mujeres_low_wind_conditions(
+                wave_direction_predominant, wave_direction, wave_energy
+            )
         )
     )
 
@@ -512,53 +536,89 @@ def get_low_wind_spot(
     wave_energy,
     tide_percentage,
 ):
-    if famara_low_wind_conditions(
+    if famara_conditions(
+        wind_direction_predominant,
         wave_direction_predominant,
+        wind_direction,
         wave_direction,
         wave_energy,
-    ) and famara_favorable_wind(wind_direction_predominant, wind_direction):
+    ):
         return "Famara"
-    elif tiburon_low_wind_conditions(
+    elif tiburon_conditions(
+        wind_direction_predominant,
         wave_direction_predominant,
+        wind_direction,
         wave_direction,
         wave_energy,
-    ) and tiburon_favorable_wind(wind_direction_predominant, wind_direction):
+    ):
         return "Tiburón"
-    elif papagayo_low_wind_conditions(
+    elif papagayo_conditions(
+        wind_direction_predominant,
         wave_direction_predominant,
+        wind_direction,
         wave_direction,
         wave_energy,
         tide_percentage,
-    ) and papagayo_favorable_wind(wind_direction_predominant, wind_direction):
+    ):
         return "Papagayo - Montaña Amarilla"
-    elif west_swell_high_tide_low_wind_conditions(
+    elif bajorisco_conditions(
+        wind_direction_predominant,
         wave_direction_predominant,
+        wind_direction,
         wave_direction,
         wave_energy,
         tide_percentage,
-    ) and bajorisco_favorable_wind(wind_direction_predominant, wind_direction):
+    ):
         return "Bajo el Risco"
-    elif papelillo_low_wind_conditions(
-        wave_direction_predominant, wave_direction, wave_energy
-    ) and papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
-        return "Papelillo"
-    elif lasanta_low_wind_conditions(
+    elif papelillo_conditions(
         wave_direction_predominant,
         wave_direction,
         wave_energy,
-    ) and lasanta_favorable_wind(wind_direction_predominant, wind_direction):
+        wind_direction_predominant,
+        wind_direction,
+    ):
+        return "Papelillo"
+    elif lasanta_conditions(
+        wind_direction_predominant,
+        wave_direction_predominant,
+        wind_direction,
+        wave_direction,
+        wave_energy,
+    ):
         return "La Santa"
-    elif san_juan_low_wind_conditions(
-        wave_direction_predominant, wave_direction, wave_energy
-    ) and san_juan_favorable_wind(wind_direction_predominant, wind_direction):
+    elif san_juan_conditions(
+        wind_direction_predominant,
+        wind_direction,
+        wave_direction_predominant,
+        wave_direction,
+        wave_energy,
+    ):
         return "San Juan - Cagao - El Muelle"
-    elif punta_mujeres_low_wind_conditions(
-        wave_direction_predominant, wave_direction, wave_energy
-    ) and punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction):
-        return "Punta Mujeres"
-    elif caleta_caballo_low_wind_conditions(
-        wave_direction_predominant, wave_direction, wave_energy
-    ) and caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction):
+    elif el_espino_conditions(
+        wind_direction_predominant,
+        wave_direction_predominant,
+        wind_direction,
+        wave_direction,
+        wave_energy,
+        tide_percentage,
+    ):
+        return "El Espino"
+    elif el_cartel_conditions(
+        wind_direction_predominant,
+        wave_direction_predominant,
+        wind_direction,
+        wave_direction,
+        wave_energy,
+        tide_percentage,
+    ):
+        return "El Cartel"
+    elif caleta_caballo_conditions(
+        wind_direction_predominant,
+        wave_direction_predominant,
+        wind_direction,
+        wave_direction,
+        wave_energy,
+    ):
         return "Caleta Caballo"
     elif famara_low_wind_conditions(
         wave_direction_predominant,
@@ -620,14 +680,24 @@ def generate_spot_name(
         tide_percentage=tide_percentage,
     ):
         return "Bastián"
-    elif punta_mujeres_conditions(
+    elif el_espino_conditions(
         wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,
         wind_direction=wind_direction,
         wave_direction=wave_direction,
         wave_energy=wave_energy,
+        tide_percentage=tide_percentage,
     ):
-        return "Punta Mujeres"
+        return "El Espino"
+    elif el_cartel_conditions(
+        wind_direction_predominant=wind_direction_predominant,
+        wave_direction_predominant=wave_direction_predominant,
+        wind_direction=wind_direction,
+        wave_direction=wave_direction,
+        wave_energy=wave_energy,
+        tide_percentage=tide_percentage,
+    ):
+        return "El Cartel"
     elif tiburon_conditions(
         wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,
@@ -1002,8 +1072,9 @@ def generate_forecast_moments(initstamp, hours):
 
     return moments
 
+
 def ammend_wave_directions(wave_directions, wave_direction_degrees):
-    #TODO check if its 310 degrees the maximum
+    # TODO check if its 310 degrees the maximum
     for i, degree in enumerate(wave_direction_degrees):
         if 300 <= degree <= 310:
             wave_directions[i] = "WNW"
