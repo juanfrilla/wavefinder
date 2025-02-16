@@ -454,10 +454,11 @@ def big_waves_conditions(
 
 
 def famara_favorable_wind(wind_direction_predominant, wind_direction):
-    famara_wind_directions = ["S"]
-    return is_favorable_wind(
-        wind_direction_predominant, wind_direction, famara_wind_directions
-    )
+    wind_directions = ["S"]
+    unwanted_wind_directions=["SW"]
+    return (not (wind_direction_predominant in unwanted_wind_directions) or not (wind_direction in unwanted_wind_directions)) and (is_favorable_wind(
+        wind_direction_predominant, wind_direction, wind_directions
+    ))
 
 
 def east_favorable_wind(wind_direction_predominant, wind_direction):
