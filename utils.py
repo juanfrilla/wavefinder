@@ -1,4 +1,4 @@
-tiimport math
+import math
 import polars as pl
 from datetime import datetime, date, time, timedelta, timezone
 from typing import Dict
