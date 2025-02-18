@@ -1,4 +1,4 @@
-import math
+tiimport math
 import polars as pl
 from datetime import datetime, date, time, timedelta, timezone
 from typing import Dict
@@ -552,7 +552,7 @@ def get_low_wind_spot(
         wave_direction,
         wave_energy,
     ):
-        return "Tiburón"
+        return "Tiburón-Espino"
     elif papagayo_conditions(
         wind_direction_predominant,
         wave_direction_predominant,
@@ -706,7 +706,7 @@ def generate_spot_name(
         wave_direction=wave_direction,
         wave_energy=wave_energy,
     ):
-        return "Tiburón"
+        return "Tiburón-Espino"
     elif papagayo_conditions(
         wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,
