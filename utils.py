@@ -147,6 +147,22 @@ def tiburon_conditions(
     )
 
 
+def posible_tiburon_conditions(
+    wind_direction_predominant: str,
+    wave_direction_predominant: str,
+    wind_direction: str,
+    wave_direction: str,
+    wave_energy: int,
+):
+    return posible_tiburon_favorable_wind(
+        wind_direction_predominant, wind_direction
+    ) & (
+        tiburon_low_wind_conditions(
+            wave_direction_predominant, wave_direction, wave_energy
+        )
+    )
+
+
 def tiburon_low_wind_conditions(
     wave_direction_predominant: str,
     wave_direction: str,
@@ -338,7 +354,10 @@ def bastian_conditions(
                 (wave_direction_predominant in bastian_wave_directions)
                 | (wave_direction in bastian_wave_directions)
             )
-            & ((wave_direction not in unwanted_wave_directions))
+            & (
+                (wave_direction not in unwanted_wave_directions)
+                & (wave_direction_predominant not in unwanted_wave_directions)
+            )
         )
         & (wind_speed >= 19.0)
         & (tide_percentage >= 50)
@@ -455,10 +474,13 @@ def big_waves_conditions(
 
 def famara_favorable_wind(wind_direction_predominant, wind_direction):
     wind_directions = ["S"]
-    unwanted_wind_directions=["SW"]
-    return (not (wind_direction_predominant in unwanted_wind_directions) and not (wind_direction in unwanted_wind_directions)) and (is_favorable_wind(
-        wind_direction_predominant, wind_direction, wind_directions
-    ))
+    unwanted_wind_directions = ["SW"]
+    return (
+        not (wind_direction_predominant in unwanted_wind_directions)
+        and not (wind_direction in unwanted_wind_directions)
+    ) and (
+        is_favorable_wind(wind_direction_predominant, wind_direction, wind_directions)
+    )
 
 
 def east_favorable_wind(wind_direction_predominant, wind_direction):
@@ -480,7 +502,14 @@ def papagayo_favorable_wind(wind_direction_predominant, wind_direction):
 
 
 def tiburon_favorable_wind(wind_direction_predominant, wind_direction):
-    tiburon_wind_directions = ["W", "NW", "SW"]
+    tiburon_wind_directions = ["NW", "N"]
+    return is_favorable_wind(
+        wind_direction_predominant, wind_direction, tiburon_wind_directions
+    )
+
+
+def posible_tiburon_favorable_wind(wind_direction_predominant, wind_direction):
+    tiburon_wind_directions = ["NE"]
     return is_favorable_wind(
         wind_direction_predominant, wind_direction, tiburon_wind_directions
     )
@@ -553,6 +582,14 @@ def get_low_wind_spot(
         wave_energy,
     ):
         return "Tiburón-Espino"
+    elif posible_tiburon_conditions(
+        wind_direction_predominant,
+        wave_direction_predominant,
+        wind_direction,
+        wave_direction,
+        wave_energy,
+    ):
+        return "Posible Tiburón"
     elif papagayo_conditions(
         wind_direction_predominant,
         wave_direction_predominant,
@@ -707,6 +744,15 @@ def generate_spot_name(
         wave_energy=wave_energy,
     ):
         return "Tiburón-Espino"
+
+    elif posible_tiburon_conditions(
+        wind_direction_predominant=wind_direction_predominant,
+        wave_direction_predominant=wave_direction_predominant,
+        wind_direction=wind_direction,
+        wave_direction=wave_direction,
+        wave_energy=wave_energy,
+    ):
+        return "Posible Tiburón"
     elif papagayo_conditions(
         wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,

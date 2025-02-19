@@ -123,7 +123,7 @@ def test_separate_spots():
     )
     assert (
         generate_spot_name(
-            wind_direction_predominant="W",
+            wind_direction_predominant="NW",
             wind_direction="WNW",
             wave_direction_predominant="WNW",
             wave_direction="NW",
@@ -132,7 +132,33 @@ def test_separate_spots():
             wave_energy=calculate_energy(wave_height=4, wave_period=15),
             tide_percentage=60,
         )
-        == "Tiburón"
+        == "Tiburón-Espino"
+    )
+    assert (
+        generate_spot_name(
+            wind_direction_predominant="NE",
+            wind_direction="NNE",
+            wave_direction_predominant="WNW",
+            wave_direction="NW",
+            wind_speed=20,
+            wave_period=13,
+            wave_energy=calculate_energy(wave_height=4, wave_period=15),
+            tide_percentage=60,
+        )
+        == "Posible Tiburón"
+    )
+    assert (
+        generate_spot_name(
+            wind_direction_predominant="N",
+            wind_direction="N",
+            wave_direction_predominant="WNW",
+            wave_direction="NW",
+            wind_speed=20,
+            wave_period=13,
+            wave_energy=calculate_energy(wave_height=4, wave_period=15),
+            tide_percentage=60,
+        )
+        == "Tiburón-Espino"
     )
     assert (
         generate_spot_name(
