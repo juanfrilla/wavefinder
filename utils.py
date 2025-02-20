@@ -516,7 +516,7 @@ def posible_tiburon_favorable_wind(wind_direction_predominant, wind_direction):
 
 
 def bajorisco_favorable_wind(wind_direction_predominant, wind_direction):
-    risco_wind_directions = ["S", "SE", "E"]
+    risco_wind_directions = ["S"]
     return is_favorable_wind(
         wind_direction_predominant, wind_direction, risco_wind_directions
     )
