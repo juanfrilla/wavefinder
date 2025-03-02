@@ -559,106 +559,11 @@ def is_favorable_wind(
 
 
 def get_low_wind_spot(
-    wind_direction_predominant,
-    wind_direction,
     wave_direction_predominant,
     wave_direction,
     wave_energy,
-    tide_percentage,
 ):
-    if famara_conditions(
-        wind_direction_predominant,
-        wave_direction_predominant,
-        wind_direction,
-        wave_direction,
-        wave_energy,
-    ):
-        return "Famara"
-    elif tiburon_conditions(
-        wind_direction_predominant,
-        wave_direction_predominant,
-        wind_direction,
-        wave_direction,
-        wave_energy,
-    ):
-        return "Tiburón-Espino"
-    elif posible_tiburon_conditions(
-        wind_direction_predominant,
-        wave_direction_predominant,
-        wind_direction,
-        wave_direction,
-        wave_energy,
-    ):
-        return "Posible Tiburón"
-    elif papagayo_conditions(
-        wind_direction_predominant,
-        wave_direction_predominant,
-        wind_direction,
-        wave_direction,
-        wave_energy,
-        tide_percentage,
-    ):
-        return "Papagayo - Montaña Amarilla"
-    elif bajorisco_conditions(
-        wind_direction_predominant,
-        wave_direction_predominant,
-        wind_direction,
-        wave_direction,
-        wave_energy,
-        tide_percentage,
-    ):
-        return "Bajo el Risco"
-    elif papelillo_conditions(
-        wave_direction_predominant,
-        wave_direction,
-        wave_energy,
-        wind_direction_predominant,
-        wind_direction,
-    ):
-        return "Papelillo"
-    elif lasanta_conditions(
-        wind_direction_predominant,
-        wave_direction_predominant,
-        wind_direction,
-        wave_direction,
-        wave_energy,
-    ):
-        return "La Santa"
-    elif san_juan_conditions(
-        wind_direction_predominant,
-        wind_direction,
-        wave_direction_predominant,
-        wave_direction,
-        wave_energy,
-    ):
-        return "San Juan - Cagao - El Muelle"
-    elif el_espino_conditions(
-        wind_direction_predominant,
-        wave_direction_predominant,
-        wind_direction,
-        wave_direction,
-        wave_energy,
-        tide_percentage,
-    ):
-        return "El Espino"
-    elif el_cartel_conditions(
-        wind_direction_predominant,
-        wave_direction_predominant,
-        wind_direction,
-        wave_direction,
-        wave_energy,
-        tide_percentage,
-    ):
-        return "El Cartel"
-    elif caleta_caballo_conditions(
-        wind_direction_predominant,
-        wave_direction_predominant,
-        wind_direction,
-        wave_direction,
-        wave_energy,
-    ):
-        return "Caleta Caballo"
-    elif famara_low_wind_conditions(
+    if famara_low_wind_conditions(
         wave_direction_predominant,
         wave_direction,
         wave_energy,
@@ -670,8 +575,7 @@ def get_low_wind_spot(
         wave_energy,
     ):
         return "San Juan - Cagao - El Muelle"
-    else:
-        return "No Clasificado"
+    return None
 
 
 def is_low_wind(wind_speed: float) -> bool:
@@ -689,17 +593,12 @@ def generate_spot_name(
     wave_direction: str,
     wave_direction_predominant: str,
 ) -> str:
-    if is_low_wind(wind_speed=wind_speed):
-        spot = get_low_wind_spot(
-            wind_direction_predominant=wind_direction_predominant,
-            wind_direction=wind_direction,
-            wave_direction_predominant=wave_direction_predominant,
-            wave_direction=wave_direction,
-            wave_energy=wave_energy,
-            tide_percentage=tide_percentage,
-        )
-        return spot
-    elif barcarola_conditions(
+    spot = get_low_wind_spot(
+        wave_direction_predominant=wave_direction_predominant,
+        wave_direction=wave_direction,
+        wave_energy=wave_energy,
+    )
+    if barcarola_conditions(
         wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,
         wind_direction=wind_direction,
@@ -812,8 +711,9 @@ def generate_spot_name(
         wave_energy=wave_energy,
     ):
         return "San Juan - Cagao - El Muelle"
-    else:
-        return "No Clasificado"
+    elif is_low_wind(wind_speed=wind_speed) and spot:
+        return spot
+    return "No Clasificado"
 
 
 def generate_spot_names(forecast: Dict[str, list]) -> list:
