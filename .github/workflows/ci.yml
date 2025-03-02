@@ -33,7 +33,7 @@ jobs:
           pytest tests
 
       - name: Run ruff formatting check
-      - uses: astral-sh/ruff-action@v3
+        uses: astral-sh/ruff-action@v3
         with:
           version: 0.8.0
           args: check --select B
