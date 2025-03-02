@@ -1,3 +1,4 @@
+import unicodedata
 import streamlit as st
 from utils import final_forecast_format, construct_date_selection_list
 from scrapers.windguru import Windguru
@@ -264,7 +265,11 @@ def plot_forecast_as_table():
                 for col, name, date, time in zip(
                     column_defs[1:], date_name, date_friendly, time_friendly
                 ):
-                    if name in ["Hoy", "Mañana", "Pasado"]:
+                    norm_name = unicodedata.normalize("NFC", name)
+                    if norm_name in [
+                        unicodedata.normalize("NFC", s)
+                        for s in ["Hoy", "Mañana", "Pasado"]
+                    ]:
                         col["headerName"] = f"{time} {name}"
                     else:
                         col["headerName"] = f"{date} {time}"
