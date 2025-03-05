@@ -293,11 +293,11 @@ def caleta_caballo_conditions(
     wave_energy: int,
 ):
 
-    return caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction) & (
+    return (caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction) & (
         caleta_caballo_low_wind_conditions(
             wave_direction_predominant, wave_direction, wave_energy
         )
-    )
+    ))
 
 
 def san_juan_low_wind_conditions(
