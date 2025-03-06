@@ -272,7 +272,7 @@ def plot_forecast_as_table():
                     ]:
                         col["headerName"] = f"{time} {name}"
                     else:
-                        col["headerName"] = f"{date} {time}"
+                        col["headerName"] = f"{time} {date}"
 
                 AgGrid(
                     rotated_df_pd,
