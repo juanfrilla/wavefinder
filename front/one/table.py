@@ -110,11 +110,10 @@ def plot_selected_wave_energy():
 def load_windguru_forecast():
     tide_scraper = TidesScraper()
     tides = tide_scraper.tasks()
-    id_spot = "49328"
+    url = "https://www.windguru.cz/49328"
     windguru = Windguru()
-    df = windguru.scrape_with_request(id_spot, tides)
+    df = windguru.scrape(url, tides)
     df = final_forecast_format(df)
-
     return df
 
 

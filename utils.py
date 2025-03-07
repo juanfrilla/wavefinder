@@ -1,7 +1,13 @@
 import math
+import re
 import polars as pl
 from datetime import datetime, date, time, timedelta, timezone
 from typing import Dict
+from dateutil.relativedelta import relativedelta
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 MONTH_MAPPING = {
     "Ene": "01",
@@ -293,11 +299,11 @@ def caleta_caballo_conditions(
     wave_energy: int,
 ):
 
-    return (caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction) & (
+    return caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction) & (
         caleta_caballo_low_wind_conditions(
             wave_direction_predominant, wave_direction, wave_energy
         )
-    ))
+    )
 
 
 def san_juan_low_wind_conditions(
@@ -1026,3 +1032,82 @@ def ammend_wave_directions(wave_directions, wave_direction_degrees):
         if 300 <= degree <= 310:
             wave_directions[i] = "WNW"
     return wave_directions
+
+
+def rename_key(dictionary, old_key, new_key):
+    if old_key in dictionary:
+        dictionary[new_key] = dictionary.pop(old_key)
+
+    return dictionary
+
+
+def generate_datetimes(dates, times):
+    datetimes = []
+    for date, time in zip(dates, times):
+        year = datetime.strptime(date, FRONT_END_DATE_FORMAT).year
+        month = datetime.strptime(date, FRONT_END_DATE_FORMAT).month
+        day = datetime.strptime(date, FRONT_END_DATE_FORMAT).day
+        hour = int(time.split(":")[0])
+        minute = int(time.split(":")[1])
+        datetimes.append(datetime(year, month, day, hour, minute))
+    return datetimes
+
+
+def datestr_to_frontend_format(input_text):
+    # si es menor es del próximo mes, si es mayor o igual es de este mes
+    day = re.search(r"\d+", input_text).group()
+
+    current_date = datetime.now()
+
+    if int(day) < current_date.day:
+        new_date = current_date + relativedelta(months=1)
+        month = new_date.month
+    elif int(day) >= current_date.day:
+        month = current_date.month
+    if int(month) < current_date.month:
+        new_date = current_date + relativedelta(years=1)
+        year = new_date.year
+    elif int(month) >= current_date.month:
+        year = current_date.year
+    date_datetime = datetime.strptime(f"{day}/{month}/{year}", "%d/%m/%Y")
+
+    return datetime_to_frontend_str(date_datetime)
+
+
+def open_browser():
+    my_user_agent = (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36",
+    )
+
+    options = webdriver.ChromeOptions()
+    options.add_argument("--lang=es")
+    options.add_argument("--headless")
+    options.add_argument(f"--user-agent={my_user_agent}")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920x1080")
+    options.page_load_strategy = "eager"
+    prefs = {"profile.managed_default_content_settings.images": 2}
+    options.add_experimental_option("prefs", prefs)
+
+    browser = webdriver.Chrome(options=options)
+    return browser
+
+
+def render_html(url, tag_to_wait=None, timeout=10):
+    try:
+        browser = open_browser()
+        browser.get(url)
+        if tag_to_wait:
+            element = WebDriverWait(browser, timeout).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, tag_to_wait))
+            )
+            assert element
+        html_content = browser.page_source
+        return html_content
+    except Exception as e:
+        raise e
+    finally:
+        browser.close()
+        browser.quit()
