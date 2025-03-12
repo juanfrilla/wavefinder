@@ -275,19 +275,23 @@ def caleta_caballo_low_wind_conditions(
 ):
     wave_directions = ["N", "NW", "NE"]
     unwanted_wave_directions = ["WNW"]
-    return ((
+    return (
         (
-            (wave_direction_predominant in wave_directions)
-            | (wave_direction in wave_directions)
+            (
+                (wave_direction_predominant in wave_directions)
+                | (wave_direction in wave_directions)
+            )
+            & (wave_direction not in unwanted_wave_directions)
+            & (wave_energy >= 100 and wave_energy <= 1000)
         )
-        & (wave_direction not in unwanted_wave_directions)
-        & (wave_energy >= 100 and wave_energy <= 1000)
-    ) | (
-            (wave_direction_predominant in wave_directions)
-            | (wave_direction in wave_directions)
+        | (
+            (
+                (wave_direction_predominant in wave_directions)
+                | (wave_direction in wave_directions)
+            )
+            & (wave_energy >= 1000)
         )
-        & (wave_energy >= 1000)
-    ) )
+    )
 
 
 
