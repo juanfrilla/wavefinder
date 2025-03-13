@@ -289,7 +289,7 @@ def caleta_caballo_low_wind_conditions(
                 (wave_direction_predominant in wave_directions)
                 | (wave_direction in wave_directions)
             )
-            & (wave_energy >= 1000)
+           & (wave_energy >= 1000 and wave_energy < 5000)
         )
     )
 
