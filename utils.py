@@ -540,9 +540,10 @@ def papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
 
 def punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction):
     punta_mujeres_wind_directions = ["N", "NW"]
+    unwanted_wind_directions=["NE"]
     return is_favorable_wind(
         wind_direction_predominant, wind_direction, punta_mujeres_wind_directions
-    )
+    ) and ((wind_direction_predominant not in unwanted_wind_directions) and (wind_direction not in unwanted_wind_directions))
 
 
 def san_juan_favorable_wind(wind_direction_predominant, wind_direction):
