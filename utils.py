@@ -277,21 +277,15 @@ def caleta_caballo_low_wind_conditions(
     unwanted_wave_directions = ["WNW"]
     return (
         (
-            (
-                (wave_direction_predominant in wave_directions)
-                | (wave_direction in wave_directions)
-            )
-            & (wave_direction not in unwanted_wave_directions)
-            & (wave_energy >= 100 and wave_energy <= 1000)
+            (wave_direction_predominant in wave_directions)
+            | (wave_direction in wave_directions)
         )
-        | (
-            (
-                wave_direction in unwanted_wave_directions
-            )
-           & (wave_energy >= 1000 and wave_energy < 5000)
-        )
+        & (wave_direction not in unwanted_wave_directions)
+        & (wave_energy >= 100 and wave_energy <= 1000)
+    ) | (
+        (wave_direction in unwanted_wave_directions)
+        & (wave_energy >= 1000 and wave_energy < 5000)
     )
-
 
 
 def caleta_caballo_conditions(
@@ -302,11 +296,11 @@ def caleta_caballo_conditions(
     wave_energy: int,
 ):
 
-    return (caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction) & (
+    return caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction) & (
         caleta_caballo_low_wind_conditions(
             wave_direction_predominant, wave_direction, wave_energy
         )
-    ))
+    )
 
 
 def san_juan_low_wind_conditions(
@@ -540,10 +534,13 @@ def papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
 
 def punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction):
     punta_mujeres_wind_directions = ["N", "NW"]
-    unwanted_wind_directions=["NE"]
+    unwanted_wind_directions = ["NE"]
     return is_favorable_wind(
         wind_direction_predominant, wind_direction, punta_mujeres_wind_directions
-    ) and ((wind_direction_predominant not in unwanted_wind_directions) and (wind_direction not in unwanted_wind_directions))
+    ) and (
+        (wind_direction_predominant not in unwanted_wind_directions)
+        and (wind_direction not in unwanted_wind_directions)
+    )
 
 
 def san_juan_favorable_wind(wind_direction_predominant, wind_direction):
@@ -823,6 +820,7 @@ def final_forecast_format(df: pl.DataFrame):
             "wind_direction",
             "wind_direction_predominant",
             "wave_direction",
+            "wave_deviation_over_north_percentage",
             "wind_speed",
             "tide_percentage",
             "nearest_tide",
@@ -840,10 +838,10 @@ def final_forecast_format(df: pl.DataFrame):
     return df
 
 
-def degrees_to_direction(degrees):
-    directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-    index = round(degrees / 45) % 8
-    return directions[index]
+# def degrees_to_direction(degrees):
+#     directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+#     index = round(degrees / 45) % 8
+#     return directions[index]
 
 
 def datetime_to_frontend_str(dt: datetime) -> str:
@@ -1036,3 +1034,25 @@ def ammend_wave_directions(wave_directions, wave_direction_degrees):
         if 300 <= degree <= 310:
             wave_directions[i] = "WNW"
     return wave_directions
+
+
+def convert_forecast_to_min_length(forecast: dict):
+    min_length = min(len(lst) for lst in forecast.values())
+    return {key: lst[:min_length] for key, lst in forecast.items()}
+
+
+def create_deviation_over_north_column(wave_directions, wave_direction_degrees):
+    deviations = []
+    max_deviation = 60
+    for wave_direction, wave_direction_degree in zip(
+        wave_directions, wave_direction_degrees
+    ):
+        if wave_direction == "WNW":
+            deviation_percentage = 100
+        else:
+            deviation = min(
+                abs(wave_direction_degree - 360), abs(wave_direction_degree - 0)
+            )
+            deviation_percentage = (deviation / max_deviation) * 100
+        deviations.append(int(deviation_percentage))
+    return deviations

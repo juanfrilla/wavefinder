@@ -11,7 +11,9 @@ from utils import (
     datetime_to_frontend_str,
     degrees_to_direction,
     generate_forecast_moments,
-    ammend_wave_directions
+    ammend_wave_directions,
+    create_deviation_over_north_column,
+    convert_forecast_to_min_length,
 )
 import locale
 import requests
@@ -135,7 +137,9 @@ class Windguru(object):
         wave_directions = [
             degrees_to_direction(element) for element in wave_direction_degrees
         ]
-        forecast["wave_direction"] = ammend_wave_directions(wave_directions, wave_direction_degrees)
+        forecast["wave_direction"] = ammend_wave_directions(
+            wave_directions, wave_direction_degrees
+        )
         forecast["energy"] = generate_energy(wave_height, wave_period)
 
         forecast["tide"] = generate_tides(tides, forecast["datetime"])
@@ -145,5 +149,10 @@ class Windguru(object):
         )
         forecast["spot_name"] = generate_spot_names(forecast)
         forecast["date_name"] = create_date_name_column(forecast["datetime"])
-
+        forecast["wave_deviation_over_north_percentage"] = (
+            create_deviation_over_north_column(
+                forecast["wave_direction"], forecast["wave_direction_degrees"]
+            )
+        )
+        forecast = convert_forecast_to_min_length(forecast)
         return pl.DataFrame(forecast)
