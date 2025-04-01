@@ -10,7 +10,7 @@ class TidesScraper(object):
     def __init__(self):
         pass
 
-    def construct_year_tides(start_tide_event: dict) -> list:
+    def construct_year_tides(self, start_tide_event: dict) -> list:
         """
         Generate a year-long list of tides starting from a given tide event.
     
@@ -41,5 +41,5 @@ class TidesScraper(object):
             "tide": "pleamar"
         }
         
-        tides = construct_year_tides(start_event)
+        tides = self.construct_year_tides(start_event)
         return tides
