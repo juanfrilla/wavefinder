@@ -185,12 +185,12 @@ def test_separate_spots():
             wave_energy=calculate_energy(wave_height=2.2, wave_period=13),
             tide_percentage=60,
         )
-        == "Bajo el Risco"
+        == "Papelillo"
     )
     assert (
         generate_spot_name(
-            wind_direction_predominant="SE",
-            wind_direction="ESE",
+            wind_direction_predominant="S",
+            wind_direction="SSE",
             wave_direction_predominant="NW",
             wave_direction="WNW",
             wind_speed=7,
@@ -198,7 +198,7 @@ def test_separate_spots():
             wave_energy=calculate_energy(wave_height=2.2, wave_period=13),
             tide_percentage=60,
         )
-        == "Bajo el Risco"
+        == "Papelillo - Bajo el Risco"
     )
 
 

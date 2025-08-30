@@ -607,7 +607,7 @@ def get_low_wind_spot(
         wave_energy,
         tide_percentage,
     ):
-        return "Bajo el Risco"
+        return "Papelillo - Bajo el Risco"
     elif papelillo_conditions(
         wave_direction_predominant,
         wave_direction,
@@ -1144,7 +1144,6 @@ def clean_list(my_list):
 def align_dict_columns(data: dict) -> dict:
     min_len = min(len(v) for v in data.values() if isinstance(v, (list, tuple)))
     aligned = {
-        k: (v[:min_len] if isinstance(v, (list, tuple)) else v)
-        for k, v in data.items()
+        k: (v[:min_len] if isinstance(v, (list, tuple)) else v) for k, v in data.items()
     }
     return aligned
