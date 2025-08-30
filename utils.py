@@ -476,8 +476,8 @@ def famara_favorable_wind(wind_direction_predominant, wind_direction):
     wind_directions = ["S"]
     unwanted_wind_directions = ["SW"]
     return (
-        not (wind_direction_predominant in unwanted_wind_directions)
-        and not (wind_direction in unwanted_wind_directions)
+        wind_direction_predominant not in unwanted_wind_directions
+        and wind_direction not in unwanted_wind_directions
     ) and (
         is_favorable_wind(wind_direction_predominant, wind_direction, wind_directions)
     )
@@ -860,20 +860,20 @@ def convert_datestr_format(datestr):
     return date_obj.strftime("%d/%m/%Y")
 
 
-def create_date_name_column(dates: list) -> list:
+def create_date_name_column(datetimes: list) -> list:
     date_names = []
     today_dt = datetime.now().date()
     tomorrow_dt = today_dt + timedelta(days=1)
     day_after_tomorrow_dt = today_dt + timedelta(days=2)
     yesterday_dt = today_dt - timedelta(days=1)
-    for date in dates:
-        if date.date() == today_dt:
+    for current_datetime in datetimes:
+        if current_datetime.date() == today_dt:
             date_names.append("Hoy")
-        elif date.date() == tomorrow_dt:
+        elif current_datetime.date() == tomorrow_dt:
             date_names.append("Mañana")
-        elif date.date() == day_after_tomorrow_dt:
+        elif current_datetime.date() == day_after_tomorrow_dt:
             date_names.append("Pasado")
-        elif date.date() == yesterday_dt:
+        elif current_datetime.date() == yesterday_dt:
             date_names.append("Ayer")
         else:
             date_names.append("Otro día")
@@ -928,12 +928,6 @@ def final_forecast_format(df: pl.DataFrame):
         ]
         df = df[common_columns]
     return df
-
-
-def degrees_to_direction(degrees):
-    directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
-    index = round(degrees / 45) % 8
-    return directions[index]
 
 
 def datetime_to_frontend_str(dt: datetime) -> str:

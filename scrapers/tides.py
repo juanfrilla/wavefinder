@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-import os, datetime, polars as pl
+import polars as pl
 from typing import Dict
 from requests import Session
 from utils import get_day_name, datestr_to_datetime

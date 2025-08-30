@@ -1,4 +1,3 @@
-import polars as pl
 from utils import generate_spot_name, calculate_energy
 
 
