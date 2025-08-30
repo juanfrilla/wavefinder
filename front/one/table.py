@@ -1,3 +1,6 @@
+import os
+import json
+import time
 import unicodedata
 import streamlit as st
 from utils import final_forecast_format, construct_date_selection_list
@@ -12,6 +15,10 @@ DEFAULT_MIN_WAVE_PERIOD = 0
 DEFAULT_WAVE_HEIGHT = 0.0
 DEFAULT_MIN_WAVE_ENERGY = 100
 RETRIES = 100
+CACHE_TTL_SECONDS = 3600
+WAVES_CACHE_PATH = "data/waves.json"
+WIND_CACHE_PATH = "data/wind.json"
+TIDES_CACHE_PATH = "data/tides.json"
 
 
 def get_list_of_spots_sorted_by_param(param, grouped_data):
@@ -106,13 +113,57 @@ def plot_selected_wave_energy():
     )
 
 
-@st.cache_data(ttl=3600)
-def load_windguru_forecast():
+def load_cache(filepath):
+    if not os.path.exists(filepath):
+        return None
+    with open(filepath, "r") as f:
+        data = json.load(f)
+    if time.time() - data["timestamp"] > CACHE_TTL_SECONDS:
+        return None
+    return data["payload"]
+
+
+def save_cache(filepath, payload):
+    with open(filepath, "w") as f:
+        json.dump({"timestamp": time.time(), "payload": payload}, f)
+
+
+def scrape_waves_cached():
+    cached = load_cache(WAVES_CACHE_PATH)
+    if cached is not None:
+        return cached
+    windguru = Windguru()
+    waves_response = windguru.get_waves_from_api(id_spot="49328")
+    save_cache(WAVES_CACHE_PATH, waves_response.json())
+    return waves_response
+
+
+def scrape_wind_cached():
+    cached = load_cache(WIND_CACHE_PATH)
+    if cached is not None:
+        return cached
+    windguru = Windguru()
+    wind_response = windguru.get_wind_from_api(id_spot="49328")
+    save_cache(WIND_CACHE_PATH, wind_response.json())
+    return wind_response
+
+
+def scrape_tides_cached():
+    cached = load_cache(TIDES_CACHE_PATH)
+    if cached is not None:
+        return cached
     tide_scraper = TidesScraper()
     tides = tide_scraper.tasks()
-    id_spot = "49328"
+    save_cache(TIDES_CACHE_PATH, tides)
+    return tides
+
+
+def load_windguru_forecast():
+    waves_data = scrape_waves_cached()
+    wind_data = scrape_wind_cached()
+    tides = scrape_tides_cached()
     windguru = Windguru()
-    df = windguru.scrape_with_request(id_spot, tides)
+    df = windguru.scrape_with_request(waves_data, wind_data, tides)
     df = final_forecast_format(df)
 
     return df
@@ -214,7 +265,11 @@ def plot_forecast_as_table():
     )
     grouped_data = grouped_data.sort("datetime", descending=False)
 
-    st.dataframe(st.session_state.forecast_df.head(1))
+    st.dataframe(
+        st.session_state.forecast_df
+        .drop(["datetime", "date", "time", "time_graph"])
+        .head(1)
+    )
 
     with st.container():
         for i in range(len(grouped_data)):

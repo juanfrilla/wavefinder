@@ -51,10 +51,9 @@ class TidesScraper(object):
                         format_time = "%H:%M"
                         tide_time = datestr_to_datetime(cell.text, format_time).time()
                         tide_datetime = datetime.combine(tide_date, tide_time)
-                        tide_data["datetime"] = tide_datetime
+                        tide_data["timestamp"] = tide_datetime.timestamp()
                     tides.append(tide_data)
         return tides
-        # return pl.DataFrame(tides)
 
     def scrape_table(self) -> Dict:
         response = self.session.get(url=self.link, headers=self.headers)
@@ -85,14 +84,15 @@ class TidesScraper(object):
 
     def construct_month_tides(self, tides: list) -> list:
         tide_interval = timedelta(hours=6, minutes=12, seconds=30)
+        tide_interval_seconds = tide_interval.total_seconds()
         current_tide_data = tides[-1]
-        current_time = current_tide_data.get("datetime")
+        current_timestamp = current_tide_data.get("timestamp")
         current_tide = current_tide_data.get("tide")
-        start_datetime = current_time
-        while current_time <= start_datetime + timedelta(days=15):
-            tide_to_append = {"tide": current_tide, "datetime": current_time}
+        start_timestamp = current_timestamp
+        while current_timestamp <= start_timestamp + timedelta(days=15).total_seconds():
+            tide_to_append = {"tide": current_tide, "timestamp": current_timestamp}
             tides.append(tide_to_append)
-            current_time += tide_interval
+            current_timestamp += tide_interval_seconds
             current_tide = "pleamar" if current_tide == "bajamar" else "bajamar"
         return tides
 

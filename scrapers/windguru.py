@@ -90,14 +90,8 @@ class Windguru(object):
             "https://www.windguru.net/int/iapi.php", params=params, headers=headers
         )
 
-    def scrape_with_request(self, id_spot: str, tides: dict):
+    def scrape_with_request(self, waves_data: dict, wind_data: dict, tides: dict):
         forecast = {}
-        waves_response = self.get_waves_from_api(id_spot)
-        wind_response = self.get_wind_from_api(id_spot)
-
-        waves_data = waves_response.json()
-        wind_data = wind_response.json()
-
         wind_speed = clean_list(wind_data.get("fcst").get("WINDSPD"))
         wind_direction_degrees = clean_list(wind_data.get("fcst").get("WINDDIR"))
         wave_height = clean_list(waves_data.get("fcst").get("HTSGW"))

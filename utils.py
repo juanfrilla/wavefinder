@@ -956,7 +956,9 @@ def datestr_to_datetime(dtstr, format) -> datetime:
 
 def generate_tides(tide_data: list, forecast_datetimes: list) -> list:
     tide_status_list = []
-    tides_datetimes_list = [item["datetime"] for item in tide_data]
+    tides_datetimes_list = [
+        datetime.fromtimestamp(item["timestamp"]) for item in tide_data
+    ]
     tides_tide_list = [item["tide"] for item in tide_data]
 
     for forecast_datetime in forecast_datetimes:
@@ -991,7 +993,9 @@ def generate_tides(tide_data: list, forecast_datetimes: list) -> list:
 
 def generate_nearest_tides(tide_data: dict, forecast_datetimes: dict) -> list:
     nearest_tides = []
-    tides_datetimes_list = [item["datetime"] for item in tide_data]
+    tides_datetimes_list = [
+        datetime.fromtimestamp(item["timestamp"]) for item in tide_data
+    ]
     tides_tide_list = [item["tide"] for item in tide_data]
 
     for forecast_datetime in forecast_datetimes:
@@ -1007,7 +1011,9 @@ def generate_nearest_tides(tide_data: dict, forecast_datetimes: dict) -> list:
 
 def generate_tide_percentages(tide_data: dict, forecast_datetimes: list) -> list:
     tide_percentages = []
-    tides_datetimes_list = [item["datetime"] for item in tide_data]
+    tides_datetimes_list = [
+        datetime.fromtimestamp(item["timestamp"]) for item in tide_data
+    ]
     tides_tide_list = [item["tide"] for item in tide_data]
 
     for forecast_datetime in forecast_datetimes:
