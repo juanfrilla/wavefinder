@@ -104,3 +104,4 @@ virtualenv==20.28.1
 watchdog==4.0.0
 wsproto==1.2.0
 zipp==3.18.1
+ruff
