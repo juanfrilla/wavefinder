@@ -1126,3 +1126,25 @@ def ammend_wave_directions(wave_directions, wave_direction_degrees):
         if 300 <= degree <= 310:
             wave_directions[i] = "WNW"
     return wave_directions
+
+
+def clean_list(my_list):
+    cleaned = []
+    for i, element in enumerate(my_list):
+        if element is None:
+            if i == 0:
+                cleaned.append(0)
+            else:
+                cleaned.append(cleaned[-1])
+        else:
+            cleaned.append(math.ceil(element))
+    return cleaned
+
+
+def align_dict_columns(data: dict) -> dict:
+    min_len = min(len(v) for v in data.values() if isinstance(v, (list, tuple)))
+    aligned = {
+        k: (v[:min_len] if isinstance(v, (list, tuple)) else v)
+        for k, v in data.items()
+    }
+    return aligned

@@ -46,3 +46,4 @@ Grafica con fuerza norte y otra con fuerza oeste
 mirar si puedo meterle requests HTML y escrapear el primer modelo que es más efectivo.
 
 el espino sale en 3 ocasiones, mucho viento norte o noroeste, mucha fuerza oeste y viento norte u noroeste y mucha fuerza norte y viento norte u noroeste 
+descargar datos y almacenar 

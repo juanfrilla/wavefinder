@@ -11,7 +11,9 @@ from utils import (
     datetime_to_frontend_str,
     degrees_to_direction,
     generate_forecast_moments,
-    ammend_wave_directions
+    ammend_wave_directions,
+    clean_list,
+    align_dict_columns,
 )
 import locale
 import requests
@@ -96,11 +98,11 @@ class Windguru(object):
         waves_data = waves_response.json()
         wind_data = wind_response.json()
 
-        wind_speed = wind_data.get("fcst").get("WINDSPD")
-        wind_direction_degrees = wind_data.get("fcst").get("WINDDIR")
-        wave_height = waves_data.get("fcst").get("HTSGW")
-        wave_direction_degrees = waves_data.get("fcst").get("DIRPW")
-        wave_period = waves_data.get("fcst").get("PERPW")
+        wind_speed = clean_list(wind_data.get("fcst").get("WINDSPD"))
+        wind_direction_degrees = clean_list(wind_data.get("fcst").get("WINDDIR"))
+        wave_height = clean_list(waves_data.get("fcst").get("HTSGW"))
+        wave_direction_degrees = clean_list(waves_data.get("fcst").get("DIRPW"))
+        wave_period = clean_list(waves_data.get("fcst").get("PERPW"))
         initstamp = int(wind_data.get("fcst").get("initstamp"))
         hours = wind_data.get("fcst").get("hours")
 
@@ -135,7 +137,9 @@ class Windguru(object):
         wave_directions = [
             degrees_to_direction(element) for element in wave_direction_degrees
         ]
-        forecast["wave_direction"] = ammend_wave_directions(wave_directions, wave_direction_degrees)
+        forecast["wave_direction"] = ammend_wave_directions(
+            wave_directions, wave_direction_degrees
+        )
         forecast["energy"] = generate_energy(wave_height, wave_period)
 
         forecast["tide"] = generate_tides(tides, forecast["datetime"])
@@ -146,4 +150,5 @@ class Windguru(object):
         forecast["spot_name"] = generate_spot_names(forecast)
         forecast["date_name"] = create_date_name_column(forecast["datetime"])
 
-        return pl.DataFrame(forecast)
+        format_forecast = align_dict_columns(forecast)
+        return pl.DataFrame(format_forecast)
