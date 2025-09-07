@@ -134,8 +134,9 @@ def scrape_waves_cached():
         return cached
     windguru = Windguru()
     waves_response = windguru.get_waves_from_api(id_spot="49328")
-    save_cache(WAVES_CACHE_PATH, waves_response.json())
-    return waves_response
+    rjson = waves_response.json()
+    save_cache(WAVES_CACHE_PATH, rjson)
+    return rjson
 
 
 def scrape_wind_cached():
@@ -144,9 +145,9 @@ def scrape_wind_cached():
         return cached
     windguru = Windguru()
     wind_response = windguru.get_wind_from_api(id_spot="49328")
-    save_cache(WIND_CACHE_PATH, wind_response.json())
-    return wind_response
-
+    rjson = wind_response.json()
+    save_cache(WIND_CACHE_PATH, rjson)
+    return rjson
 
 def scrape_tides_cached():
     cached = load_cache(TIDES_CACHE_PATH)
