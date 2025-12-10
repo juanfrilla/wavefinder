@@ -32,6 +32,18 @@ def test_separate_spots():
     assert (
         generate_spot_name(
             wind_direction_predominant="NW",
+            wind_direction="N",
+            wave_direction_predominant="NW",
+            wave_direction="NNW",
+            wind_speed=21,
+            wave_period=18,
+            wave_energy=calculate_energy(wave_height=6, wave_period=18),
+            tide_percentage=90,
+        )
+    ) == "El Espino"
+    assert (
+        generate_spot_name(
+            wind_direction_predominant="NW",
             wind_direction="NW",
             wave_direction_predominant="NW",
             wave_direction="NW",

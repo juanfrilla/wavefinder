@@ -699,6 +699,24 @@ def generate_spot_name(
             tide_percentage=tide_percentage,
         )
         return spot
+    elif el_espino_conditions(
+        wind_direction_predominant=wind_direction_predominant,
+        wave_direction_predominant=wave_direction_predominant,
+        wind_direction=wind_direction,
+        wave_direction=wave_direction,
+        wave_energy=wave_energy,
+        tide_percentage=tide_percentage,
+    ):
+        return "El Espino"
+    elif el_cartel_conditions(
+        wind_direction_predominant=wind_direction_predominant,
+        wave_direction_predominant=wave_direction_predominant,
+        wind_direction=wind_direction,
+        wave_direction=wave_direction,
+        wave_energy=wave_energy,
+        tide_percentage=tide_percentage,
+    ):
+        return "El Cartel"
     elif barcarola_conditions(
         wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,
@@ -718,24 +736,6 @@ def generate_spot_name(
         tide_percentage=tide_percentage,
     ):
         return "Bastián"
-    elif el_espino_conditions(
-        wind_direction_predominant=wind_direction_predominant,
-        wave_direction_predominant=wave_direction_predominant,
-        wind_direction=wind_direction,
-        wave_direction=wave_direction,
-        wave_energy=wave_energy,
-        tide_percentage=tide_percentage,
-    ):
-        return "El Espino"
-    elif el_cartel_conditions(
-        wind_direction_predominant=wind_direction_predominant,
-        wave_direction_predominant=wave_direction_predominant,
-        wind_direction=wind_direction,
-        wave_direction=wave_direction,
-        wave_energy=wave_energy,
-        tide_percentage=tide_percentage,
-    ):
-        return "El Cartel"
     elif tiburon_conditions(
         wind_direction_predominant=wind_direction_predominant,
         wave_direction_predominant=wave_direction_predominant,
