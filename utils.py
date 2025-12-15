@@ -85,7 +85,8 @@ def punta_mujeres_low_wind_conditions(
     wave_energy: int,
 ):
     punta_mujeres_wave_directions = ["N", "NE", "E", "NNW", "NNE", "NW"]
-    unwanted_wave_directions = ["WNW"]
+    # Its not exactly true, cuz if there are a lot of west swell itll pump
+    unwanted_wave_directions = ["WNW", "W"]
     return (
         (
             (wave_direction_predominant in punta_mujeres_wave_directions)
@@ -187,7 +188,6 @@ def bajorisco_conditions(
     wave_energy: int,
     tide_percentage: float,
 ):
-
     return bajorisco_favorable_wind(
         wind_direction_predominant, wind_direction
     ) & west_swell_high_tide_low_wind_conditions(
@@ -292,7 +292,6 @@ def caleta_caballo_conditions(
     wave_direction: str,
     wave_energy: int,
 ):
-
     return caleta_caballo_favorable_wind(wind_direction_predominant, wind_direction) & (
         caleta_caballo_low_wind_conditions(
             wave_direction_predominant, wave_direction, wave_energy
@@ -324,7 +323,6 @@ def san_juan_conditions(
     wave_direction: str,
     wave_energy: int,
 ):
-
     return san_juan_favorable_wind(wind_direction_predominant, wind_direction) & (
         san_juan_low_wind_conditions(
             wave_direction_predominant, wave_direction, wave_energy
@@ -373,7 +371,6 @@ def barcarola_conditions(
     wave_period: int,
     tide_percentage: float,
 ):
-
     barcarola_wind_directions = ["NE", "N"]
     barcarola_wave_directions = ["N", "NW", "NE", "E", "S"]
     unwanted_wave_directions = ["WNW"]
@@ -388,7 +385,7 @@ def barcarola_conditions(
                 (wave_direction_predominant in barcarola_wave_directions)
                 | (wave_direction in barcarola_wave_directions)
             )
-            & ((wave_direction not in unwanted_wave_directions))
+            & (wave_direction not in unwanted_wave_directions)
         )
         & (wind_speed >= 19.0)
         & (wave_period >= 10)
@@ -403,7 +400,6 @@ def lasanta_conditions(
     wave_direction: str,
     wave_energy: int,
 ):
-
     return lasanta_favorable_wind(
         wind_direction_predominant, wind_direction
     ) & lasanta_low_wind_conditions(
@@ -1085,7 +1081,6 @@ def get_predominant_direction(direction: float) -> str:
 
 
 def degrees_to_direction(degrees: int) -> str:
-
     compass_directions = [
         "N",
         "NNE",

@@ -149,6 +149,7 @@ def scrape_wind_cached():
     save_cache(WIND_CACHE_PATH, rjson)
     return rjson
 
+
 def scrape_tides_cached():
     cached = load_cache(TIDES_CACHE_PATH)
     if cached is not None:
@@ -178,8 +179,9 @@ def custom_sort_key(item):
 def plot_forecast_as_table():
     retries = 0
     st.set_page_config(layout="wide")
-
     st.title("LANZAROTE (WINDGURU)")
+
+    # Fetch forecast data with retries
     while retries <= RETRIES:
         initial_forecast = load_windguru_forecast()
         if not initial_forecast.is_empty():
@@ -196,6 +198,8 @@ def plot_forecast_as_table():
         st.error("No se pudo obtener el forecast")
 
     st.session_state.forecast_df = initial_forecast
+
+    # Extract lists for filters
     scraped_datetime_list = list(
         set(st.session_state.forecast_df["datetime"].to_list())
     )
@@ -203,20 +207,33 @@ def plot_forecast_as_table():
     date_name_list = list(set(st.session_state.forecast_df["date_name"].to_list()))
     all_beaches = list(set(st.session_state.forecast_df["spot_name"].to_list()))
 
-    # CREATE MULTISELECT
-    date_name_selection = st.multiselect(
-        "Nombre del día:", date_name_list, default=date_name_list
-    )
+    # SIDEBAR FILTERS
+    with st.sidebar:
+        st.header("Filtros de Forecast")
+        # Date names
+        date_name_selection = st.multiselect(
+            "Cuándo?:", date_name_list, default=date_name_list
+        )
 
-    today = datetime.now().date()
-    next_days = (datetime.now() + timedelta(days=17)).date()
-    selected_date_range_datetime = st.date_input(
-        "Selecciona el rango de fechas",
-        (today, next_days),
-        today,
-        next_days,
-        format="DD/MM/YYYY",
-    )
+        # Date range
+        today = datetime.now().date()
+        next_days = (datetime.now() + timedelta(days=17)).date()
+        selected_date_range_datetime = st.date_input(
+            "Rango de fechas",
+            (today, next_days),
+            today,
+            next_days,
+            format="DD/MM/YYYY",
+        )
+
+        # Wave energy & wind speed sliders
+        selected_wave_energy = plot_selected_wave_energy()
+        selected_wind_speed = plot_selected_wind_speed()
+
+        # Beach selection
+        beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
+
+    # Construct selected date list
     date_selection = []
     if len(selected_date_range_datetime) == 2:
         min_value = selected_date_range_datetime[0]
@@ -224,61 +241,45 @@ def plot_forecast_as_table():
         date_selection = construct_date_selection_list(
             min_value, max_value, scraped_date_list
         )
-    selected_wave_energy = plot_selected_wave_energy()
-    selected_wind_speed = plot_selected_wind_speed()
-
-    beach_selection = st.multiselect("Playa:", all_beaches, default=all_beaches)
     if date_selection == []:
         date_selection = scraped_date_list
 
-    date_condition = st.session_state.forecast_df["date"].is_in(date_selection)
-
-    date_name_condition = st.session_state.forecast_df["date_name"].is_in(
-        date_name_selection
-    )
-    beach_condition = st.session_state.forecast_df["spot_name"].is_in(beach_selection)
-    wind_speed_condition = (
-        st.session_state.forecast_df["wind_speed"] >= selected_wind_speed[0]
-    ) & (st.session_state.forecast_df["wind_speed"] <= selected_wind_speed[1])
-
-    wave_energy_condition = (
-        st.session_state.forecast_df["energy"] >= selected_wave_energy[0]
-    ) & (st.session_state.forecast_df["energy"] <= selected_wave_energy[1])
-
+    # FILTER DATA
+    df = st.session_state.forecast_df
     mask = (
-        date_condition
-        & date_name_condition
-        & beach_condition
-        & wind_speed_condition
-        & wave_energy_condition
+        df["date"].is_in(date_selection)
+        & df["date_name"].is_in(date_name_selection)
+        & df["spot_name"].is_in(beach_selection)
+        & (df["wind_speed"] >= selected_wind_speed[0])
+        & (df["wind_speed"] <= selected_wind_speed[1])
+        & (df["energy"] >= selected_wave_energy[0])
+        & (df["energy"] <= selected_wave_energy[1])
     )
+    st.session_state.forecast_df = df.filter(mask)
 
-    st.session_state.forecast_df = st.session_state.forecast_df.filter(mask)
     data = st.session_state.forecast_df
     data_other = data.filter(~pl.col("wave_direction").is_in(["W", "WNW"]))
     plot_graph("energy", "north swell", data_other)
+
     data_west_wave = data.filter(pl.col("wave_direction").is_in(["W", "WNW"]))
     if not data_west_wave.is_empty():
         plot_graph("energy", "west swell", data_west_wave)
 
-    grouped_data = st.session_state.forecast_df.group_by("spot_name").agg(
+    # Display first row summary
+    grouped_data = data.group_by("spot_name").agg(
         pl.col("datetime").min().alias("datetime")
     )
     grouped_data = grouped_data.sort("datetime", descending=False)
 
-    st.dataframe(
-        st.session_state.forecast_df
-        .drop(["datetime", "date", "time", "time_graph"])
-        .head(1)
-    )
+    st.dataframe(data.drop(["datetime", "date", "time", "time_graph"]).head(1))
 
+    # Detailed spot forecast
     with st.container():
         for i in range(len(grouped_data)):
             spot_name = grouped_data[i]["spot_name"].to_numpy()[0]
-            group_df = st.session_state.forecast_df.filter(
-                pl.col("spot_name") == spot_name
-            )
+            group_df = data.filter(pl.col("spot_name") == spot_name)
             num_rows = group_df.height
+
             with st.expander(f"Spot: {spot_name} ({num_rows} times)"):
                 forecast_df_dropped = (
                     group_df.drop("spot_name")
@@ -293,13 +294,11 @@ def plot_forecast_as_table():
                 date_name = forecast_df_dropped["date_name"].to_list()
 
                 forecast_to_plot = forecast_df_dropped.drop("datetime")
-
                 forecast_columns = [
                     column.upper() for column in forecast_to_plot.columns
                 ]
                 rotated_df = forecast_to_plot.transpose(include_header=False)
-                s = pl.Series("column names", forecast_columns)
-                rotated_df.insert_column(0, s)
+                rotated_df.insert_column(0, pl.Series("column names", forecast_columns))
 
                 rotated_df_pd = rotated_df.to_pandas()
 
@@ -307,15 +306,12 @@ def plot_forecast_as_table():
                 gb.configure_default_column(
                     wrapText=True, autoHeight=True, editable=False
                 )
-                gb.configure_grid_options(
-                    domLayout="normal",
-                )
+                gb.configure_grid_options(domLayout="normal")
                 gb.configure_column(
                     "column names", pinned="left", cellStyle={"fontWeight": "bold"}
                 )
 
                 grid_options = gb.build()
-
                 column_defs = grid_options["columnDefs"]
 
                 for col, name, date, time in zip(
