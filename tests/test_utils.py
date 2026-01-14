@@ -2,7 +2,6 @@ from utils import generate_spot_name, calculate_energy
 
 
 def test_separate_spots():
-
     assert (
         generate_spot_name(
             wind_direction_predominant="W",
@@ -53,6 +52,18 @@ def test_separate_spots():
             tide_percentage=90,
         )
     ) == "El Espino"
+    assert (
+        generate_spot_name(
+            wind_direction_predominant="NE",
+            wind_direction="N",
+            wave_direction_predominant="NW",
+            wave_direction="NW",
+            wind_speed=12,
+            wave_period=10,
+            wave_energy=calculate_energy(wave_height=2.5, wave_period=10),
+            tide_percentage=90,
+        )
+    ) == "No Clasificado"
     assert (
         generate_spot_name(
             wind_direction_predominant="NW",

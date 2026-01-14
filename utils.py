@@ -246,7 +246,7 @@ def papelillo_conditions(
 ):
     return papelillo_low_wind_conditions(
         wave_direction_predominant, wave_direction, wave_energy
-    ) and papelillo_favorable_low_wind(
+    ) and papelillo_favorable_wind(
         wind_direction_predominant=wind_direction_predominant,
         wind_direction=wind_direction,
     )
@@ -518,7 +518,7 @@ def bajorisco_favorable_wind(wind_direction_predominant, wind_direction):
     )
 
 
-def papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
+def papelillo_favorable_wind(wind_direction_predominant, wind_direction):
     east_wind_directions = ["E", "SE"]
     return is_favorable_wind(
         wind_direction_predominant, wind_direction, east_wind_directions
@@ -527,8 +527,10 @@ def papelillo_favorable_low_wind(wind_direction_predominant, wind_direction):
 
 def punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction):
     punta_mujeres_wind_directions = ["N", "NW"]
-    return is_favorable_wind(
-        wind_direction_predominant, wind_direction, punta_mujeres_wind_directions
+    return not ("E" in wind_direction_predominant or "E" in wind_direction) and (
+        is_favorable_wind(
+            wind_direction_predominant, wind_direction, punta_mujeres_wind_directions
+        )
     )
 
 
