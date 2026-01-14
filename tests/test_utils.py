@@ -104,6 +104,18 @@ def test_separate_spots():
     ) == "San Juan - Cagao - El Muelle"
     assert (
         generate_spot_name(
+            wind_direction_predominant="NE",
+            wind_direction="NE",
+            wave_direction_predominant="N",
+            wave_direction="N",
+            wind_speed=7,
+            wave_period=10,
+            wave_energy=calculate_energy(wave_height=2.5, wave_period=10),
+            tide_percentage=80,
+        )
+    ) == "No Clasificado"
+    assert (
+        generate_spot_name(
             wind_direction_predominant="E",
             wind_direction="E",
             wave_direction_predominant="NW",
@@ -193,7 +205,7 @@ def test_separate_spots():
             wave_energy=calculate_energy(wave_height=2.2, wave_period=13),
             tide_percentage=60,
         )
-        == "San Juan - Cagao - El Muelle"
+        == "No Clasificado"
     )
 
     assert (
