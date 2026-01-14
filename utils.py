@@ -891,7 +891,7 @@ def final_forecast_format(df: pl.DataFrame):
         _6_AM = time(hour=6, minute=0, second=0, microsecond=0)
         _19_PM = time(hour=19, minute=0, second=0, microsecond=0)
         now = datetime.now(timezone.utc)
-        mask = (times >= _6_AM) and (times <= _19_PM) and (datetimes >= now)
+        mask = (times >= _6_AM) & (times <= _19_PM) & (datetimes >= now)
         df = df.filter(mask)
         common_columns = [
             "spot_name",
