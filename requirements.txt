@@ -1,4 +1,4 @@
 streamlit
 polars
 curl-cffi
-st-aggrid
+streamlit-aggrid
