@@ -68,7 +68,7 @@ def plot_graph(variable, add_data: str, data: pl.DataFrame):
 
     zoomed_chart = chart.interactive().properties(width=600, height=400)
 
-    st.altair_chart(zoomed_chart, use_container_width=True)
+    st.altair_chart(zoomed_chart, width="stretch")
 
 
 def plot_selected_wind_speed():
