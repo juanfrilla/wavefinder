@@ -45,60 +45,63 @@ def get_default_wind_approval_selection(wind_approval_list):
 
 
 def plot_graph(add_data: str, data: pl.DataFrame):
-    st.header(f"Energía por días ({add_data})", divider="rainbow")
+    if not data.is_empty():
+        st.header(f"Energía por días ({add_data})", divider="rainbow")
 
-    source = data.to_pandas()
-    now = datetime.now(timezone.utc)
-    highlight = alt.selection_point(on="mouseover", fields=["spot_name"], nearest=True)
-    base = alt.Chart(source).encode(
-        x=alt.X("datetime:T", title="Día y Hora"),
-        y=alt.Y("energy:Q", title="Energía (kJ)", scale=alt.Scale(zero=False)),
-        color=alt.Color(
-            "spot_name:N", title="Playa", scale=alt.Scale(scheme="tableau10")
-        ),
-        tooltip=[
-            alt.Tooltip("datetime:T", format="%H:%M %d/%m", title="Hora"),
-            alt.Tooltip("spot_name:N", title="Playa"),
-            alt.Tooltip("energy:Q", title="Energía (kJ)"),
-            alt.Tooltip("wave_height:Q", title="Altura (m)"),
-            alt.Tooltip("wave_period:Q", title="Periodo (s)"),
-        ],
-    )
-    lines = (
-        base.mark_line(strokeWidth=3, interpolate="monotone")
-        .encode(size=alt.condition(~highlight, alt.value(2), alt.value(5)))
-        .add_params(highlight)
-    )
-
-    points = base.mark_point(filled=True, size=60).encode(
-        opacity=alt.condition(~highlight, alt.value(0.3), alt.value(1))
-    )
-    now_df = pd.DataFrame({"now": [now]})
-    rule = (
-        alt.Chart(now_df)
-        .mark_rule(color="#ff4b4b", strokeDash=[5, 5], strokeWidth=2)
-        .encode(x="now:T")
-    )
-
-    text = (
-        alt.Chart(now_df)
-        .mark_text(
-            align="left",
-            dx=5,
-            dy=-180,
-            text="📍 AHORA",
-            color="#ff4b4b",
-            fontWeight="bold",
+        source = data.to_pandas()
+        now = datetime.now(timezone.utc)
+        highlight = alt.selection_point(
+            on="mouseover", fields=["spot_name"], nearest=True
         )
-        .encode(x="now:T")
-    )
-    final_chart = (
-        (lines + points + rule + text)
-        .properties(width="container", height=450)
-        .interactive()
-    )
+        base = alt.Chart(source).encode(
+            x=alt.X("datetime:T", title="Día y Hora"),
+            y=alt.Y("energy:Q", title="Energía (kJ)", scale=alt.Scale(zero=False)),
+            color=alt.Color(
+                "spot_name:N", title="Playa", scale=alt.Scale(scheme="tableau10")
+            ),
+            tooltip=[
+                alt.Tooltip("datetime:T", format="%H:%M %d/%m", title="Hora"),
+                alt.Tooltip("spot_name:N", title="Playa"),
+                alt.Tooltip("energy:Q", title="Energía (kJ)"),
+                alt.Tooltip("wave_height:Q", title="Altura (m)"),
+                alt.Tooltip("wave_period:Q", title="Periodo (s)"),
+            ],
+        )
+        lines = (
+            base.mark_line(strokeWidth=3, interpolate="monotone")
+            .encode(size=alt.condition(~highlight, alt.value(2), alt.value(5)))
+            .add_params(highlight)
+        )
 
-    st.altair_chart(final_chart, width="stretch")
+        points = base.mark_point(filled=True, size=60).encode(
+            opacity=alt.condition(~highlight, alt.value(0.3), alt.value(1))
+        )
+        now_df = pd.DataFrame({"now": [now]})
+        rule = (
+            alt.Chart(now_df)
+            .mark_rule(color="#ff4b4b", strokeDash=[5, 5], strokeWidth=2)
+            .encode(x="now:T")
+        )
+
+        text = (
+            alt.Chart(now_df)
+            .mark_text(
+                align="left",
+                dx=5,
+                dy=-180,
+                text="📍 AHORA",
+                color="#ff4b4b",
+                fontWeight="bold",
+            )
+            .encode(x="now:T")
+        )
+        final_chart = (
+            (lines + points + rule + text)
+            .properties(width="container", height=450)
+            .interactive()
+        )
+
+        st.altair_chart(final_chart, width="stretch")
 
 
 def plot_selected_wind_speed():
