@@ -252,15 +252,77 @@ def plot_forecast_as_table():
             group_df = data.filter(pl.col("spot_name") == spot_name)
 
             with st.expander(f"Spot: {spot_name} ({group_df.height} times)"):
-                forecast_df_dropped = group_df.drop(
-                    ["spot_name", "date", "time", "time_graph"]
-                ).sort("datetime")
+                group_df = group_df.with_columns(
+                    [
+                        (
+                            pl.col("wind_direction")
+                            + " ("
+                            + pl.col("wind_direction_degrees").cast(pl.Utf8)
+                            + "º)"
+                        ).alias("wind_unified"),
+                        (
+                            pl.col("wave_direction")
+                            + " ("
+                            + pl.col("wave_direction_degrees").cast(pl.Utf8)
+                            + "º)"
+                        ).alias("wave_unified"),
+                        (
+                            pl.col("nearest_tide")
+                            + " ("
+                            + pl.col("tide_percentage").cast(pl.Utf8)
+                            + "%)"
+                        ).alias("tide_unified"),
+                    ]
+                )
 
-                date_friendly = forecast_df_dropped["date_friendly"].to_list()
-                time_friendly = forecast_df_dropped["time_friendly"].to_list()
-                date_names = forecast_df_dropped["date_name"].to_list()
+                date_friendly = group_df["date_friendly"].to_list()
+                time_friendly = group_df["time_friendly"].to_list()
+                date_names = group_df["date_name"].to_list()
 
-                forecast_to_plot = forecast_df_dropped.drop("datetime")
+                forecast_to_plot = (
+                    group_df.drop(
+                        [
+                            "spot_name",
+                            "date",
+                            "time",
+                            "time_graph",
+                            "wind_direction",
+                            "wind_direction_degrees",
+                            "wave_direction",
+                            "wave_direction_degrees",
+                            "date_friendly",
+                            "time_friendly",
+                            "date_name",
+                            "nearest_tide",
+                            "tide_percentage",
+                        ]
+                    )
+                    .sort("datetime")
+                    .rename(
+                        {
+                            "wave_unified": "wave_direction",
+                            "wind_unified": "wind_direction",
+                            "tide_unified": "nearest_tide",
+                        }
+                    )
+                )
+
+                forecast_to_plot = forecast_to_plot.drop(["datetime"])
+
+                order_surf = [
+                    "energy",
+                    "nearest_tide",
+                    "tide",
+                    "wind_direction",
+                    "wind_direction_predominant",
+                    "wave_height",
+                    "wave_period",
+                    "wave_direction",
+                    "wave_direction_predominant",
+                    "wind_speed",
+                ]
+                forecast_to_plot = forecast_to_plot.select(order_surf)
+
                 forecast_columns = [col.upper() for col in forecast_to_plot.columns]
                 rotated_df = forecast_to_plot.transpose(include_header=False)
                 rotated_df.insert_column(0, pl.Series("column names", forecast_columns))
@@ -272,9 +334,16 @@ def plot_forecast_as_table():
                 )
                 gb.configure_grid_options(domLayout="autoHeight")
                 gb.configure_column(
-                    "column names", pinned="left", cellStyle={"fontWeight": "bold"}
+                    "column names",
+                    pinned="left",  # <--- ESTO LA FIJA A LA IZQUIERDA
+                    cellStyle={
+                        "fontWeight": "bold",
+                        "backgroundColor": "#f8f9fb",  # Un gris clarito para que destaque
+                        "borderRight": "1px solid #d3d3d3",  # Una línea divisoria clara
+                    },
+                    width=150,  # Ancho fijo para que no baile
                 )
-
+                gb.configure_column("column names", suppressMenu=True)
                 grid_options = gb.build()
                 column_defs = grid_options["columnDefs"]
 

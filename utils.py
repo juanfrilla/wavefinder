@@ -1038,30 +1038,6 @@ def find_next_tide(tides_datetimes_list, tides_tide_list, start_index, tide_type
     raise ValueError(f"No {tide_type} found after index {start_index}")
 
 
-# def calculate_tide_percentage(
-#     high_tide_hour: datetime, current_hour: datetime, low_tide_hour: datetime
-# ) -> float:
-#     if high_tide_hour > low_tide_hour:
-#         total_cycle_duration = (high_tide_hour - low_tide_hour).total_seconds()
-#     else:
-#         total_cycle_duration = (low_tide_hour - high_tide_hour).total_seconds()
-
-#     if current_hour < high_tide_hour:
-#         deviation = (high_tide_hour - current_hour).total_seconds()
-#         percentage = (deviation / total_cycle_duration) * 100
-#     elif current_hour > low_tide_hour:
-#         deviation = (current_hour - low_tide_hour).total_seconds()
-#         percentage = 100 - (deviation / total_cycle_duration) * 100
-#     else:
-#         deviation = (current_hour - high_tide_hour).total_seconds()
-#         percentage = (deviation / total_cycle_duration) * 100
-
-#     percentage = max(0, min(100, percentage))
-#     calculed_percentage = math.ceil(percentage)
-#     returned_percentage = 100 - calculed_percentage
-#     return returned_percentage
-
-
 def calculate_tide_percentage(
     high_tide: datetime, low_tide: datetime, current_time: datetime
 ) -> float:
@@ -1077,7 +1053,7 @@ def calculate_tide_percentage(
     else:
         percentage = (1 - curve_factor) * 100
 
-    return round(percentage, 2)
+    return math.ceil(percentage)
 
 
 def get_predominant_direction(direction: float) -> str:
