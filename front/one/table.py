@@ -304,7 +304,7 @@ def plot_forecast_as_table():
                 c3, c4 = st.columns(2)
                 c3.metric(
                     "Swell",
-                    f"{next_forecast['wave_height']}m {next_forecast['wave_period']}s",
+                    f"{next_forecast['wave_height']}m | {next_forecast['wave_period']}s",
                     next_forecast["wave_direction"],
                     delta_arrow="off",
                 )
@@ -341,7 +341,7 @@ def plot_forecast_as_table():
                 )
                 c3.metric(
                     "Swell",
-                    f"{next_forecast['wave_height']}m {next_forecast['wave_period']}s",
+                    f"{next_forecast['wave_height']}m | {next_forecast['wave_period']}s",
                     next_forecast["wave_direction"],
                     delta_arrow="off",
                 )
