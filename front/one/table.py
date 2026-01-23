@@ -8,6 +8,7 @@ from scrapers.windguru import Windguru
 from scrapers.tides import TidesScraperLanzarote
 import altair as alt
 import polars as pl
+import pandas as pd
 from datetime import datetime, timedelta, timezone
 from st_aggrid import AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
 
@@ -44,39 +45,60 @@ def get_default_wind_approval_selection(wind_approval_list):
 
 
 def plot_graph(add_data: str, data: pl.DataFrame):
-    st.header(f"Energía/día ({add_data})", divider="rainbow")
-    num_categories = data["spot_name"].n_unique()
-    chart = (
-        alt.Chart(data.to_pandas())
-        .mark_line(strokeWidth=3, point=True)
-        .encode(
-            x="datetime:T",
-            y=alt.Y("energy:Q", impute=alt.ImputeParams(value=None)),
-            color=alt.Color(
-                "spot_name:N",
-                scale=alt.Scale(
-                    scheme="category20" if num_categories <= 20 else "tableau10"
-                ),
-            ),
-            detail="date:T",
-            tooltip=[
-                alt.Tooltip("date:T", format="%d/%m/%Y", title="Date"),
-                alt.Tooltip("time_graph:N", title="Time"),
-                "energy:Q",
-                "spot_name:N",
-                "wave_height:Q",
-                "wind_speed:Q",
-                "wind_direction:N",
-                "wave_direction:N",
-                "wave_period:Q",
-                "tide_percentage:Q",
-            ],
-        )
-        .properties(width=600, height=400)
-        .configure_legend(orient="right")
+    st.header(f"Energía por días ({add_data})", divider="rainbow")
+
+    source = data.to_pandas()
+    now = datetime.now(timezone.utc)
+    highlight = alt.selection_point(on="mouseover", fields=["spot_name"], nearest=True)
+    base = alt.Chart(source).encode(
+        x=alt.X("datetime:T", title="Día y Hora"),
+        y=alt.Y("energy:Q", title="Energía (kJ)", scale=alt.Scale(zero=False)),
+        color=alt.Color(
+            "spot_name:N", title="Playa", scale=alt.Scale(scheme="tableau10")
+        ),
+        tooltip=[
+            alt.Tooltip("datetime:T", format="%H:%M %d/%m", title="Hora"),
+            alt.Tooltip("spot_name:N", title="Playa"),
+            alt.Tooltip("energy:Q", title="Energía (kJ)"),
+            alt.Tooltip("wave_height:Q", title="Altura (m)"),
+            alt.Tooltip("wave_period:Q", title="Periodo (s)"),
+        ],
     )
-    zoomed_chart = chart.interactive()
-    st.altair_chart(zoomed_chart, width="stretch")
+    lines = (
+        base.mark_line(strokeWidth=3, interpolate="monotone")
+        .encode(size=alt.condition(~highlight, alt.value(2), alt.value(5)))
+        .add_params(highlight)
+    )
+
+    points = base.mark_point(filled=True, size=60).encode(
+        opacity=alt.condition(~highlight, alt.value(0.3), alt.value(1))
+    )
+    now_df = pd.DataFrame({"now": [now]})
+    rule = (
+        alt.Chart(now_df)
+        .mark_rule(color="#ff4b4b", strokeDash=[5, 5], strokeWidth=2)
+        .encode(x="now:T")
+    )
+
+    text = (
+        alt.Chart(now_df)
+        .mark_text(
+            align="left",
+            dx=5,
+            dy=-180,
+            text="📍 AHORA",
+            color="#ff4b4b",
+            fontWeight="bold",
+        )
+        .encode(x="now:T")
+    )
+    final_chart = (
+        (lines + points + rule + text)
+        .properties(width="container", height=450)
+        .interactive()
+    )
+
+    st.altair_chart(final_chart, width="stretch")
 
 
 def plot_selected_wind_speed():
@@ -231,18 +253,7 @@ def plot_forecast_as_table():
     )
     data = df.filter(mask)
 
-    data_other = data.filter(~pl.col("wave_direction").is_in(["W", "WNW"]))
-    plot_graph("fuerza norte", data_other)
-
-    data_west_wave = data.filter(pl.col("wave_direction").is_in(["W", "WNW"]))
-    if not data_west_wave.is_empty():
-        plot_graph("fuerza oeste", data_west_wave)
-
-    grouped_data = data.group_by("spot_name").agg(
-        pl.col("datetime").min().alias("datetime")
-    )
-    grouped_data = grouped_data.sort("datetime", descending=False)
-
+    # TODO put in a method
     if not data.is_empty():
         next_forecast = data.sort("datetime").head(1).to_dicts()[0]
         now = datetime.now(timezone.utc)
@@ -304,6 +315,19 @@ def plot_forecast_as_table():
                 delta_arrow="off",
             )
 
+    data_other = data.filter(~pl.col("wave_direction").is_in(["W", "WNW"]))
+    plot_graph("fuerza norte", data_other)
+
+    data_west_wave = data.filter(pl.col("wave_direction").is_in(["W", "WNW"]))
+    if not data_west_wave.is_empty():
+        plot_graph("fuerza oeste", data_west_wave)
+
+    grouped_data = data.group_by("spot_name").agg(
+        pl.col("datetime").min().alias("datetime")
+    )
+    grouped_data = grouped_data.sort("datetime", descending=False)
+
+    # TODO put in a method
     with st.container():
         for i, row in enumerate(grouped_data.to_dicts()):
             spot_name = row["spot_name"]
