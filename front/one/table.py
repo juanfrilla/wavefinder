@@ -288,8 +288,17 @@ def plot_forecast_as_table():
             if is_mobile():
                 # FILA 1: Inicio y Energía
                 c1, c2 = st.columns(2)
-                c1.metric("Inicio", next_forecast["time_friendly"], tiempo_display)
-                c2.metric("Energía", f"{next_forecast['energy']} kJ")
+                c1.metric(
+                    "Inicio",
+                    next_forecast["time_friendly"],
+                    tiempo_display,
+                    delta_arrow="off",
+                )
+                c2.metric(
+                    "Energía",
+                    f"{next_forecast['energy']} kJ",
+                    delta_arrow="off",
+                )
 
                 # FILA 2: Swell y Viento
                 c3, c4 = st.columns(2)
@@ -297,11 +306,13 @@ def plot_forecast_as_table():
                     "Swell",
                     f"{next_forecast['wave_height']}m {next_forecast['wave_period']}s",
                     next_forecast["wave_direction"],
+                    delta_arrow="off",
                 )
                 c4.metric(
                     "Viento",
                     f"{next_forecast['wind_speed']} kn",
                     next_forecast["wind_direction"],
+                    delta_arrow="off",
                 )
 
                 # FILA 3: Marea (El "1" final)
@@ -311,27 +322,40 @@ def plot_forecast_as_table():
                     "Marea",
                     f"{next_forecast['tide_percentage']}%",
                     next_forecast["tide"],
+                    delta_arrow="off",
                 )
 
             else:
                 # DISEÑO PARA PC (5 columnas en una fila)
                 c1, c2, c3, c4, c5 = st.columns(5)
-                c1.metric("Inicio", next_forecast["time_friendly"], tiempo_display)
-                c2.metric("Energía", f"{next_forecast['energy']} kJ")
+                c1.metric(
+                    "Inicio",
+                    next_forecast["time_friendly"],
+                    tiempo_display,
+                    delta_arrow="off",
+                )
+                c2.metric(
+                    "Energía",
+                    f"{next_forecast['energy']} kJ",
+                    delta_arrow="off",
+                )
                 c3.metric(
                     "Swell",
                     f"{next_forecast['wave_height']}m {next_forecast['wave_period']}s",
                     next_forecast["wave_direction"],
+                    delta_arrow="off",
                 )
                 c4.metric(
                     "Viento",
                     f"{next_forecast['wind_speed']} kn",
                     next_forecast["wind_direction"],
+                    delta_arrow="off",
                 )
                 c5.metric(
                     "Marea",
                     f"{next_forecast['tide_percentage']}%",
                     next_forecast["tide"],
+                    delta_arrow="off",
                 )
 
     data_other = data.filter(~pl.col("wave_direction").is_in(["W", "WNW"]))
