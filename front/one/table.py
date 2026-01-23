@@ -326,10 +326,11 @@ def plot_forecast_as_table():
                     else:
                         col["headerName"] = f"{date} {time}"
 
-                AgGrid(
-                    rotated_df_pd,
-                    gridOptions=grid_options,
-                    fit_columns_on_grid_load=True,
-                    theme="alpine",
-                    enable_enterprise_modules=False,
-                )
+                    AgGrid(
+                        rotated_df_pd,
+                        gridOptions=grid_options,
+                        fit_columns_on_grid_load=True,
+                        theme="alpine",
+                        enable_enterprise_modules=False,
+                        key=f"grid_{spot_name}_{i}",
+                    )
