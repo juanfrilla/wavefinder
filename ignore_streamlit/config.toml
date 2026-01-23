@@ -1,0 +1,69 @@
+[theme]
+
+base="dark"
+
+# Main colors
+primaryColor="#1ca3ec"                # Ocean blue for buttons & highlights
+backgroundColor="#0b1a2bcc"           # Deep sea, slightly transparent
+secondaryBackgroundColor="#112f44cc"  # Lighter wave background
+textColor="#d0f0ff"                   # Soft ocean text
+
+# Basic palette
+redColor="#ff6b6b"                     # Coral/red accent
+orangeColor="#ffa94d"                  # Sandy/orange accent
+yellowColor="#fff176"                  # Sunlight yellow
+blueColor="#1ca3ec"                    # Ocean accent
+greenColor="#21c354"                   # Surfboard/green highlights
+violetColor="#6a4eff"                  # Twilight sky/foam highlights
+grayColor="#7a7f91"                    # Rock/neutral gray
+
+# Background variants
+redBackgroundColor="#ff6b6b33"
+orangeBackgroundColor="#ffa94d33"
+yellowBackgroundColor="#fff17633"
+blueBackgroundColor="#1ca3ec33"
+greenBackgroundColor="#3dd56d33"
+violetBackgroundColor="#7a4eff33"
+grayBackgroundColor="#80849533"
+
+# Text variants
+redTextColor="#ff8a8a"
+orangeTextColor="#ffbc7d"
+yellowTextColor="#ffffa3"
+blueTextColor="#60d0ff"
+greenTextColor="#76ffa8"
+violetTextColor="#a085ff"
+grayTextColor="#f0f0f0cc"
+
+# Links & code
+linkColor="#60d0ff"
+linkUnderline=true
+codeTextColor="#76ffa8"
+codeBackgroundColor="#112f44cc"
+
+# Fonts
+font="sans-serif"
+fontFaces = []
+baseFontSize=16
+baseFontWeight=400
+
+headingFont="sans-serif"
+headingFontSizes=["2.75rem","2.25rem","1.75rem","1.5rem","1.25rem","1rem"]
+headingFontWeights=[700,600,600,600,600,600]
+
+codeFont="monospace"
+codeFontSize="0.875rem"
+codeFontWeight=400
+
+# Radius & borders
+baseRadius="0.5rem"
+buttonRadius="0.75rem"
+borderColor="#1a2b44"
+dataframeBorderColor="#1a2b44"
+dataframeHeaderBackgroundColor="#112f44cc"
+showWidgetBorder=true
+showSidebarBorder=true
+
+# Charts: wave-inspired palettes
+chartCategoricalColors=["#1ca3ec","#60d0ff","#83d4ff","#7defa1","#29b09d","#fff176","#ffa94d","#ff6b6b","#6a4eff","#d0f0ff"]
+chartSequentialColors=["#0b1a2b","#112f44","#1c4f70","#1ca3ec","#60d0ff","#83d4ff","#a0e0ff","#c0f0ff","#e0f8ff","#f0fcff"]
