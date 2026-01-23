@@ -4,7 +4,6 @@ Meterle pydantic
 Probar algún profiler, para trastear
 Meterle windycom
 
-
 escrapear temperatura, precipitaciones
 elegir qué campos quieres que se muestren en el dataframe
 
@@ -21,4 +20,4 @@ mirar si puedo meterle requests HTML y escrapear el primer modelo que es más ef
 el espino sale en 3 ocasiones, mucho viento norte o noroeste, mucha fuerza oeste y viento norte u noroeste y mucha fuerza norte y viento norte u noroeste
 descargar datos y almacenar
 
-POner frontend más bonito, unificar grados con direccion en el df para menos columnas, mareas unificar
+En vez de poner papagayo-montaña amarilla en la leyenda o similares, permitir varios spots
