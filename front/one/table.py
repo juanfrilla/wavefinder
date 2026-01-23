@@ -3,7 +3,7 @@ import json
 import time
 import unicodedata
 import streamlit as st
-from utils import final_forecast_format, construct_date_selection_list
+from utils import final_forecast_format, construct_date_selection_list, is_mobile
 from scrapers.windguru import Windguru
 from scrapers.tides import TidesScraperLanzarote
 import altair as alt
@@ -194,7 +194,7 @@ def plot_forecast_as_table():
         unsafe_allow_html=True,
     )
 
-    st.title("LANZAROTE (WINDGURU)")
+    st.title("LANZAROTE (WAVEFINDER)")
 
     retries = 0
     while retries <= RETRIES:
@@ -264,56 +264,71 @@ def plot_forecast_as_table():
 
         diff = target_time - now
         total_seconds = int(diff.total_seconds())
+
+        # Lógica de tiempo mejorada
         if total_seconds <= 0:
             tiempo_display = "Ahora"
         else:
             hours = total_seconds // 3600
             minutes = (total_seconds % 3600) // 60
-        if hours > 0:
-            tiempo_display = f"En {hours}h y {minutes}min"
-        else:
-            tiempo_display = f"En {minutes}min"
+            tiempo_display = (
+                f"En {hours}h {minutes}min" if hours > 0 else f"En {minutes}min"
+            )
 
+        # Título principal
         st.subheader(f"⏱️ Próxima Sesión: {next_forecast['spot_name']}", divider="blue")
-        c1, c2, c3, c4, c5 = st.columns(5)
 
-        with c1:
-            st.metric(
-                "Inicio",
-                f"A las {next_forecast['time_friendly']}",
-                tiempo_display,
-                delta_arrow="off",
-            )
+        # Usamos un contenedor con borde para agrupar visualmente las métricas
+        # DETECCIÓN DE DISPOSITIVO
 
-        with c2:
-            st.metric(
-                "Energía",
-                f"{next_forecast['energy']} kJ",
-            )
+        with st.container(border=True):
+            if is_mobile():
+                # DISEÑO PARA MÓVIL (2 columnas por fila)
+                row1_col1, row1_col2 = st.columns(2)
+                row1_col1.metric(
+                    "Inicio", next_forecast["time_friendly"], tiempo_display
+                )
+                row1_col2.metric("Energía", f"{next_forecast['energy']} kJ")
 
-        with c3:
-            st.metric(
-                "Swell",
-                f"{next_forecast['wave_height']}m | {next_forecast['wave_period']}s",
-                f"{next_forecast['wave_direction']}",
-                delta_arrow="off",
-            )
+                row2_col1, row2_col2 = st.columns(2)
+                row2_col1.metric(
+                    "Swell",
+                    f"{next_forecast['wave_height']}m {next_forecast['wave_period']}s",
+                    next_forecast["wave_direction"],
+                )
+                row2_col2.metric(
+                    "Viento",
+                    f"{next_forecast['wind_speed']} kn",
+                    next_forecast["wind_direction"],
+                )
 
-        with c4:
-            st.metric(
-                "Viento",
-                f"{next_forecast['wind_speed']} kn",
-                next_forecast["wind_direction"],
-                delta_arrow="off",
-            )
+                st.divider()
+                st.metric(
+                    "Marea",
+                    f"{next_forecast['tide_percentage']}%",
+                    next_forecast["tide"],
+                )
 
-        with c5:
-            st.metric(
-                "Marea",
-                f"{next_forecast['tide_percentage']}%",
-                next_forecast["tide"],
-                delta_arrow="off",
-            )
+            else:
+                # DISEÑO PARA PC (5 columnas en una fila)
+                c1, c2, c3, c4, c5 = st.columns(5)
+                c1.metric("Inicio", next_forecast["time_friendly"], tiempo_display)
+                c2.metric("Energía", f"{next_forecast['energy']} kJ")
+                c3.metric(
+                    "Swell",
+                    f"{next_forecast['wave_height']}m {next_forecast['wave_period']}s",
+                    next_forecast["wave_direction"],
+                )
+                c4.metric(
+                    "Viento",
+                    f"{next_forecast['wind_speed']} kn",
+                    next_forecast["wind_direction"],
+                )
+                c5.metric(
+                    "Marea",
+                    f"{next_forecast['tide_percentage']}%",
+                    next_forecast["tide"],
+                )
 
     data_other = data.filter(~pl.col("wave_direction").is_in(["W", "WNW"]))
     plot_graph("fuerza norte", data_other)

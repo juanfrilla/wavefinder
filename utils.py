@@ -1,6 +1,7 @@
 import math
 import polars as pl
 from datetime import datetime, date, time, timedelta, timezone
+import streamlit as st
 from typing import Dict
 
 MONTH_MAPPING = {
@@ -1137,3 +1138,12 @@ def align_dict_columns(data: dict) -> dict:
         k: (v[:min_len] if isinstance(v, (list, tuple)) else v) for k, v in data.items()
     }
     return aligned
+
+
+def is_mobile():
+    headers = st.context.headers
+    if headers:
+        user_agent = headers.get("User-Agent", "").lower()
+        # Buscamos palabras clave de dispositivos móviles
+        return any(x in user_agent for x in ["mobile", "android", "iphone", "ipad"])
+    return False
