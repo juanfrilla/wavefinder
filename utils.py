@@ -1053,7 +1053,7 @@ def calculate_tide_percentage(
     else:
         percentage = (1 - curve_factor) * 100
 
-    return math.ceil(percentage)
+    return round(percentage)
 
 
 def get_predominant_direction(direction: float) -> str:
