@@ -8,7 +8,7 @@ from scrapers.windguru import Windguru
 from scrapers.tides import TidesScraperLanzarote
 import altair as alt
 import polars as pl
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from st_aggrid import AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
 
 DEFAULT_MIN_WAVE_PERIOD = 0
@@ -43,15 +43,15 @@ def get_default_wind_approval_selection(wind_approval_list):
     return []
 
 
-def plot_graph(variable, add_data: str, data: pl.DataFrame):
-    st.header(f"{variable} {add_data} per day", divider="rainbow")
+def plot_graph(add_data: str, data: pl.DataFrame):
+    st.header(f"Energía/día ({add_data})", divider="rainbow")
     num_categories = data["spot_name"].n_unique()
     chart = (
         alt.Chart(data.to_pandas())
         .mark_line(strokeWidth=3, point=True)
         .encode(
             x="datetime:T",
-            y=alt.Y(f"{variable}:Q", impute=alt.ImputeParams(value=None)),
+            y=alt.Y("energy:Q", impute=alt.ImputeParams(value=None)),
             color=alt.Color(
                 "spot_name:N",
                 scale=alt.Scale(
@@ -232,11 +232,11 @@ def plot_forecast_as_table():
     data = df.filter(mask)
 
     data_other = data.filter(~pl.col("wave_direction").is_in(["W", "WNW"]))
-    plot_graph("energy", "north swell", data_other)
+    plot_graph("fuerza norte", data_other)
 
     data_west_wave = data.filter(pl.col("wave_direction").is_in(["W", "WNW"]))
     if not data_west_wave.is_empty():
-        plot_graph("energy", "west swell", data_west_wave)
+        plot_graph("fuerza oeste", data_west_wave)
 
     grouped_data = data.group_by("spot_name").agg(
         pl.col("datetime").min().alias("datetime")
@@ -244,7 +244,65 @@ def plot_forecast_as_table():
     grouped_data = grouped_data.sort("datetime", descending=False)
 
     if not data.is_empty():
-        st.dataframe(data.drop(["datetime", "date", "time", "time_graph"]).head(1))
+        next_forecast = data.sort("datetime").head(1).to_dicts()[0]
+        now = datetime.now(timezone.utc)
+        target_time = next_forecast["datetime"]
+
+        if target_time.tzinfo is None:
+            target_time = target_time.replace(tzinfo=timezone.utc)
+
+        diff = target_time - now
+        total_seconds = int(diff.total_seconds())
+        if total_seconds <= 0:
+            tiempo_display = "Ahora"
+        else:
+            hours = total_seconds // 3600
+            minutes = (total_seconds % 3600) // 60
+        if hours > 0:
+            tiempo_display = f"En {hours}h y {minutes}min"
+        else:
+            tiempo_display = f"En {minutes}min"
+
+        st.subheader(f"⏱️ Próxima Sesión: {next_forecast['spot_name']}", divider="blue")
+        c1, c2, c3, c4, c5 = st.columns(5)
+
+        with c1:
+            st.metric(
+                "Inicio",
+                f"A las {next_forecast['time_friendly']}",
+                tiempo_display,
+                delta_arrow="off",
+            )
+
+        with c2:
+            st.metric(
+                "Energía",
+                f"{next_forecast['energy']} kJ",
+            )
+
+        with c3:
+            st.metric(
+                "Swell",
+                f"{next_forecast['wave_height']}m | {next_forecast['wave_period']}s",
+                f"{next_forecast['wave_direction']}",
+                delta_arrow="off",
+            )
+
+        with c4:
+            st.metric(
+                "Viento",
+                f"{next_forecast['wind_speed']} kn",
+                next_forecast["wind_direction"],
+                delta_arrow="off",
+            )
+
+        with c5:
+            st.metric(
+                "Marea",
+                f"{next_forecast['tide_percentage']}%",
+                next_forecast["tide"],
+                delta_arrow="off",
+            )
 
     with st.container():
         for i, row in enumerate(grouped_data.to_dicts()):
@@ -330,7 +388,11 @@ def plot_forecast_as_table():
 
                 gb = GridOptionsBuilder.from_dataframe(rotated_df_pd)
                 gb.configure_default_column(
-                    wrapText=True, autoHeight=True, editable=False
+                    wrapText=True,
+                    autoHeight=True,
+                    editable=False,
+                    resizable=True,
+                    suppressMovable=True,
                 )
                 gb.configure_grid_options(domLayout="autoHeight")
                 gb.configure_column(
@@ -352,7 +414,7 @@ def plot_forecast_as_table():
                     if name in ["Hoy", "Mañana", "Pasado"]:
                         col["headerName"] = f"{time_friendly[idx]} {name}"
                     else:
-                        col["headerName"] = f"{date_friendly[idx]} {time_friendly[idx]}"
+                        col["headerName"] = f"{time_friendly[idx]} {date_friendly[idx]}"
 
                 AgGrid(
                     rotated_df_pd,
