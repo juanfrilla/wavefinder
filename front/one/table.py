@@ -335,13 +335,13 @@ def plot_forecast_as_table():
                 gb.configure_grid_options(domLayout="autoHeight")
                 gb.configure_column(
                     "column names",
-                    pinned="left",  # <--- ESTO LA FIJA A LA IZQUIERDA
+                    pinned="left",
                     cellStyle={
                         "fontWeight": "bold",
-                        "backgroundColor": "#f8f9fb",  # Un gris clarito para que destaque
-                        "borderRight": "1px solid #d3d3d3",  # Una línea divisoria clara
+                        "backgroundColor": "#f8f9fb",
+                        "borderRight": "1px solid #d3d3d3",
                     },
-                    width=150,  # Ancho fijo para que no baile
+                    width=150,
                 )
                 gb.configure_column("column names", suppressMenu=True)
                 grid_options = gb.build()
