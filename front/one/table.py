@@ -5,7 +5,7 @@ import unicodedata
 import streamlit as st
 from utils import final_forecast_format, construct_date_selection_list
 from scrapers.windguru import Windguru
-from scrapers.tides import TidesScraper
+from scrapers.tides import TidesScraperLanzarote
 import altair as alt
 import polars as pl
 from datetime import datetime, timedelta
@@ -154,7 +154,7 @@ def scrape_tides_cached():
     cached = load_cache(TIDES_CACHE_PATH)
     if cached is not None:
         return cached
-    tide_scraper = TidesScraper()
+    tide_scraper = TidesScraperLanzarote()
     tides = tide_scraper.tasks()
     save_cache(TIDES_CACHE_PATH, tides)
     return tides

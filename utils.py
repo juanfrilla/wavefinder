@@ -993,31 +993,38 @@ def generate_nearest_tides(tide_data: dict, forecast_datetimes: dict) -> list:
     return nearest_tides
 
 
-def generate_tide_percentages(tide_data: dict, forecast_datetimes: list) -> list:
+def generate_tide_percentages(tide_data: list, forecast_datetimes: list) -> list:
     tide_percentages = []
-    tides_datetimes_list = [
-        datetime.fromtimestamp(item["timestamp"]) for item in tide_data
-    ]
-    tides_tide_list = [item["tide"] for item in tide_data]
+    sorted_tides = sorted(tide_data, key=lambda x: x["timestamp"])
 
     for forecast_datetime in forecast_datetimes:
-        sorted_datetimes = sorted(
-            tides_datetimes_list, key=lambda dt: abs(dt - forecast_datetime)
-        )
-        closest_datetime_1 = sorted_datetimes[0]
-        closest_datetime_2 = sorted_datetimes[1]
+        forecast_ts = forecast_datetime.timestamp()
+        before = None
+        after = None
 
-        closest_datetime_index_1 = tides_datetimes_list.index(closest_datetime_1)
+        for i in range(len(sorted_tides) - 1):
+            if (
+                sorted_tides[i]["timestamp"]
+                <= forecast_ts
+                <= sorted_tides[i + 1]["timestamp"]
+            ):
+                before = sorted_tides[i]
+                after = sorted_tides[i + 1]
+                break
 
-        if tides_tide_list[closest_datetime_index_1] == "pleamar":
-            high_tide_hour = closest_datetime_1
-            low_tide_hour = closest_datetime_2
+        if not before or not after:
+            tide_percentages.append(0)
+            continue
+
+        if before["tide"] == "pleamar":
+            high_tide_dt = datetime.fromtimestamp(before["timestamp"])
+            low_tide_dt = datetime.fromtimestamp(after["timestamp"])
         else:
-            high_tide_hour = closest_datetime_2
-            low_tide_hour = closest_datetime_1
+            low_tide_dt = datetime.fromtimestamp(before["timestamp"])
+            high_tide_dt = datetime.fromtimestamp(after["timestamp"])
 
         tide_percentage = calculate_tide_percentage(
-            high_tide_hour, forecast_datetime, low_tide_hour
+            high_tide_dt, low_tide_dt, forecast_datetime
         )
         tide_percentages.append(tide_percentage)
 
@@ -1031,28 +1038,46 @@ def find_next_tide(tides_datetimes_list, tides_tide_list, start_index, tide_type
     raise ValueError(f"No {tide_type} found after index {start_index}")
 
 
+# def calculate_tide_percentage(
+#     high_tide_hour: datetime, current_hour: datetime, low_tide_hour: datetime
+# ) -> float:
+#     if high_tide_hour > low_tide_hour:
+#         total_cycle_duration = (high_tide_hour - low_tide_hour).total_seconds()
+#     else:
+#         total_cycle_duration = (low_tide_hour - high_tide_hour).total_seconds()
+
+#     if current_hour < high_tide_hour:
+#         deviation = (high_tide_hour - current_hour).total_seconds()
+#         percentage = (deviation / total_cycle_duration) * 100
+#     elif current_hour > low_tide_hour:
+#         deviation = (current_hour - low_tide_hour).total_seconds()
+#         percentage = 100 - (deviation / total_cycle_duration) * 100
+#     else:
+#         deviation = (current_hour - high_tide_hour).total_seconds()
+#         percentage = (deviation / total_cycle_duration) * 100
+
+#     percentage = max(0, min(100, percentage))
+#     calculed_percentage = math.ceil(percentage)
+#     returned_percentage = 100 - calculed_percentage
+#     return returned_percentage
+
+
 def calculate_tide_percentage(
-    high_tide_hour: datetime, current_hour: datetime, low_tide_hour: datetime
+    high_tide: datetime, low_tide: datetime, current_time: datetime
 ) -> float:
-    if high_tide_hour > low_tide_hour:
-        total_cycle_duration = (high_tide_hour - low_tide_hour).total_seconds()
-    else:
-        total_cycle_duration = (low_tide_hour - high_tide_hour).total_seconds()
+    start_tide = min(high_tide, low_tide)
+    end_tide = max(high_tide, low_tide)
 
-    if current_hour < high_tide_hour:
-        deviation = (high_tide_hour - current_hour).total_seconds()
-        percentage = (deviation / total_cycle_duration) * 100
-    elif current_hour > low_tide_hour:
-        deviation = (current_hour - low_tide_hour).total_seconds()
-        percentage = 100 - (deviation / total_cycle_duration) * 100
+    total_duration = (end_tide - start_tide).total_seconds()
+    elapsed = (current_time - start_tide).total_seconds()
+    progress = max(0, min(1, elapsed / total_duration))
+    curve_factor = (1 - math.cos(progress * math.pi)) / 2
+    if start_tide == low_tide:
+        percentage = curve_factor * 100
     else:
-        deviation = (current_hour - high_tide_hour).total_seconds()
-        percentage = (deviation / total_cycle_duration) * 100
+        percentage = (1 - curve_factor) * 100
 
-    percentage = max(0, min(100, percentage))
-    calculed_percentage = math.ceil(percentage)
-    returned_percentage = 100 - calculed_percentage
-    return returned_percentage
+    return round(percentage, 2)
 
 
 def get_predominant_direction(direction: float) -> str:
