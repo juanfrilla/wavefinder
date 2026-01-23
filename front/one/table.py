@@ -283,27 +283,28 @@ def plot_forecast_as_table():
 
         with st.container(border=True):
             if is_mobile():
-                # DISEÑO PARA MÓVIL (2 columnas por fila)
-                row1_col1, row1_col2 = st.columns(2)
-                row1_col1.metric(
-                    "Inicio", next_forecast["time_friendly"], tiempo_display
-                )
-                row1_col2.metric("Energía", f"{next_forecast['energy']} kJ")
+                # FILA 1: Inicio y Energía
+                c1, c2 = st.columns(2)
+                c1.metric("Inicio", next_forecast["time_friendly"], tiempo_display)
+                c2.metric("Energía", f"{next_forecast['energy']} kJ")
 
-                row2_col1, row2_col2 = st.columns(2)
-                row2_col1.metric(
+                # FILA 2: Swell y Viento
+                c3, c4 = st.columns(2)
+                c3.metric(
                     "Swell",
                     f"{next_forecast['wave_height']}m {next_forecast['wave_period']}s",
                     next_forecast["wave_direction"],
                 )
-                row2_col2.metric(
+                c4.metric(
                     "Viento",
                     f"{next_forecast['wind_speed']} kn",
                     next_forecast["wind_direction"],
                 )
 
-                st.divider()
-                st.metric(
+                # FILA 3: Marea (El "1" final)
+                # Al crear una sola columna, ocupará el ancho completo, centrando visualmente el dato
+                c5 = st.columns(1)[0]
+                c5.metric(
                     "Marea",
                     f"{next_forecast['tide_percentage']}%",
                     next_forecast["tide"],
