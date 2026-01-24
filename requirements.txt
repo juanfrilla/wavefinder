@@ -4,3 +4,4 @@ curl-cffi
 streamlit-aggrid
 bs4
 pytest
+ruff
