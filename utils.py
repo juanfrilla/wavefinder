@@ -390,7 +390,7 @@ def barcarola_conditions(
             )
             and (wave_direction not in unwanted_wave_directions)
         )
-        and (wind_speed >= 19.0)
+        and (wind_speed >= 20.0)
         and (wave_period >= 10)
         and (tide_percentage <= 50)
     )
@@ -1144,6 +1144,5 @@ def is_mobile():
     headers = st.context.headers
     if headers:
         user_agent = headers.get("User-Agent", "").lower()
-        # Buscamos palabras clave de dispositivos móviles
         return any(x in user_agent for x in ["mobile", "android", "iphone", "ipad"])
     return False

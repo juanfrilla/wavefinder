@@ -190,6 +190,163 @@ def load_windguru_forecast():
     return df
 
 
+def render_spot_expanders(filtered_data: pl.DataFrame, section_prefix: str):
+    if filtered_data.is_empty():
+        return
+    now = datetime.now(timezone.utc)
+    spots_ordenados = (
+        filtered_data.group_by("spot_name")
+        .agg(pl.col("datetime").min().alias("proxima_sesion"))
+        .sort("proxima_sesion")["spot_name"]
+        .to_list()
+    )
+
+    for i, spot_name in enumerate(spots_ordenados):
+        spot_df = filtered_data.filter(pl.col("spot_name") == spot_name)
+
+        with st.expander(f"Spot: {spot_name} ({spot_df.height} sesiones)"):
+            fechas_disponibles = spot_df["date"].unique().sort()
+
+            for j, fecha in enumerate(fechas_disponibles):
+                group_df = spot_df.filter(pl.col("date") == fecha).sort("datetime")
+
+                first_session_dt = group_df["datetime"][0]
+                if first_session_dt.tzinfo is None:
+                    first_session_dt = first_session_dt.replace(tzinfo=timezone.utc)
+
+                diff = first_session_dt - now
+                total_seconds = int(diff.total_seconds())
+
+                if total_seconds <= 0:
+                    tiempo_restante_txt = "¡Ya está ocurriendo!"
+                else:
+                    dias = total_seconds // 86400
+                    horas = (total_seconds % 86400) // 3600
+                    minutos = (total_seconds % 3600) // 60
+
+                    partes = []
+                    if dias > 0:
+                        partes.append(f"{dias}d")
+                    if horas > 0:
+                        partes.append(f"{horas}h")
+                    if minutos > 0:
+                        partes.append(f"{minutos}min")
+                    tiempo_restante_txt = f"En {' '.join(partes)}"
+
+                nombre_dia = group_df["date_name"][0]
+                fecha_f = group_df["date_friendly"][0]
+
+                st.markdown(
+                    f"**{nombre_dia}** <small>({fecha_f})</small> — `{tiempo_restante_txt}`",
+                    unsafe_allow_html=True,
+                )
+                group_df = group_df.with_columns(
+                    [
+                        (
+                            pl.col("wind_direction")
+                            + " ("
+                            + pl.col("wind_direction_degrees").cast(pl.Utf8)
+                            + "º)"
+                        ).alias("wind_unified"),
+                        (
+                            pl.col("wave_direction")
+                            + " ("
+                            + pl.col("wave_direction_degrees").cast(pl.Utf8)
+                            + "º)"
+                        ).alias("wave_unified"),
+                        (
+                            pl.col("nearest_tide")
+                            + " ("
+                            + pl.col("tide_percentage").cast(pl.Utf8)
+                            + "%)"
+                        ).alias("tide_unified"),
+                    ]
+                )
+                date_friendly = group_df["date_friendly"].to_list()
+                time_friendly = group_df["time_friendly"].to_list()
+                date_names = group_df["date_name"].to_list()
+
+                forecast_to_plot = (
+                    group_df.drop(
+                        [
+                            "spot_name",
+                            "date",
+                            "time",
+                            "time_graph",
+                            "wind_direction",
+                            "wind_direction_degrees",
+                            "wave_direction",
+                            "wave_direction_degrees",
+                            "date_friendly",
+                            "time_friendly",
+                            "date_name",
+                            "nearest_tide",
+                            "tide_percentage",
+                        ]
+                    )
+                    .sort("datetime")
+                    .rename(
+                        {
+                            "wave_unified": "wave_direction",
+                            "wind_unified": "wind_direction",
+                            "tide_unified": "nearest_tide",
+                        }
+                    )
+                )
+
+                forecast_to_plot = forecast_to_plot.drop(["datetime"])
+
+                order_surf = [
+                    "energy",
+                    "nearest_tide",
+                    "tide",
+                    "wind_direction",
+                    "wind_direction_predominant",
+                    "wave_height",
+                    "wave_period",
+                    "wave_direction",
+                    "wave_direction_predominant",
+                    "wind_speed",
+                ]
+                forecast_to_plot = forecast_to_plot.select(order_surf)
+
+                forecast_columns = [
+                    col.upper().replace("_", " ") for col in forecast_to_plot.columns
+                ]
+                rotated_df = forecast_to_plot.transpose(include_header=False)
+                rotated_df.insert_column(0, pl.Series("PARÁMETROS", forecast_columns))
+                rotated_df_pd = rotated_df.to_pandas()
+
+                gb = GridOptionsBuilder.from_dataframe(rotated_df_pd)
+                gb.configure_default_column(wrapText=True, autoHeight=True)
+                gb.configure_grid_options(domLayout="autoHeight")
+                gb.configure_column(
+                    "PARÁMETROS",
+                    pinned="left",
+                    cellStyle={"fontWeight": "bold", "backgroundColor": "#f8f9fb"},
+                )
+
+                grid_options = gb.build()
+                for idx, col in enumerate(grid_options["columnDefs"][1:]):
+                    name = unicodedata.normalize("NFC", date_names[idx])
+                    col["headerName"] = (
+                        f"{time_friendly[idx]}"
+                        if name in ["Hoy", "Mañana", "Pasado"]
+                        else f"{time_friendly[idx]} {date_friendly[idx]}"
+                    )
+                unique_key = f"grid_{section_prefix}_{spot_name}_{fecha}_{j}".replace(
+                    " ", "_"
+                ).lower()
+
+                AgGrid(
+                    rotated_df_pd,
+                    gridOptions=grid_options,
+                    theme="alpine",
+                    key=f"{unique_key}",
+                    columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
+                )
+
+
 def plot_forecast_as_table():
     st.set_page_config(layout="wide")
     st.markdown(
@@ -268,7 +425,6 @@ def plot_forecast_as_table():
         diff = target_time - now
         total_seconds = int(diff.total_seconds())
 
-        # Lógica de tiempo mejorada
         if total_seconds <= 0:
             tiempo_display = "Ahora"
         else:
@@ -278,15 +434,10 @@ def plot_forecast_as_table():
                 f"En {hours}h {minutes}min" if hours > 0 else f"En {minutes}min"
             )
 
-        # Título principal
         st.subheader(f"⏱️ Próxima Sesión: {next_forecast['spot_name']}", divider="blue")
-
-        # Usamos un contenedor con borde para agrupar visualmente las métricas
-        # DETECCIÓN DE DISPOSITIVO
 
         with st.container(border=True):
             if is_mobile():
-                # FILA 1: Inicio y Energía
                 c1, c2 = st.columns(2)
                 c1.metric(
                     "Inicio",
@@ -300,7 +451,6 @@ def plot_forecast_as_table():
                     delta_arrow="off",
                 )
 
-                # FILA 2: Swell y Viento
                 c3, c4 = st.columns(2)
                 c3.metric(
                     "Swell",
@@ -315,8 +465,6 @@ def plot_forecast_as_table():
                     delta_arrow="off",
                 )
 
-                # FILA 3: Marea (El "1" final)
-                # Al crear una sola columna, ocupará el ancho completo, centrando visualmente el dato
                 c5 = st.columns(1)[0]
                 c5.metric(
                     "Marea",
@@ -326,7 +474,6 @@ def plot_forecast_as_table():
                 )
 
             else:
-                # DISEÑO PARA PC (5 columnas en una fila)
                 c1, c2, c3, c4, c5 = st.columns(5)
                 c1.metric(
                     "Inicio",
@@ -358,136 +505,15 @@ def plot_forecast_as_table():
                     delta_arrow="off",
                 )
 
-    data_other = data.filter(~pl.col("wave_direction").is_in(["W", "WNW"]))
-    plot_graph("fuerza norte", data_other)
+    data_north = data.filter(~pl.col("wave_direction").is_in(["W", "WNW"]))
+    data_west = data.filter(pl.col("wave_direction").is_in(["W", "WNW"]))
 
-    data_west_wave = data.filter(pl.col("wave_direction").is_in(["W", "WNW"]))
-    if not data_west_wave.is_empty():
-        plot_graph("fuerza oeste", data_west_wave)
+    if not data_north.is_empty():
+        plot_graph("fuerza norte", data_north)
+        render_spot_expanders(data_north, "norte")
 
-    grouped_data = data.group_by("spot_name").agg(
-        pl.col("datetime").min().alias("datetime")
-    )
-    grouped_data = grouped_data.sort("datetime", descending=False)
+    st.divider()
 
-    # TODO put in a method
-    with st.container():
-        for i, row in enumerate(grouped_data.to_dicts()):
-            spot_name = row["spot_name"]
-            group_df = data.filter(pl.col("spot_name") == spot_name)
-
-            with st.expander(f"Spot: {spot_name} ({group_df.height} times)"):
-                group_df = group_df.with_columns(
-                    [
-                        (
-                            pl.col("wind_direction")
-                            + " ("
-                            + pl.col("wind_direction_degrees").cast(pl.Utf8)
-                            + "º)"
-                        ).alias("wind_unified"),
-                        (
-                            pl.col("wave_direction")
-                            + " ("
-                            + pl.col("wave_direction_degrees").cast(pl.Utf8)
-                            + "º)"
-                        ).alias("wave_unified"),
-                        (
-                            pl.col("nearest_tide")
-                            + " ("
-                            + pl.col("tide_percentage").cast(pl.Utf8)
-                            + "%)"
-                        ).alias("tide_unified"),
-                    ]
-                )
-
-                date_friendly = group_df["date_friendly"].to_list()
-                time_friendly = group_df["time_friendly"].to_list()
-                date_names = group_df["date_name"].to_list()
-
-                forecast_to_plot = (
-                    group_df.drop(
-                        [
-                            "spot_name",
-                            "date",
-                            "time",
-                            "time_graph",
-                            "wind_direction",
-                            "wind_direction_degrees",
-                            "wave_direction",
-                            "wave_direction_degrees",
-                            "date_friendly",
-                            "time_friendly",
-                            "date_name",
-                            "nearest_tide",
-                            "tide_percentage",
-                        ]
-                    )
-                    .sort("datetime")
-                    .rename(
-                        {
-                            "wave_unified": "wave_direction",
-                            "wind_unified": "wind_direction",
-                            "tide_unified": "nearest_tide",
-                        }
-                    )
-                )
-
-                forecast_to_plot = forecast_to_plot.drop(["datetime"])
-
-                order_surf = [
-                    "energy",
-                    "nearest_tide",
-                    "tide",
-                    "wind_direction",
-                    "wind_direction_predominant",
-                    "wave_height",
-                    "wave_period",
-                    "wave_direction",
-                    "wave_direction_predominant",
-                    "wind_speed",
-                ]
-                forecast_to_plot = forecast_to_plot.select(order_surf)
-
-                forecast_columns = [col.upper() for col in forecast_to_plot.columns]
-                rotated_df = forecast_to_plot.transpose(include_header=False)
-                rotated_df.insert_column(0, pl.Series("column names", forecast_columns))
-                rotated_df_pd = rotated_df.to_pandas()
-
-                gb = GridOptionsBuilder.from_dataframe(rotated_df_pd)
-                gb.configure_default_column(
-                    wrapText=True,
-                    autoHeight=True,
-                    editable=False,
-                    resizable=True,
-                    suppressMovable=True,
-                )
-                gb.configure_grid_options(domLayout="autoHeight")
-                gb.configure_column(
-                    "column names",
-                    pinned="left",
-                    cellStyle={
-                        "fontWeight": "bold",
-                        "backgroundColor": "#f8f9fb",
-                        "borderRight": "1px solid #d3d3d3",
-                    },
-                    width=150,
-                )
-                gb.configure_column("column names", suppressMenu=True)
-                grid_options = gb.build()
-                column_defs = grid_options["columnDefs"]
-
-                for idx, col in enumerate(column_defs[1:]):
-                    name = unicodedata.normalize("NFC", date_names[idx])
-                    if name in ["Hoy", "Mañana", "Pasado"]:
-                        col["headerName"] = f"{time_friendly[idx]} {name}"
-                    else:
-                        col["headerName"] = f"{time_friendly[idx]} {date_friendly[idx]}"
-
-                AgGrid(
-                    rotated_df_pd,
-                    gridOptions=grid_options,
-                    theme="alpine",
-                    key=f"grid_{spot_name}_{i}",
-                    columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
-                    enable_enterprise_modules=False,
-                )
+    if not data_west.is_empty():
+        plot_graph("fuerza oeste", data_west)
+        render_spot_expanders(data_west, "oeste")
