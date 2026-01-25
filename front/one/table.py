@@ -203,7 +203,7 @@ def render_spot_expanders(filtered_data: pl.DataFrame, section_prefix: str):
     for i, spot_name in enumerate(spots_ordenados):
         spot_df = filtered_data.filter(pl.col("spot_name") == spot_name)
 
-        with st.expander(f"Spot: {spot_name} ({spot_df.height} sesiones)"):
+        with st.expander(f"Spot: {spot_name} ({spot_df.height} franjas)"):
             fechas_disponibles = spot_df["date"].unique().sort()
 
             for j, fecha in enumerate(fechas_disponibles):
@@ -235,9 +235,11 @@ def render_spot_expanders(filtered_data: pl.DataFrame, section_prefix: str):
                 day_name = group_df["date_name"][0]
                 date_f = group_df["date_friendly"][0]
 
-                expander_day_phrase = f"{day_name} ({date_f}) | {remaining_time_txt}"
+                expander_day_phrase = f"{day_name} ({date_f}) [{group_df.height} franjas] | {remaining_time_txt}"
                 if day_name == "Otro día":
-                    expander_day_phrase = f"{date_f} | {remaining_time_txt}"
+                    expander_day_phrase = (
+                        f"{date_f} [{group_df.height} franjas] | {remaining_time_txt}"
+                    )
 
                 with st.expander(expander_day_phrase):
                     group_df = group_df.with_columns(
@@ -319,7 +321,12 @@ def render_spot_expanders(filtered_data: pl.DataFrame, section_prefix: str):
                     rotated_df_pd = rotated_df.to_pandas()
 
                     gb = GridOptionsBuilder.from_dataframe(rotated_df_pd)
-                    gb.configure_default_column(wrapText=True, autoHeight=True)
+                    gb.configure_default_column(
+                        wrapText=True,
+                        autoHeight=True,
+                        suppressMovable=True,
+                        sortable=False,
+                    )
                     gb.configure_grid_options(domLayout="autoHeight")
                     gb.configure_column(
                         "PARÁMETROS",
