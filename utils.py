@@ -538,7 +538,7 @@ def punta_mujeres_favorable_wind(wind_direction_predominant, wind_direction):
 
 
 def san_juan_favorable_wind(wind_direction_predominant, wind_direction):
-    san_juan_wind_directions = ["S", "SE"]
+    san_juan_wind_directions = ["S", "SE", "W", "SW"]
     return not (
         "N" in wind_direction_predominant or "N" in wind_direction
     ) and is_favorable_wind(
