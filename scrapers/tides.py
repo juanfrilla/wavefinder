@@ -1,9 +1,10 @@
-from bs4 import BeautifulSoup
-import polars as pl
-from typing import List, Dict
-from curl_cffi import Session
-from datetime import datetime, timedelta
 import re
+from datetime import datetime, timedelta
+from typing import Dict, List
+
+import polars as pl
+from bs4 import BeautifulSoup
+from curl_cffi import Session
 
 
 class TidesScraperLanzarote:
@@ -22,43 +23,37 @@ class TidesScraperLanzarote:
 
         soup = BeautifulSoup(response.text, "html.parser")
         tides_data = []
-
-        # En esta web, las filas de días tienen clases fondo1 o fondo2
         rows = soup.find_all("tr", class_=re.compile(r"tabla_mareas_fila_fondo"))
 
         for row in rows:
-            # Extraer la fecha del atributo onclick: Day('2026-01-23')
             onclick = row.get("onclick", "")
-            date_match = re.search(r"\d{4}-\d{2}-\d{2}", onclick)
+            date_match = re.search(r"(\d{4}-\d{2}-\d{1,2})", onclick)
+
             if not date_match:
                 continue
 
-            current_date_str = date_match.group()
-
-            # Buscar celdas de marea (1ª, 2ª, 3ª y 4ª)
+            current_date_str = date_match.group(1)
             marea_cells = row.find_all("td", class_="tabla_mareas_marea")
 
             for cell in marea_cells:
                 hora_div = cell.find("div", class_="tabla_mareas_marea_hora")
-                if not hora_div:
+                if not hora_div or not hora_div.text.strip():
                     continue
+                hora_raw = hora_div.text.replace("h", "").strip()
 
-                hora_str = self._clean_text(hora_div.text)
-
-                # Determinar si es pleamar o bajamar por la clase del icono
                 tipo_div = cell.find("div", class_="tabla_mareas_marea_bajamar_pleamar")
-                es_bajamar = "tabla_mareas_marea_bajamar" in tipo_div.get("class", [])
-                tipo = "bajamar" if es_bajamar else "pleamar"
+                tipo = (
+                    "bajamar"
+                    if "tabla_mareas_marea_bajamar" in tipo_div.get("class", [])
+                    else "pleamar"
+                )
 
-                # Altura
                 altura_span = cell.find(
                     "span", class_="tabla_mareas_marea_altura_numero"
                 )
                 altura = altura_span.text.replace(",", ".") if altura_span else "0"
-
-                # Construir objeto datetime
                 full_dt = datetime.strptime(
-                    f"{current_date_str} {hora_str}", "%Y-%m-%d %H:%M"
+                    f"{current_date_str} {hora_raw}", "%Y-%m-%d %H:%M"
                 )
 
                 tides_data.append(
@@ -66,10 +61,10 @@ class TidesScraperLanzarote:
                         "tide": tipo,
                         "timestamp": full_dt.timestamp(),
                         "height": float(altura),
-                        "datetime": full_dt.isoformat(),  # <--- Cambia esto (.isoformat())
+                        "datetime": full_dt.isoformat(),
                     }
                 )
-
+        tides_data.sort(key=lambda x: x["timestamp"])
         return tides_data
 
     def construct_future_tides(

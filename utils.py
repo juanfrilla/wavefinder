@@ -1,8 +1,9 @@
 import math
-import polars as pl
-from datetime import datetime, date, time, timedelta, timezone
-import streamlit as st
+from datetime import date, datetime, time, timedelta, timezone
 from typing import Dict
+
+import polars as pl
+import streamlit as st
 
 MONTH_MAPPING = {
     "Ene": "01",
