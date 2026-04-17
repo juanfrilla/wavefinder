@@ -21,3 +21,7 @@ el espino sale en 3 ocasiones, mucho viento norte o noroeste, mucha fuerza oeste
 descargar datos y almacenar
 
 En vez de poner papagayo-montaña amarilla en la leyenda o similares, permitir varios spots
+
+arreglar ammend_wave_directions     # esto arreglarlo, solo funciona para papagayo o papelillo quizas, para playa honda tiene uqe estar muy oeste
+orden de fuerza oeste fuerza norte en el frontend cuando hay fuerza oeste primero, sale debajo la grafica
+Pasarle los grados del viento y swell a get_low_wind_spot para tratar con menos argumentos
