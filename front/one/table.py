@@ -1,15 +1,17 @@
-import os
 import json
+import os
 import time
-import streamlit as st
-from utils import final_forecast_format, construct_date_selection_list, is_mobile
-from scrapers.windguru import Windguru
-from scrapers.tides import TidesScraperLanzarote
-import altair as alt
-import polars as pl
-import pandas as pd
 from datetime import datetime, timedelta, timezone
-from st_aggrid import AgGrid, GridOptionsBuilder, ColumnsAutoSizeMode
+
+import altair as alt
+import pandas as pd
+import polars as pl
+import streamlit as st
+from st_aggrid import AgGrid, ColumnsAutoSizeMode, GridOptionsBuilder
+
+from scrapers.tides import TidesScraperLanzarote
+from scrapers.windguru import Windguru
+from utils import construct_date_selection_list, final_forecast_format, is_mobile
 
 DEFAULT_MIN_WAVE_PERIOD = 0
 DEFAULT_WAVE_HEIGHT = 0.0
@@ -322,8 +324,9 @@ def render_spot_expanders(filtered_data: pl.DataFrame, section_prefix: str):
 
                     gb = GridOptionsBuilder.from_dataframe(rotated_df_pd)
                     gb.configure_default_column(
-                        wrapText=True,
-                        autoHeight=True,
+                        # wrapText=True,
+                        # autoHeight=True,
+                        columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
                         suppressMovable=True,
                         sortable=False,
                     )
