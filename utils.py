@@ -424,7 +424,7 @@ def lasanta_low_wind_conditions(
             | (wave_direction in lasanta_wave_directions)
         )
         and (wave_direction not in unwanted_wave_directions)
-    ) and (wave_energy >= 100 and wave_energy <= 1000)
+    ) and (wave_energy >= 100 and wave_energy <= 2000)
 
 
 def famara_conditions(
