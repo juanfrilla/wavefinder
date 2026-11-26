@@ -1115,7 +1115,7 @@ def generate_forecast_moments(initstamp, hours):
 def ammend_wave_directions(wave_directions, wave_direction_degrees):
     # esto arreglarlo, solo funciona para papagayo o papelillo quizas, para playa honda tiene uqe estar muy oeste
     for i, degree in enumerate(wave_direction_degrees):
-        if 300 <= degree <= 315: # it can be 320 as well
+        if 300 <= degree <= 315:  # it can be 320 as well
             wave_directions[i] = "WNW"
     return wave_directions
 
