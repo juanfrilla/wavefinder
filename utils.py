@@ -1,6 +1,5 @@
 import math
-from datetime import date, datetime, time, timedelta, timezone
-from typing import Dict
+from datetime import UTC, date, datetime, time, timedelta
 
 import polars as pl
 import streamlit as st
@@ -808,7 +807,7 @@ def generate_spot_name(
         return "No Clasificado"
 
 
-def generate_spot_names(forecast: Dict[str, list]) -> list:
+def generate_spot_names(forecast: dict[str, list]) -> list:
     spot_names = []
     wind_direction_predominant = forecast["wind_direction_predominant"]
     wave_direction_predominant = forecast["wave_direction_predominant"]
@@ -892,7 +891,7 @@ def final_forecast_format(df: pl.DataFrame):
         datetimes = df["datetime"]
         _6_AM = time(hour=6, minute=0, second=0, microsecond=0)
         _19_PM = time(hour=19, minute=0, second=0, microsecond=0)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         mask = (times >= _6_AM) & (times <= _19_PM) & (datetimes >= now)
         df = df.filter(mask)
         common_columns = [
@@ -1104,7 +1103,7 @@ def degrees_to_direction(degrees: int) -> str:
 
 
 def generate_forecast_moments(initstamp, hours):
-    init_datetime = datetime.fromtimestamp(initstamp, tz=timezone.utc).replace(
+    init_datetime = datetime.fromtimestamp(initstamp, tz=UTC).replace(
         tzinfo=None
     )
     moments = [init_datetime + timedelta(hours=hour) for hour in hours]

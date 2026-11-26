@@ -379,7 +379,7 @@ def plot_forecast_as_table():
     scraped_datetime_list = list(
         set(st.session_state.forecast_df["datetime"].to_list())
     )
-    scraped_date_list = set([date.date() for date in scraped_datetime_list])
+    scraped_date_list = {date.date() for date in scraped_datetime_list}
     date_name_list = list(set(st.session_state.forecast_df["date_name"].to_list()))
     all_beaches = list(set(st.session_state.forecast_df["spot_name"].to_list()))
 

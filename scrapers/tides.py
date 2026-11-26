@@ -1,6 +1,5 @@
 import re
 from datetime import datetime, timedelta
-from typing import Dict, List
 
 import polars as pl
 from bs4 import BeautifulSoup
@@ -16,7 +15,7 @@ class TidesScraperLanzarote:
     def _clean_text(self, text: str) -> str:
         return text.replace("h", "").strip()
 
-    def scrape_tides(self) -> List[Dict]:
+    def scrape_tides(self) -> list[dict]:
         response = self.session.get(url=self.link, impersonate="chrome131")
         if response.status_code != 200:
             return []
@@ -68,8 +67,8 @@ class TidesScraperLanzarote:
         return tides_data
 
     def construct_future_tides(
-        self, tides: List[Dict], days_to_extend: int = 15
-    ) -> List[Dict]:
+        self, tides: list[dict], days_to_extend: int = 15
+    ) -> list[dict]:
         if not tides:
             return []
 
@@ -95,11 +94,11 @@ class TidesScraperLanzarote:
             )
         return tides
 
-    def get_tides_dataframe(self, tides: List[Dict]) -> pl.DataFrame:
+    def get_tides_dataframe(self, tides: list[dict]) -> pl.DataFrame:
         return pl.DataFrame(tides)
 
     def tasks(self):
         tides = self.scrape_tides()
         tides = self.construct_future_tides(tides)
         unique_tides = {t["timestamp"]: t for t in tides}.values()
-        return sorted(list(unique_tides), key=lambda x: x["timestamp"])
+        return sorted(unique_tides, key=lambda x: x["timestamp"])

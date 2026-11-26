@@ -1,28 +1,30 @@
-from datetime import datetime, timezone
+import locale
+import math
+from datetime import UTC, datetime
+
 import polars as pl
+import requests
+
 from utils import (
-    generate_tides,
-    generate_nearest_tides,
-    generate_tide_percentages,
-    generate_energy,
-    create_date_name_column,
-    create_direction_predominant_column,
-    generate_spot_names,
-    datetime_to_frontend_str,
-    degrees_to_direction,
-    generate_forecast_moments,
+    align_dict_columns,
     ammend_wave_directions,
     clean_list,
-    align_dict_columns,
+    create_date_name_column,
+    create_direction_predominant_column,
+    datetime_to_frontend_str,
+    degrees_to_direction,
+    generate_energy,
+    generate_forecast_moments,
+    generate_nearest_tides,
+    generate_spot_names,
+    generate_tide_percentages,
+    generate_tides,
 )
-import locale
-import requests
-import math
 
 locale.setlocale(locale.LC_TIME, "es_ES.UTF-8")
 
 
-class Windguru(object):
+class Windguru:
     def __init__(self):
         pass
 
@@ -33,7 +35,7 @@ class Windguru(object):
         long_range_start=243,
         long_range_end=384,
     ):
-        now_dt = datetime.now(timezone.utc)
+        now_dt = datetime.now(UTC)
 
         if now_dt.hour >= 12:
             model_run_time = now_dt.replace(hour=12, minute=0, second=0, microsecond=0)
