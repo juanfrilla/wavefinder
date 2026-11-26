@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import altair as alt
 import pandas as pd
@@ -50,7 +50,7 @@ def plot_graph(add_data: str, data: pl.DataFrame):
         st.header(f"Energía por días ({add_data})", divider="rainbow")
 
         source = data.to_pandas()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         highlight = alt.selection_point(
             on="mouseover", fields=["spot_name"], nearest=True
         )
@@ -194,7 +194,7 @@ def load_windguru_forecast():
 def render_spot_expanders(filtered_data: pl.DataFrame, section_prefix: str):
     if filtered_data.is_empty():
         return
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     spots_ordenados = (
         filtered_data.group_by("spot_name")
         .agg(pl.col("datetime").min().alias("proxima_sesion"))
@@ -213,7 +213,7 @@ def render_spot_expanders(filtered_data: pl.DataFrame, section_prefix: str):
 
                 first_session_dt = group_df["datetime"][0]
                 if first_session_dt.tzinfo is None:
-                    first_session_dt = first_session_dt.replace(tzinfo=timezone.utc)
+                    first_session_dt = first_session_dt.replace(tzinfo=UTC)
 
                 diff = first_session_dt - now
                 total_seconds = int(diff.total_seconds())
@@ -424,11 +424,11 @@ def plot_forecast_as_table():
     # TODO put in a method
     if not data.is_empty():
         next_forecast = data.sort("datetime").head(1).to_dicts()[0]
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         target_time = next_forecast["datetime"]
 
         if target_time.tzinfo is None:
-            target_time = target_time.replace(tzinfo=timezone.utc)
+            target_time = target_time.replace(tzinfo=UTC)
 
         diff = target_time - now
         total_seconds = int(diff.total_seconds())
@@ -516,12 +516,17 @@ def plot_forecast_as_table():
     data_north = data.filter(~pl.col("wave_direction").is_in(["W", "WNW"]))
     data_west = data.filter(pl.col("wave_direction").is_in(["W", "WNW"]))
 
-    if not data_north.is_empty():
-        plot_graph("fuerza norte", data_north)
-        render_spot_expanders(data_north, "norte")
+    north_date = data_north["datetime"].min() if not data_north.is_empty() else None
+    west_date = data_west["datetime"].min() if not data_west.is_empty() else None
 
-    st.divider()
+    plots = [
+        ("fuerza norte", data_north, "norte", north_date),
+        ("fuerza oeste", data_west, "oeste", west_date),
+    ]
 
-    if not data_west.is_empty():
-        plot_graph("fuerza oeste", data_west)
-        render_spot_expanders(data_west, "oeste")
+    plots = sorted([p for p in plots if p[3] is not None], key=lambda p: p[3])
+
+    for title, df, direction, _ in plots:
+        plot_graph(title, df)
+        render_spot_expanders(df, direction)
+        st.divider()
