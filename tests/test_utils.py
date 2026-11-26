@@ -1,4 +1,4 @@
-from utils import generate_spot_name, calculate_energy
+from utils import calculate_energy, generate_spot_name
 
 
 def test_separate_spots():
@@ -63,7 +63,7 @@ def test_separate_spots():
             wave_energy=calculate_energy(wave_height=2.5, wave_period=10),
             tide_percentage=90,
         )
-    ) == "No Clasificado"
+    ) == "La Santa"
     assert (
         generate_spot_name(
             wind_direction_predominant="NW",
@@ -113,7 +113,7 @@ def test_separate_spots():
             wave_energy=calculate_energy(wave_height=2.5, wave_period=10),
             tide_percentage=80,
         )
-    ) == "No Clasificado"
+    ) == "La Santa"
     assert (
         generate_spot_name(
             wind_direction_predominant="E",

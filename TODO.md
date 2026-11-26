@@ -28,3 +28,4 @@ Pasarle los grados del viento y swell a get_low_wind_spot para tratar con menos 
 
 
 migrar esto a javascript puro, para librarme del streamlit
+poner una lista de spots cuando proceda más que dos juntos
